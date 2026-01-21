@@ -12,19 +12,26 @@ Bao gồm vai trò quản trị viên và nhân viên.
 ## Database Setup
 1. Create database: food_order
 2. Import data:
-   - food_order.products.json
-   - food_order.categories.json
-   - food_order.tables.json
+```
+food_order.products.json
+food_order.categories.json
+food_order.tables.json
+```
+
 
 ## Run Backend
+```
 cd backend
 npm install
 npm start
+```
 
 ## Run Frontend
+```
 cd frontend
 npm install
 npm run dev
+```
 
 ## Demo Accounts (for testing)
 Admin:
