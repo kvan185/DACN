@@ -1,17 +1,16 @@
-### Setup Project
-```
-cd backend/ && npm i
-cd frontend/ && npm i
-```
-
+# Setup Project
 ## Run Server:
 ```
-cd backend/ && npm start
+cd backend
+npm i
+npm start
 ```
 
 ## Run-client:
 ```
-cd frontend/ && npm run dev && cd ..
+cd frontend
+npm i
+npm run dev
 ```
 
 ## Account
