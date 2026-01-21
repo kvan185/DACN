@@ -1,0 +1,65 @@
+@use '../../../scss/' as *;
+
+.block-menu {
+    padding: 40px 0;
+    min-height: calc(100vh - 200px);
+
+    .menu-products {
+        h2 {
+            color: $color-primary;
+            margin-bottom: 30px;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .order-info {
+            text-align: center;
+            margin-bottom: 30px;
+
+            .table-info {
+                background: $color-secondary;
+                color: $color-text-light;
+                padding: 10px 20px;
+                border-radius: 8px;
+                display: inline-block;
+
+                span {
+                    font-size: 18px;
+                    font-weight: 500;
+                }
+            }
+
+            .online-info {
+                background: $color-primary;
+                color: $color-text-light;
+                padding: 10px 20px;
+                border-radius: 8px;
+                display: inline-block;
+
+                span {
+                    font-size: 18px;
+                    font-weight: 500;
+                }
+            }
+        }
+    }
+
+    @media (max-width: 768px) {
+        padding: 20px 0;
+
+        .menu-products {
+            h2 {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .order-info {
+                .table-info span,
+                .online-info span {
+                    font-size: 16px;
+                }
+            }
+        }
+    }
+} 

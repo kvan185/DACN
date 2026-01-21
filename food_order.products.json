@@ -1,0 +1,340 @@
+[{
+  "_id": {
+    "$oid": "6752d6a1c50b10fa72808d78"
+  },
+  "name": "Burger Bò phô mai đặc biệt",
+  "category_id": {
+    "$oid": "6752d60ec50b10fa72808d64"
+  },
+  "detail": "Bò phô mai đặc biệt",
+  "price": 56000,
+  "image": "d8c958ad-3e90-4607-99e3-0c9b291685cf-xcheesedlx_bb.png.pagespeed.ic.t9fdyoxrfn.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:49:05.567Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:49:05.567Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d6cdc50b10fa72808d7c"
+  },
+  "name": "Burger 2 lớp bò, phô-mai",
+  "category_id": {
+    "$oid": "6752d60ec50b10fa72808d64"
+  },
+  "detail": "Burger 2 lớp bò và phô-mai.",
+  "price": 66000,
+  "image": "c24848a6-5ac0-4ba9-80e6-1b9f4c4d009f-.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:49:49.560Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:49:49.560Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d762c50b10fa72808d8d"
+  },
+  "name": "Burger Bò miếng lớn phô-mai",
+  "category_id": {
+    "$oid": "6752d60ec50b10fa72808d64"
+  },
+  "detail": "Burger bò miếng lớn và phô-mai\r\n\r\n",
+  "price": 79000,
+  "image": "ec7f241c-2bfd-49f2-ad87-920b4689d388-xmcroyal_bb.png.pagespeed.ic.x_bth4ptjp.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:52:18.060Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:52:18.060Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d783c50b10fa72808d91"
+  },
+  "name": "Burger Big Mac",
+  "category_id": {
+    "$oid": "6752d60ec50b10fa72808d64"
+  },
+  "detail": "Burger 2 lớp bò, phô-mai, rau tươi và sốt Big Mac.\r\n\r\n",
+  "price": 76000,
+  "image": "9400454e-e885-47e3-a343-8dc88e2c2689-xbigmac_bb.png.pagespeed.ic.t-4l-nzxfn.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:52:51.090Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:52:51.090Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d878c50b10fa72808d95"
+  },
+  "name": "Burger Bò Hoàng Gia Đặc Biệt",
+  "category_id": {
+    "$oid": "6752d60ec50b10fa72808d64"
+  },
+  "detail": "Burger Bò Hoàng Gia Đặc Biệt",
+  "price": 89000,
+  "image": "e5c4b59e-97ed-4055-b21b-7a2fc47c19ca-xmcroyaldlx_bb.png.pagespeed.ic.qwzwgunriy.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:56:56.131Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:56:56.131Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d8bcc50b10fa72808d99"
+  },
+  "name": " Burger Gà phô-mai đặc biệt",
+  "category_id": {
+    "$oid": "6752d61ec50b10fa72808d67"
+  },
+  "detail": "Burger Đặc biệt gà và phô-mai.",
+  "price": 69000,
+  "image": "89c40d97-bf84-4cc0-bc10-b996b396e182-xmcchickendlx_bb.png.pagespeed.ic.xwrimj_enc.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:58:04.999Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:58:04.999Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d8d9c50b10fa72808d9d"
+  },
+  "name": "Burger Gà Nhỏ Mayo",
+  "category_id": {
+    "$oid": "6752d61ec50b10fa72808d67"
+  },
+  "detail": null,
+  "price": 36000,
+  "image": "8d49654a-2e5e-4aae-8cd8-68c356dbb04e-xchickbg.png.pagespeed.ic.vcptk7cser.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:58:33.754Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:58:33.754Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d904c50b10fa72808da1"
+  },
+  "name": "Burger Phi lê Cá phô mai",
+  "category_id": {
+    "$oid": "6752d628c50b10fa72808d6a"
+  },
+  "detail": null,
+  "price": 56000,
+  "image": "15c60cfc-ac3c-44f0-ab2d-343e7f1a423a-xfof_bb.png.pagespeed.ic.x358sc8trh.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:59:16.041Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:59:16.041Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d92bc50b10fa72808da5"
+  },
+  "name": "Burger Xúc Xích - 337 Kcal",
+  "category_id": {
+    "$oid": "6752d62fc50b10fa72808d6d"
+  },
+  "detail": null,
+  "price": 36000,
+  "image": "7227320e-35f3-40e5-82c4-0a66309ee9ed-xsausagebg_bb.png.pagespeed.ic.hviz0h1bpe.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:59:55.860Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:59:55.860Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d95bc50b10fa72808da9"
+  },
+  "name": "Fanta®",
+  "category_id": {
+    "$oid": "6752d641c50b10fa72808d70"
+  },
+  "detail": null,
+  "price": 22000,
+  "image": "ad616cfe-82a1-4024-8eb9-c6671c962036-xhero-pdt-fanta-201703_0.png.pagespeed.ic.vtcouwwjr9.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T11:00:43.631Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T11:00:43.631Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d980c50b10fa72808dad"
+  },
+  "name": "Nước suối",
+  "category_id": {
+    "$oid": "6752d641c50b10fa72808d70"
+  },
+  "detail": null,
+  "price": 15000,
+  "image": "359a20ea-16e0-4017-9091-ae56df8d8164-xdasani_water.png.pagespeed.ic.9dioxb9nfk.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T11:01:20.089Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T11:01:20.089Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d99fc50b10fa72808db1"
+  },
+  "name": " Sprite®",
+  "category_id": {
+    "$oid": "6752d641c50b10fa72808d70"
+  },
+  "detail": null,
+  "price": 22000,
+  "image": "8de0d525-2782-4e58-93a6-dc5a01872a51-xproduct_thumb_sprite.png.pagespeed.ic.jesrsw7hgq.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T11:01:51.863Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T11:01:51.863Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d9bbc50b10fa72808db5"
+  },
+  "name": "Coca-Cola® - 150 Kcal",
+  "category_id": {
+    "$oid": "6752d641c50b10fa72808d70"
+  },
+  "detail": null,
+  "price": 22000,
+  "image": "3168490d-10d2-43c8-98f4-96aba7a12cc9-xmcd-food-beverages-soft-drinks-coke.png.pagespeed.ic.dnhv1b1e6d.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T11:02:19.526Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T11:02:19.526Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d9e9c50b10fa72808db9"
+  },
+  "name": "Kem McSundae™ xốt Sôcôla",
+  "category_id": {
+    "$oid": "6752d657c50b10fa72808d73"
+  },
+  "detail": null,
+  "price": 29000,
+  "image": "d077261a-2217-4144-923d-5ece38b0ef17-xhotfudge_mcsundae.png.pagespeed.ic.aziwlx7dt-.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T11:03:05.313Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T11:03:05.313Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752da06c50b10fa72808dbd"
+  },
+  "name": "Kem Xay Bánh Oreo™",
+  "category_id": {
+    "$oid": "6752d657c50b10fa72808d73"
+  },
+  "detail": null,
+  "price": 39000,
+  "image": "26f3f764-a2a8-479d-a2ea-9980aa67109c-xoreo_mcflurry.png.pagespeed.ic.x74srjja1s.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T11:03:34.251Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T11:03:34.251Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752da45c50b10fa72808dc6"
+  },
+  "name": "Cơm Gà Rán 1 miếng kèm Nước",
+  "category_id": {
+    "$oid": "6752da33c50b10fa72808dc1"
+  },
+  "detail": null,
+  "price": 39000,
+  "image": "b11ce2d0-6404-4615-a06c-6365b9af9a15-xcso1589.png.pagespeed.ic.s2121cfp8x.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T11:04:37.268Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T11:04:37.268Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752da64c50b10fa72808dca"
+  },
+  "name": "Combo Burger Bò Nướng + 1 Gà Rán",
+  "category_id": {
+    "$oid": "6752da33c50b10fa72808dc1"
+  },
+  "detail": null,
+  "price": 59000,
+  "image": "e0a72ab5-2f8d-478e-a4a4-e3cd060abfc5-xcso_1851combo_gabo.png.pagespeed.ic.kdtndzxnqz.png",
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T11:05:08.339Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T11:05:08.339Z"
+  },
+  "__v": 0
+}]

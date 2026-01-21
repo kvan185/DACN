@@ -1,0 +1,122 @@
+@use '../../../scss/' as *;
+
+.product-list {
+    position: relative;
+    min-height: 200px;
+    
+    &__grid {
+        margin: -1rem;
+        
+        > [class*="col-"] {
+            padding: 1rem;
+        }
+    }
+    
+    // Loading State
+    &__loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px;
+        color: $color-primary;
+        
+        .spinner {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            animation: spin 1s linear infinite;
+        }
+        
+        p {
+            color: $color-text-secondary;
+            font-size: 1rem;
+            margin: 0;
+        }
+    }
+    
+    // Error State
+    &__error {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: rgba($color-error, 0.1);
+        border-radius: 1rem;
+        margin: 1rem 0;
+        
+        i {
+            font-size: 2.5rem;
+            color: $color-error;
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            color: $color-text-primary;
+            margin-bottom: 1.5rem;
+        }
+        
+        button {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 2rem;
+            background: $color-primary;
+            color: $color-text-light;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            
+            &:hover {
+                background: darken($color-primary, 10%);
+                transform: translateY(-2px);
+            }
+        }
+    }
+    
+    // Empty State
+    &__empty {
+        text-align: center;
+        padding: 4rem 1rem;
+        background: $color-background-light;
+        border-radius: 1rem;
+        border: 2px dashed rgba($color-text-secondary, 0.2);
+        
+        i {
+            font-size: 3rem;
+            color: $color-text-secondary;
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            color: $color-text-secondary;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+    }
+}
+
+// Animations
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Responsive
+@media (max-width: 768px) {
+    .product-list {
+        &__grid {
+            margin: -0.5rem;
+            
+            > [class*="col-"] {
+                padding: 0.5rem;
+            }
+        }
+        
+        &__empty,
+        &__error {
+            padding: 2rem 1rem;
+        }
+    }
+}
+

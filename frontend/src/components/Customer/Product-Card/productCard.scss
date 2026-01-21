@@ -1,0 +1,98 @@
+@use '../../../scss/' as *;
+
+[class*="col-"] {
+    margin-bottom: 20px;
+}
+
+.product-card{
+    background-color: $color-text-light;    
+    border-radius: 10px;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+    &:hover {
+        transform: translateY(-5px);
+    }
+
+    a{
+        text-decoration: none;
+    }
+    
+    img{
+        width: 100%;
+        height: auto;
+        min-height: 200px;
+        min-width: auto;
+        max-height: 280px;
+        object-fit: contain;
+        border-radius: 10px 10px 0 0;
+
+        @media (max-width: 768px) {
+            min-height: 150px;
+        }
+    }
+
+    .product-info{
+        display: flex;
+        justify-content: space-between;
+        padding: 16px 14px;
+        background-color: $color-text-light;
+        border-radius: 0 0 10px 10px;
+
+        &-left{
+            width: 75%;
+        }
+
+        &-right{
+            display: flex;
+            flex-direction: column;
+            align-items: end;
+
+            .price {
+                color: $color-primary;
+                font-weight: 600;
+            }
+
+            .btn{
+                padding-top: 16px;
+                color: $color-accent-green;
+                
+                &:hover {
+                    color: $color-primary;
+                }
+            }
+        }
+
+        span{
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 20px;
+            letter-spacing: -0.012em;
+            color: $color-text-primary;
+
+            @media (max-width: 768px) {
+                font-size: 14px;
+                line-height: 18px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+
+            &-left {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            &-right {
+                align-items: center;
+            }
+        }
+    }
+}

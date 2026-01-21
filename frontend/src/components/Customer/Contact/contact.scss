@@ -1,0 +1,121 @@
+@use '../../../scss/' as *;
+
+.block-contact{
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    background-color: $color-text-light;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+    .contact-form{
+        flex: 1;
+
+        &-head{
+            margin-bottom: 40px;
+
+            h3{
+                font-weight: 500;
+                font-size: 32px;
+                line-height: 38px;
+                color: $color-primary;
+                margin-bottom: 16px;
+            }
+
+            span{
+                font-weight: 400;
+                font-size: 16px;
+                line-height: 19px;
+                color: $color-text-secondary;
+            }
+        }
+
+        form{
+            .contact-form-group{
+                display: flex;
+                gap: 20px;
+                margin-bottom: 20px;
+
+                input{
+                    flex: 1;
+                    height: 50px;
+                }
+            }
+
+            input, textarea{
+                width: 100%;
+                padding: 12px 20px;
+                border: 1px solid rgba($color-text-primary, 0.1);
+                border-radius: 10px;
+                font-size: 16px;
+                color: $color-text-primary;
+                background-color: $color-background-light;
+                transition: all 0.3s ease;
+
+                &:focus {
+                    outline: none;
+                    border-color: $color-primary;
+                }
+
+                &::placeholder {
+                    color: $color-text-secondary;
+                }
+            }
+
+            textarea{
+                height: 150px;
+                margin-bottom: 20px;
+                resize: none;
+            }
+
+            .btn-contact{
+                input{
+                    background-color: $color-primary;
+                    border: none;
+                    padding: 12px 40px;
+                    width: fit-content;
+                    font-weight: 500;
+                    font-size: 18px;
+                    color: $color-text-light;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+
+                    &:hover {
+                        background-color: darken($color-primary, 10%);
+                    }
+                }
+            }
+        }
+    }
+
+    @media screen and (max-width: 768px) {
+        flex-direction: column;
+        padding: 20px;
+
+        .contact-form {
+            &-head {
+                margin-bottom: 24px;
+                
+                h3 {
+                    font-size: 24px;
+                    line-height: 32px;
+                }
+            }
+
+            form {
+                .contact-form-group {
+                    flex-direction: column;
+                    gap: 12px;
+                }
+            }
+        }
+
+        .contact-img {
+            img {
+                width: 100%;
+                height: auto;
+            }
+        }
+    }
+}

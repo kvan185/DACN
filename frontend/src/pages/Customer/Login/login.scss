@@ -1,0 +1,130 @@
+@use '../../../scss/' as *;
+
+.block-login {
+    margin: 40px auto;
+    max-width: 920px;
+    padding: 20px;
+    background: $color-background-light;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+    h2 {
+        font-weight: 400;
+        font-size: 36px;
+        line-height: 42px;
+        margin-bottom: 15px;
+        color: $color-primary;
+        text-align: center;
+    }
+
+    span {
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 17px;
+        text-align: center;
+        color: $color-text-secondary;
+        display: block;
+        margin-bottom: 20px;
+    }
+
+    .login-form {
+        margin: 20px auto;
+        max-width: 800px;
+
+        &-input {
+            margin-bottom: 20px;
+            position: relative;
+
+            input {
+                background-color: $color-text-light;
+                border: 2px solid transparent;
+                height: 50px;
+                width: 100%;
+                padding: 0 15px;
+                transition: all 0.3s ease;
+                font-size: 16px;
+                border-radius: 8px;
+                color: $color-text-primary;
+
+                &::placeholder {
+                    color: $color-text-secondary;
+                }
+
+                &:focus {
+                    border-color: $color-primary;
+                    box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
+                }
+            }
+        }
+
+        &-btn {
+            margin-top: 20px;
+
+            .btn-login {
+                background: linear-gradient(45deg, $color-primary, $color-secondary);
+                border-radius: 10px;
+                border: none;
+                height: 50px;
+                width: 100%;
+                font-weight: 600;
+                font-size: 16px;
+                color: $color-text-light;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 15px rgba($color-primary, 0.3);
+                }
+
+                &:active {
+                    transform: scale(0.98);
+                }
+            }
+        }
+
+        &-register {
+            margin-top: 20px;
+            text-align: center;
+
+            span {
+                display: inline;
+                margin-right: 10px;
+            }
+
+            button {
+                background: none;
+                border: none;
+                color: $color-primary;
+                font-weight: 600;
+                cursor: pointer;
+                
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+}
+
+@media (min-width: 768px) {
+    .block-login {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 30px;
+
+        h2 {
+            font-size: 42px;
+            line-height: 50px;
+        }
+
+        span {
+            font-size: 16px;
+            line-height: 19px;
+        }
+
+        .login-form {
+            margin: 30px auto;
+            max-width: 600px;
+        }
+    }
+}

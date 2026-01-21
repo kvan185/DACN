@@ -1,0 +1,60 @@
+@use '../../../scss/' as *;
+
+.chart {
+    background-color: #F6F7FD;
+    &-box {
+        margin-top: 48px;
+        padding: 30px;
+        border-radius: 10px;
+        background-color: #FFFFFF;
+
+        canvas{
+            height: 560px;
+        }
+    }
+
+    .btn-export{
+        background: $yellow-color;
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        color: $white-color;
+        border: none;
+        margin-bottom: 20px;
+    }
+
+    &-time{
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 45px;
+
+        &__group{
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+
+            span{
+                font-weight: 500;
+                font-size: 16px;
+                line-height: 150%;
+                margin-right: 10px;
+            }
+
+            input, select{
+                width: 180px;
+            }
+
+            .form-group{
+                display: flex;
+                align-items: center;
+            }
+
+            .btn-revenue{
+                background: $green-color;
+                box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
+                border-radius: 10px;
+                color: $white-color;
+                border: none;
+            }
+        }
+    }
+}

@@ -1,0 +1,44 @@
+@use '../../../scss/' as *;
+
+.block-product{
+    padding-top: 80px;
+    background-color: $color-background-light;
+
+    h2{
+        margin-bottom: 16px;
+        font-size: 24px;
+        font-weight: 600;
+        color: $color-text-primary;
+        
+        &::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background-color: $color-primary;
+            margin-top: 8px;
+        }
+    }
+    
+    > * + * {
+        margin-top: 32px;
+    }
+    
+    @media (max-width: 768px) {
+        padding-top: 60px;
+        
+        h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            
+            &::after {
+                width: 40px;
+                margin-top: 6px;
+            }
+        }
+        
+        > * + * {
+            margin-top: 24px;
+        }
+    }
+}

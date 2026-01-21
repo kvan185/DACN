@@ -1,0 +1,105 @@
+[{
+  "_id": {
+    "$oid": "6752d60ec50b10fa72808d64"
+  },
+  "name": "Burger Bò",
+  "image": null,
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:46:38.613Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:46:38.613Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d61ec50b10fa72808d67"
+  },
+  "name": "Burger Gà",
+  "image": null,
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:46:54.301Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:46:54.301Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d628c50b10fa72808d6a"
+  },
+  "name": "Burger Cá",
+  "image": null,
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:47:04.522Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:47:04.522Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d62fc50b10fa72808d6d"
+  },
+  "name": "Burger Heo",
+  "image": null,
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:47:11.842Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:47:11.842Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d641c50b10fa72808d70"
+  },
+  "name": "Thức uống",
+  "image": null,
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:47:29.640Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:47:29.640Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752d657c50b10fa72808d73"
+  },
+  "name": "Tráng miệng",
+  "image": null,
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T10:47:51.451Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T10:47:51.451Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6752da33c50b10fa72808dc1"
+  },
+  "name": "Combo",
+  "image": null,
+  "is_active": true,
+  "createdAt": {
+    "$date": "2024-12-06T11:04:19.238Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-06T11:04:19.238Z"
+  },
+  "__v": 0
+}]

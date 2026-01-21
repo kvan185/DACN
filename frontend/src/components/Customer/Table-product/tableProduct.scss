@@ -1,0 +1,211 @@
+@use '../../../scss/' as *;
+
+@mixin mobile {
+    @media (max-width: 739px) {
+        @content;
+    }
+}
+
+table {
+    // CSS cho desktop
+    .product-action {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+
+        button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            transition: all 0.2s ease;
+            min-width: 100px;
+            cursor: pointer;
+
+            &.product-action-update {
+                background: $color-primary;
+                color: $color-text-light;
+
+                &:hover {
+                    background: darken($color-primary, 5%);
+                }
+
+                &:active {
+                    transform: scale(0.98);
+                }
+            }
+
+            &.product-action-delete {
+                background: $color-error;
+                color: $color-text-light;
+
+                &:hover {
+                    background: darken($color-error, 5%);
+                }
+
+                &:active {
+                    transform: scale(0.98);
+                }
+            }
+        }
+
+        span {
+            color: $color-text-secondary;
+            padding: 0 5px;
+        }
+    }
+
+    // CSS cho table chung
+    td {
+        vertical-align: middle;
+        padding: 15px 10px;
+        
+        img {
+            display: none; // Ẩn hình ảnh
+        }
+
+        .product-name {
+            font-weight: 500;
+            font-size: 15px;
+            color: $color-text-primary;
+        }
+
+        .product-quantity {
+            font-size: 15px;
+            color: $color-text-primary;
+        }
+
+        .product-price {
+            font-weight: 500;
+            color: $color-primary;
+        }
+    }
+
+    // Mobile styles (giữ nguyên code cũ)
+    @include mobile {
+        display: block;
+        
+        thead {
+            display: none;
+        }
+        
+        tbody {
+            display: block;
+            width: 100%;
+        }
+
+        tr {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: $color-background-light;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            position: relative;
+            transition: all 0.3s ease;
+
+            &:active {
+                transform: scale(0.98);
+            }
+        }
+
+        td {
+            display: flex;
+            padding: 8px 0;
+            border: none;
+
+            &:first-child {
+                .product-name {
+                    font-weight: 600;
+                    font-size: 18px;
+                    color: $color-text-primary;
+                    margin-bottom: 5px;
+                }
+
+                img {
+                    display: none;
+                }
+            }
+
+            &:nth-child(2) {
+                .product-quantity {
+                    font-size: 15px;
+                    &:before {
+                        content: "Số lượng: ";
+                        color: $color-text-secondary;
+                        margin-right: 5px;
+                    }
+                }
+            }
+
+            &:nth-child(3) {
+                .product-price {
+                    font-weight: 600;
+                    font-size: 16px;
+                    color: $color-primary;
+                    &:before {
+                        content: "Giá: ";
+                        color: $color-text-secondary;
+                        font-weight: normal;
+                        margin-right: 5px;
+                    }
+                }
+            }
+
+            &:last-child {
+                margin-top: 12px;
+                border-top: 1px solid rgba(0, 0, 0, 0.08);
+                padding-top: 15px;
+
+                .product-action {
+                    width: 100%;
+                    display: flex;
+                    gap: 12px;
+                    justify-content: space-around;
+                    
+                    button {
+                        flex: 1;
+                        padding: 12px;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-weight: 500;
+                        border: none;
+                        transition: all 0.2s ease;
+                        
+                        &.product-action-update {
+                            background: $color-primary;
+                            color: $color-text-light;
+
+                            &:active {
+                                background: darken($color-primary, 10%);
+                            }
+                        }
+                        
+                        &.product-action-delete {
+                            background: $color-error;
+                            color: $color-text-light;
+
+                            &:active {
+                                background: darken($color-error, 10%);
+                            }
+                        }
+                    }
+
+                    span {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.table-status {
+    &.in-use {
+        background-color: #ffc107;
+        color: #000;
+    }
+}

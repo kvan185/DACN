@@ -1,0 +1,89 @@
+@use '../../../scss/' as *;
+
+.modal__success{
+    .modal-dialog{
+        max-width: 500px;
+    }
+    .modal-header, .modal-footer{
+        padding: 30px 30px;
+        border: none;
+
+        .modal-title{
+            font-weight: 500;
+            font-size: 28px;
+            line-height: 38px;
+            color: $color-primary;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn-success-close{
+            border: none;
+            color: $color-text-secondary;
+            transition: all 0.3s ease;
+            
+            &:hover {
+                color: $color-primary;
+            }
+        }
+    }
+
+    .modal-body{
+        padding: 0;
+        margin: 0 auto;
+
+        svg{
+            width: 120px;
+            height: 120px;
+            display: block;
+            margin: 0 auto;
+            color: $color-success;
+        }
+
+        h4{
+            font-weight: 400;
+            font-size: 20px;
+            line-height: 20px;
+            margin: 20px 0 30px;
+            text-align: center;
+            color: $color-text-primary;
+        }
+    }
+
+    .modal-footer{
+        justify-content: space-around;
+        flex-wrap: nowrap;
+        gap: 20px;
+
+        a{
+            font-weight: 500;
+            font-size: 18px;
+            line-height: 30px;
+            text-align: center;
+            letter-spacing: -0.02em;
+            border-radius: 10px;
+            padding: 10px 20px;
+            flex: 1;
+            max-width: 200px;
+            color: $color-text-light;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-success-follow{
+            background: $color-success;
+            
+            &:hover {
+                background: darken($color-success, 10%);
+            }
+        }
+
+        .btn-success-continue{
+            background: $color-primary;
+            
+            &:hover {
+                background: darken($color-primary, 10%);
+            }
+        }
+    }
+}

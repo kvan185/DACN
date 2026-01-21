@@ -1,0 +1,85 @@
+@use '../../../scss/' as *;
+
+.block-product-staff{
+    .product-container{
+        margin-top: 48px;
+        padding: 30px 20px;
+    }
+
+    .product-add{
+        margin: 0 0 20px 12px;
+
+        a{
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 16px;
+        }
+    }
+
+    .product-table{
+        border-collapse: collapse !important;
+        padding-bottom: 30px;
+
+        thead, tbody, tr {
+            border-bottom: 1px solid #e9ecef !important;
+            border-top: 1px solid #e9ecef !important;
+        }
+
+        thead>tr>th {
+            padding: 12px 12px;
+            color: #8898aa;
+            font-size: 14px;
+            background-color: #f6f9fc;
+            text-align: center;
+        }
+
+        tbody>tr>td {
+            padding: 12px 12px;
+            color: #8898aa;
+            font-size: 14px;
+            background-color: #f6f9fc;
+            text-align: center;
+        }
+
+        .product-status{
+            font-size: 12px;
+            font-weight: 600;
+            color: $white-color;
+            padding: 4px 8px;
+            border-radius: 33px;
+
+            &.active{
+                background: $green-color;
+            }
+            &.inactive{
+                background: $red-color;
+                opacity: 0.7;
+            }
+        }
+
+        .icon-update, .icon-delete{
+            font-size: 18px;
+        }
+
+        .icon-delete{
+            color: $red-color;
+            cursor: pointer;
+        }
+
+        .icon-update{
+            color: $green-color;
+            margin-right: 10px;
+        }
+    }
+
+    .product-form{
+        .btn-add{
+            background: $green-color;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            color: $white-color;
+            border: none;
+        }
+    }
+}

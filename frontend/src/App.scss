@@ -1,0 +1,200 @@
+@use './scss/' as *;
+
+// Import Google Fonts hỗ trợ tiếng Việt
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+// Reset CSS
+*, *::before, *::after {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+// Base styles
+body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: $color-text-primary;
+    background-color: $color-background-light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+// Typography
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    color: $color-text-primary;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 2.5rem;
+    
+    @media (max-width: 768px) {
+        font-size: 2rem;
+    }
+}
+
+h2 {
+    font-size: 2rem;
+    
+    @media (max-width: 768px) {
+        font-size: 1.75rem;
+    }
+}
+
+h3 {
+    font-size: 1.75rem;
+    
+    @media (max-width: 768px) {
+        font-size: 1.5rem;
+    }
+}
+
+p {
+    margin-bottom: 1rem;
+    color: $color-text-secondary;
+}
+
+// Container
+.container {
+    @media screen and (min-width: 1440px) {
+        max-width: 1320px;
+    }
+}
+
+// Main Content
+#root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    margin-left: 250px;
+    min-height: 100vh;
+    transition: all 0.4s ease;
+    background-color: $color-background-light;
+    flex: 1;
+    
+    @media (max-width: 992px) {
+        margin-left: 0;
+    }
+}
+
+.block-content {
+    padding: 2rem;
+    
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
+}
+
+// Grid System
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -1rem;
+}
+
+.col {
+    padding: 0 1rem;
+}
+
+// Common Components
+.background-radius {
+    background-color: $color-text-light;
+    border-radius: 1.25rem;
+    box-shadow: 0 0.5rem 1rem rgba($color-text-primary, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.75rem 1.5rem rgba($color-text-primary, 0.12);
+    }
+}
+
+.title-admin {
+    font-size: 1.5rem;
+    color: $color-text-primary;
+    margin: 0 0 1.25rem 1.25rem;
+    position: relative;
+    
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: -0.5rem;
+        left: 0;
+        width: 3rem;
+        height: 0.25rem;
+        background-color: $color-primary;
+        border-radius: 0.125rem;
+    }
+}
+
+// Scrollbar Styling
+::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+::-webkit-scrollbar-track {
+    background: $color-background-light;
+}
+
+::-webkit-scrollbar-thumb {
+    background: $color-primary;
+    border-radius: 0.25rem;
+    
+    &:hover {
+        background: darken($color-primary, 10%);
+    }
+}
+
+// Selection Styling
+::selection {
+    background-color: $color-primary;
+    color: $color-text-light;
+}
+
+// Focus Styling
+:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba($color-primary, 0.5);
+}
+
+// Animation Classes
+.fade-enter {
+    opacity: 0;
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transition: opacity 300ms ease-in;
+}
+
+.fade-exit {
+    opacity: 1;
+}
+
+.fade-exit-active {
+    opacity: 0;
+    transition: opacity 300ms ease-in;
+}
+
+// Utility Classes
+.text-primary { color: $color-primary !important; }
+.text-secondary { color: $color-secondary !important; }
+.text-success { color: $color-success !important; }
+.text-warning { color: $color-warning !important; }
+.text-error { color: $color-error !important; }
+
+.bg-primary { background-color: $color-primary !important; }
+.bg-secondary { background-color: $color-secondary !important; }
+.bg-success { background-color: $color-success !important; }
+.bg-warning { background-color: $color-warning !important; }
+.bg-error { background-color: $color-error !important; }
