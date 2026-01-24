@@ -222,7 +222,7 @@
                     transition: all 0.3s ease;
 
                     &:hover {
-                        background: darken($color-secondary, 5%);
+                        background: darken-color($color-secondary, 5%);
                         transform: translateY(-2px);
                     }
                 }

@@ -120,7 +120,7 @@ function HistoryOrder(props) {
                                                         return(
                                                             <Col xs={6} key={index}>
                                                                 <div className="product-item">
-                                                                    <img src={product_image ? `http://localhost:8080/static/images/${product_image}` : pizza} alt="" />
+                                                                    <img src={product_image ? `http://localhost:5000/static/images/${product_image}` : pizza} alt="" />
                                                                     <div className="product-item-info">
                                                                         <label>Tên sản phẩm: <span>{product_name}</span></label>
                                                                         <label>Số lượng: <span>{qty}</span></label>

@@ -54,7 +54,7 @@
                         &:focus {
                             border-color: $color-primary;
                             box-shadow: 0 0 0 3px rgba($color-primary, 0.1);
-                            background-color: lighten($color-text-light, 2%);
+                            background-color: lighten-color($color-text-light, 2%);
                         }
                     }
                 }

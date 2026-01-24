@@ -93,7 +93,7 @@ function OrderDetail(props) {
                             return (
                                 <Col xs={6} className='' key={index}>
                                     <div className="order__detail-item" key={index}>
-                                        <img src={`http://localhost:8080/static/images/${product_image}`} alt="" />
+                                        <img src={`http://localhost:5000/static/images/${product_image}`} alt="" />
                                         <div className="detail-item-info">
                                             <label>Tên sản phẩm: <span>{product_name}</span></label>
                                             <label>Số lượng: <span>{qty}</span></label>

@@ -29,7 +29,7 @@ table {
                 color: $color-text-light;
 
                 &:hover {
-                    background: darken($color-primary, 5%);
+                    background: darken-color($color-primary, 5%);
                 }
 
                 &:active {
@@ -42,7 +42,7 @@ table {
                 color: $color-text-light;
 
                 &:hover {
-                    background: darken($color-error, 5%);
+                    background: darken-color($color-error, 5%);
                 }
 
                 &:active {
@@ -180,7 +180,7 @@ table {
                             color: $color-text-light;
 
                             &:active {
-                                background: darken($color-primary, 10%);
+                                background: darken-color($color-primary, 10%);
                             }
                         }
                         
@@ -189,7 +189,7 @@ table {
                             color: $color-text-light;
 
                             &:active {
-                                background: darken($color-error, 10%);
+                                background: darken-color($color-error, 10%);
                             }
                         }
                     }

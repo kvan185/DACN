@@ -146,7 +146,7 @@
             letter-spacing: -0.02em;
 
             &:hover {
-                background-color: darken($color-primary, 10%);
+                background-color: darken-color($color-primary, 10%);
             }
 
             @include mobile {

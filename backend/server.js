@@ -1,10 +1,11 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
 
 var corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:3000"
+  origin: process.env.FRONTEND_URL || "http://localhost:8080"
 };
 
 app.use('/static', express.static('static'));

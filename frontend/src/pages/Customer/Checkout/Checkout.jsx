@@ -143,7 +143,7 @@ function Checkout(props) {
                                     return (
                                         <tr key={index}>
                                             <td>
-                                                <img src={`http://localhost:8080/static/images/${product_image}`} alt="" />
+                                                <img src={`http://localhost:5000/static/images/${product_image}`} alt="" />
 
                                                 <span className='product-name'>{product_name}</span>
                                             </td>

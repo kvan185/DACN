@@ -180,7 +180,7 @@
             margin-top: 30px;
 
             input {
-                background: linear-gradient(135deg, $color-primary 0%, darken($color-primary, 10%) 100%);
+                background: linear-gradient(135deg, $color-primary 0%, darken-color($color-primary, 10%) 100%);
                 border: none;
                 height: 50px;
                 width: 100%;

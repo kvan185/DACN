@@ -1,7 +1,7 @@
 @use '../../../scss/' as *;
 
 .banner {
-    background: linear-gradient(135deg, $color-primary 0%, darken($color-primary, 15%) 100%);
+    background: linear-gradient(135deg, $color-primary 0%, darken-color($color-primary, 15%) 100%);
     padding: 60px 0;
     position: relative;
     overflow: hidden;
@@ -126,7 +126,7 @@
                     white-space: nowrap;
                     
                     &:hover {
-                        background: darken($color-secondary, 5%);
+                        background: darken-color($color-secondary, 5%);
                         transform: translateY(-2px);
                     }
                 }

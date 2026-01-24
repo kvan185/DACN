@@ -69,7 +69,7 @@ function Product(props) {
                                             {name}
                                         </td>
                                         <td>
-                                            <img src={`http://localhost:8080/static/images/${image}`} alt=""/>
+                                            <img src={`http://localhost:5000/static/images/${image}`} alt=""/>
                                         </td>
                                         <td>
                                             {price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}

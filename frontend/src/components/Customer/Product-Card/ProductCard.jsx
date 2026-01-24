@@ -19,7 +19,7 @@ function ProductCard({items, fullCol}) {
 
     var _image;
     if (image) {
-        _image = `http://localhost:8080/static/images/${image}`;
+        _image = `http://localhost:5000/static/images/${image}`;
     } else {
         _image = pizza;
     }

@@ -175,7 +175,7 @@
             margin-right: 20px;
             
             &:hover {
-                color: darken(#F3BA00, 10%);
+                color: darken-color(#F3BA00, 10%);
             }
 
             span {
@@ -184,6 +184,48 @@
         }
     }
 }
+
+.menu_feature {
+  background: transparent;   /* trong suốt */
+  padding: 5px 5px;
+}
+
+.menu_list {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  list-style: none;          /* xóa dấu chấm */
+  padding: 0;
+  margin: 0;
+}
+
+.menu_item {
+  position: relative;
+}
+
+/* Link bên trong menu */
+.menu_item a {
+  text-decoration: none;     /* xóa gạch chân */
+  color: #000;               /* xóa màu xanh mặc định */
+  font-weight: 500;
+}
+
+/* Gạch chân hover */
+.menu_item::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0;
+  height: 2px;
+  background: #ff6b00;
+  transition: width 0.3s ease;
+}
+
+.menu_item:hover::after {
+  width: 100%;
+}
+
 
 @media (max-width: 576px) {
     .header {

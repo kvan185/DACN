@@ -8,7 +8,7 @@ exports.initOrRetrieveCart = async (req, res) => {
     try {
         const auth = await middlewares.checkAuth(req);
         if (!auth) {
-            return res.status(400).send({ message: "Authentication failed" });
+            return res.status(401).send({ message: "Authentication failed" });
         }
 
         const customer_id = auth.id;
@@ -36,16 +36,23 @@ exports.addProductToCart = async (req, res) => {
     try {
         const auth = await middlewares.checkAuth(req);
         if (!auth) {
-            return res.status(400).send({ message: "Authentication failed" });
+            return res.status(401).send({ message: "Authentication failed" });
         }
 
         const customer_id = auth.id;
+        
         const cart = await Cart.findOne({ customer_id: customer_id, is_active: true });
+        if (!cart) return res.status(404).json({ message: "Cart not found" });
+        
         const listItem = req.body.listItem;
         if (listItem && Array.isArray(listItem)) {
             await Promise.all(listItem.map(async (item) => {
                 const { id, qty } = item;
+
                 const product = await Product.findById(id);
+                if (!product) res.status(404).send({ message: `Product not found with id ${id}` });
+                if (qty <= 0) res.status(400).send({ message: `Invalid quantity for product id ${id}` });
+
                 const price = product.price;
 
                 const cartItem = await CartItem.findOne({cart_id: cart.id, product_id: id});
@@ -73,11 +80,10 @@ exports.addProductToCart = async (req, res) => {
         const cartItems = await CartItem.find({cart_id: cart.id});
 
         if (cartItems.length > 0) {
-            cart.total_item = cartItems.length;
+            cart.total_item = cartItems.reduce((sum, i) => sum + i.qty, 0);
             cart.total_price = cartItems.reduce((acc, curr) => acc + curr.total_price, 0);
             await cart.save();
         }
-
 
         res.status(200).send({ message: "Add Product to Cart successfully" });
     } catch (error) {
@@ -90,17 +96,28 @@ exports.updateCartItem = async (req, res) => {
     try {
         const auth = await middlewares.checkAuth(req);
         if (!auth) {
-            return res.status(400).send({ message: "Authentication failed" });
+            return res.status(401).send({ message: "Authentication failed" });
         }
 
         const customer_id = auth.id;
         const cart = await Cart.findOne({ customer_id: customer_id, is_active: true });
+        if (!cart) {
+            return res.status(404).json({ message: "Cart not found" });
+        }
+
         const listItem = req.body.listItem;
         if (listItem && Array.isArray(listItem)) {
             const cartItems = await Promise.all(listItem.map(async (item) => {
                 const { id, qty } = item;
                 const product = await Product.findById(id);
+                if (!product) res.status(404).send({ message: `Product not found with id ${id}` });
+
                 const price = product.price;
+
+                if (qty <= 0){
+                    await CartItem.findOneAndDelete({cart_id: cart.id, product_id: id});
+                    return null;
+                }
 
                 const cartItem = await CartItem.findOne({cart_id: cart.id, product_id: id});
                 if (cartItem) {
@@ -124,7 +141,7 @@ exports.updateCartItem = async (req, res) => {
                 }
             }));
             const listCartItems = await CartItem.find({cart_id: cart.id})
-            cart.total_item = listCartItems.length;
+            cart.total_item = listCartItems.reduce((sum, i) => sum + i.qty, 0);
             cart.total_price = listCartItems.reduce((acc, curr) => acc + curr.total_price, 0);
             await cart.save();
         }
@@ -165,19 +182,23 @@ exports.deleteCartItem = async (req, res) => {
         if (!auth) {
             return res.status(401).json({ message: "Authentication failed" });
         }
+
         const { id: customer_id } = auth;
         const cart = await Cart.findOne({ customer_id, is_active: true });
+        if (!cart) {
+            return res.status(404).json({ message: "Cart not found" });
+        }
 
         const cartItemId = req.params.id;
 
-        const cartItem = await CartItem.findOneAndDelete({ _id: cartItemId });
+        const cartItem = await CartItem.findOneAndDelete({ _id: cartItemId, cart_id: cart.id });
 
         if (!cartItem) {
             return res.status(404).json({ message: "Cart item not found" });
         }
 
         const listCartItems = await CartItem.find({cart_id: cart.id})
-        cart.total_item = listCartItems.length;
+        cart.total_item = listCartItems.reduce((sum, i) => sum + i.qty, 0);
         cart.total_price = listCartItems.reduce((acc, curr) => acc + curr.total_price, 0);
         await cart.save();
 

@@ -62,7 +62,7 @@ function Profile(props) {
                         <Col xs={4}>
                             <div className="profile__image">
                                 <div className="profile__image-group">
-                                    <img src={selectedImage ? URL.createObjectURL(selectedImage) : `http://localhost:8080/static/images/${userUpdate.avatar}`} alt="Selected" />
+                                    <img src={selectedImage ? URL.createObjectURL(selectedImage) : `http://localhost:5000/static/images/${userUpdate.avatar}`} alt="Selected" />
                                     <input  type="file" name='avartar' accept="image/*" 
                                         onChange={handleImageChange}
                                     />

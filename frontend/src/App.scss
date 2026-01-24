@@ -151,7 +151,7 @@ p {
     border-radius: 0.25rem;
     
     &:hover {
-        background: darken($color-primary, 10%);
+        background: darken-color($color-primary, 10%);
     }
 }
 
