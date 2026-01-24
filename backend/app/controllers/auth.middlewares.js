@@ -5,26 +5,29 @@ const authMethod = require('./auth.method');
 
 exports.isAuth = async (req, res, next) => {
 	try {
-		// Get access token from header
-		const accessTokenFromHeader = req.headers.authorization.split(' ');
-		if (!accessTokenFromHeader[1]) {
+		if (!req.headers.authorization) {
+			return res.status(401).json({ error: "Authorization header missing" });
+		}
+
+		const token = req.headers.authorization.split(' ')[1];
+		if (!token) {
 			return res.status(401).send({ error: 'Access token not found.' });
 		}
 
-		// Verify access token
-		const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET || jwtVariable.accessTokenSecret;
-		const verified = await authMethod.verifyToken(accessTokenFromHeader[1], accessTokenSecret);
-		if (!verified) {
+		const secret = process.env.ACCESS_TOKEN_SECRET || jwtVariable.accessTokenSecret;
+
+		const decoded = await authMethod.verifyToken(token, secret);
+		if (!decoded) {
 			return res.status(401).send({ error: 'Invalid access token.' });
 		}
 
-		// // Find customer by email
-		// const customer = await findCustomerByEmail(verified.payload.email);
-		// if (!customer) {
-		// 	return res.status(401).send({ error: `Customer not found with email ${verified.payload.email}.` });
-		// }
+		// Check if customer exists by email
+		const customer = await findCustomerByEmail(decoded.payload.email);
+		if (!customer) {
+			return res.status(401).send({ error: `Customer not found with email ${decoded.payload.email}.` });
+		}
 
-		res.send(verified.payload);
+		req.user = decoded.payload;
 		next();
 	} catch (error) {
 		console.error(error);
@@ -33,23 +36,21 @@ exports.isAuth = async (req, res, next) => {
 };
 
 async function findCustomerByEmail(email) {
-	const customer = await Customer.findOne({ email });
-	return customer;
+	return await Customer.findOne({ email });
 }
 
 exports.checkAuth = async(req) => {
-	// Get access token from header
-	const accessTokenFromHeader = req.headers.authorization.split(' ');
-	if (!accessTokenFromHeader[1]) {
+	const token = req.headers.authorization.split(' ')[1];
+	if (!token) {
 		return null;
 	}
 
 	// Verify access token
-	const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET || jwtVariable.accessTokenSecret;
-	const verified = await authMethod.verifyToken(accessTokenFromHeader[1], accessTokenSecret);
-	if (!verified) {
+	const secret = process.env.ACCESS_TOKEN_SECRET || jwtVariable.accessTokenSecret;
+	const decoded = await authMethod.verifyToken(token, secret);
+	if (!decoded) {
 		return null;
 	}
 
-	return verified.payload
+	return decoded.payload;
 }

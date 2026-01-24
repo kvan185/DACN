@@ -4,17 +4,12 @@ const cors = require("cors");
 const app = express();
 
 var corsOptions = {
-  origin: "http://localhost:8081"
+  origin: process.env.FRONTEND_URL || "http://localhost:3000"
 };
 
 app.use('/static', express.static('static'));
-
 app.use(cors(corsOptions));
-
-// parse requests of content-type - application/json
 app.use(express.json());
-
-// parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
 const db = require("./app/models");
@@ -30,8 +25,8 @@ db.mongoose
     console.log("Cannot connect to the database!", err);
     process.exit();
   });
-
-// simple route
+  
+// routes test
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to application." });
 });
