@@ -27,7 +27,7 @@ exports.isAuth = async (req, res, next) => {
 			return res.status(401).send({ error: `Customer not found with email ${decoded.payload.email}.` });
 		}
 
-		req.user = decoded.payload;
+		res.send(verified.payload);
 		next();
 	} catch (error) {
 		console.error(error);
