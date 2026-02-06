@@ -68,7 +68,7 @@ exports.getList = async (req, res) => {
 
 exports.getCategoryById = async (req, res) => {
     try {
-        const category = await Category.findById(req.params.id);
+        const category = await Category.findById((req.params.id === 'null' ? undefined : req.params.id));
         if (!category) {
             return res.status(404).send({ message: "Category not found." });
         }
@@ -83,7 +83,7 @@ exports.getCategoryById = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-    const id = req.params.id;
+    const id = (req.params.id === 'null' ? undefined : req.params.id);
 
     try {
         upload.single('image')(req, res, async (err) => {
@@ -114,7 +114,7 @@ exports.update = async (req, res) => {
 };
 
 exports.delete = async (req, res) => {
-    const id = req.params.id;
+    const id = (req.params.id === 'null' ? undefined : req.params.id);
 
     try {
         const deletedCategory = await Category.findByIdAndDelete(id);

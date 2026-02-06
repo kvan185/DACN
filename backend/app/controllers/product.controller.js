@@ -74,7 +74,7 @@ exports.getList = async (req, res) => {
 
 exports.getListByCategory = async (req, res) => {
     try {
-        const products = await Product.find({category_id: req.params.id});
+        const products = await Product.find({category_id: (req.params.id === 'null' ? undefined : req.params.id)});
         res.status(200).json(products);
     } catch (error) {
         console.error(error);
@@ -84,7 +84,7 @@ exports.getListByCategory = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await Product.findById((req.params.id === 'null' ? undefined : req.params.id));
         if (!product) {
             return res.status(404).send({ message: "Product not found." });
         }
@@ -99,7 +99,7 @@ exports.getProductById = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-    const id = req.params.id;
+    const id = (req.params.id === 'null' ? undefined : req.params.id);
 
     try {
         upload.single('image')(req, res, async (err) => {
@@ -133,7 +133,7 @@ exports.update = async (req, res) => {
 };
 
 exports.delete = async (req, res) => {
-    const id = req.params.id;
+    const id = (req.params.id === 'null' ? undefined : req.params.id);
 
     try {
         const deletedProduct = await Product.findByIdAndDelete(id);

@@ -189,7 +189,7 @@ exports.deleteCartItem = async (req, res) => {
             return res.status(404).json({ message: "Cart not found" });
         }
 
-        const cartItemId = req.params.id;
+        const cartItemId = (req.params.id === 'null' ? undefined : req.params.id);
 
         const cartItem = await CartItem.findOneAndDelete({ _id: cartItemId, cart_id: cart.id });
 
