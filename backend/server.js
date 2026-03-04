@@ -14,6 +14,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const db = require("./app/models");
+
+db.mongoose.set('strictQuery', false);
 db.mongoose
   .connect(db.url, {
     useNewUrlParser: true,
