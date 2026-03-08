@@ -1,60 +1,98 @@
 const multer = require('multer');
-const { v4: uuidv4 } = require('uuid');
 const db = require("../models");
 const Category = db.category;
 
-const DIR = 'static/images/';
+const fs = require("fs");
+const path = require("path");
+
+const generateSlug = require("../helpers/generateSlug");
+const generateImageName = require("../helpers/generateImageName");
+const findCategoryFolder = require('../helpers/findCategoryFolder');
+
+const DIR = path.join(__dirname, '../static/images');
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, DIR);
-    },
-    filename: (req, file, cb) => {
-        const fileName = uuidv4() + '-' + file.originalname.toLowerCase().split(' ').join('-');
-        cb(null, fileName);
+  destination: async (req, file, cb) => {
+    try {
+      const categoryId = req.params.id || null;
+      let folderName = null;
+
+      // UPDATE → tìm folder cũ
+      if (categoryId) {
+        folderName = findCategoryFolder(categoryId.toString());
+      }
+
+      // CREATE → chưa có folder
+      if (!folderName) {
+        if (!req.body.name) {
+          return cb(new Error("Category name is required"));
+        }
+
+        const slug = generateSlug(req.body.name);
+        folderName = slug; // folder tạm, sẽ rename sau khi save
+      }
+
+      const uploadPath = path.join(DIR, folderName);
+      fs.mkdirSync(uploadPath, { recursive: true });
+
+      cb(null, uploadPath);
+    } catch (err) {
+      cb(err);
     }
+  },
+
+  filename: (req, file, cb) => {
+    cb(null, generateImageName(file.originalname, req.body.name));
+  }
 });
 
 const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        const allowedMimeTypes = ["image/png", "image/jpg", "image/jpeg"];
-        if (allowedMimeTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(null, false);
-            return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
-        }
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ["image/png", "image/jpg", "image/jpeg"];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only .png, .jpg, .jpeg allowed"));
     }
+  }
 });
 
+
 exports.create = async (req, res) => {
+  upload.single('image')(req, res, async (err) => {
     try {
-        upload.single('image')(req, res, async (err) => {
-            if (err) {
-                console.error(err);
-                return res.status(400).send({ message: err.message });
-            }
+      if (err) {
+        return res.status(400).send({ message: err.message });
+      }
 
-            // Check category name in body
-            if (!req.body.name) {
-                return res.status(400).send({ message: "Category name is required." });
-            }
+      if (!req.body.name) {
+        return res.status(400).send({ message: "Category name is required." });
+      }
 
-            // Create a new category
-            const category = new Category({
-                name: req.body.name,
-                image: req.file ? req.file.filename : null
-            });
+      const category = new Category({
+        name: req.body.name,
+        image: req.file ? req.file.filename : null
+      });
 
-            const savedCategory = await category.save();
-            res.status(201).send(savedCategory);
-        });
+      const savedCategory = await category.save();
+
+      const slug = generateSlug(savedCategory.name);
+      const oldPath = path.join(DIR, slug);
+      const newPath = path.join(DIR, `${slug}_${savedCategory._id}`);
+
+      if (fs.existsSync(oldPath)) {
+        fs.renameSync(oldPath, newPath);
+      }
+
+      res.status(201).send(savedCategory);
     } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "An error occurred while processing your request." });
+      console.error(error);
+      res.status(500).send({ message: "Server error" });
     }
+  });
 };
+
 
 exports.getList = async (req, res) => {
     try {
@@ -68,7 +106,7 @@ exports.getList = async (req, res) => {
 
 exports.getCategoryById = async (req, res) => {
     try {
-        const category = await Category.findById((req.params.id === 'null' ? undefined : req.params.id));
+        const category = await Category.findById(req.params.id);
         if (!category) {
             return res.status(404).send({ message: "Category not found." });
         }

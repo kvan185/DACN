@@ -30,9 +30,9 @@ function ProductList(props) {
         <div className='product-list'>
             <Row>
                 {products && (
-                    products.map((product, index)=>{
+                    products.map((product, _id)=>{
                         if(product.is_active){                     
-                            return <ProductCard key={index} items={product}/>
+                            return <ProductCard key={_id} items={product}/>
                         }
                     })
                 )}

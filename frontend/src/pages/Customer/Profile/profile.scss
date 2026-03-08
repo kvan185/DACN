@@ -12,7 +12,11 @@
 
     .profile__image {
         text-align: center;
-        
+        height: 100%;        // chiếm toàn bộ chiều dọc
+        display: flex;
+        flex-direction: column;
+        justify-content: center;  // căn giữa theo chiều dọc
+        align-items: center;      // căn giữa theo chiều ngang
         &-group {
             position: relative;
             display: block;

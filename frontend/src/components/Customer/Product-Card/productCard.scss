@@ -4,70 +4,77 @@
     margin-bottom: 20px;
 }
 
-.product-card{
-    background-color: $color-text-light;    
+.product-card {
+    background-color: $color-text-light;
     border-radius: 10px;
     height: 100%;
     display: flex;
-    justify-content: space-between;
     flex-direction: column;
-    transition: transform 0.3s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
 
     &:hover {
         transform: translateY(-5px);
     }
 
-    a{
+    a {
         text-decoration: none;
     }
-    
-    img{
-        width: 100%;
-        height: auto;
-        min-height: 200px;
-        min-width: auto;
-        max-height: 280px;
-        object-fit: contain;
-        border-radius: 10px 10px 0 0;
 
-        @media (max-width: 768px) {
-            min-height: 150px;
+    /* ===== IMAGE ===== */
+    .product-img {
+        width: 100%;
+        aspect-ratio: 1 / 1; // 👉 ảnh vuông, card đều
+        overflow: hidden;
+        border-radius: 10px 10px 0 0;
+        padding: 25px 35px 20px 35px;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; // 🔥 cắt ảnh cho vừa khung
+            display: block;
+            transition: transform 0.6s ease;
         }
     }
 
-    .product-info{
+    &:hover .product-img img {
+        transform: scale(1.03); // zoom nhẹ
+    }
+
+    /* ===== INFO ===== */
+    .product-info {
         display: flex;
         justify-content: space-between;
-        padding: 16px 14px;
+        padding: 14px;
         background-color: $color-text-light;
         border-radius: 0 0 10px 10px;
 
-        &-left{
+        &-left {
             width: 75%;
         }
 
-        &-right{
+        &-right {
             display: flex;
             flex-direction: column;
-            align-items: end;
+            align-items: flex-end;
 
-            .price {
+            .product-price {
                 color: $color-primary;
                 font-weight: 600;
             }
 
-            .btn{
+            .btn {
                 padding-top: 16px;
                 color: $color-accent-green;
-                
+
                 &:hover {
                     color: $color-primary;
                 }
             }
         }
 
-        span{
+        span {
             font-weight: 400;
             font-size: 16px;
             line-height: 20px;
@@ -95,4 +102,10 @@
             }
         }
     }
+}
+
+.btn-add-cart {
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
 }

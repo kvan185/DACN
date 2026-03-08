@@ -8,14 +8,19 @@ var corsOptions = {
   origin: process.env.FRONTEND_URL || "http://localhost:8080"
 };
 
-app.use('/static', express.static('static'));
+const path = require('path');
+
+app.use(
+  "/static",
+  express.static(path.join(__dirname, "static"))
+);
+
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const db = require("./app/models");
-
-db.mongoose.set('strictQuery', false);
+db.mongoose.set("strictQuery", false);
 db.mongoose
   .connect(db.url, {
     useNewUrlParser: true,
@@ -45,10 +50,13 @@ require("./app/routes/revenue.routes")(app);
 require("./app/routes/table.routes")(app);
 require("./app/routes/reservation.routes")(app);
 
-const socket = require("./app/socket");
+const http = require("http");
+const server = http.createServer(app);
 
-// set port, listen for requests
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}.`);
+// gắn socket vào server
+require("./app/socket")(server);
+
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => {
+  console.log(`Server + Socket running on port ${PORT}`);
 });

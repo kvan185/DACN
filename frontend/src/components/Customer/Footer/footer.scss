@@ -1,97 +1,63 @@
 @use '../../../scss/' as *;
 
-.footer{
+.footer {
     background-color: $color-primary;
-    padding: 40px 0 24px;
-    
-    hr {
-        width: 80%;
-        margin: auto;
-        color: $color-text-light;
-        opacity: 0.2;
-        margin-bottom: 16px;
+    padding: 0px;
+    margin: 0px;
+
+    .container{
+        max-width: 100%;
+        padding-left: 50px;
+        padding-right: 0;
     }
-    
-    &__top {
+    &__top{
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 24px 0;
-    }
-    
-    &__logo {
-        font-family: 'Squada One', cursive;
-        font-weight: 400;
-        font-size: 32px;
-        line-height: 20px;
-        letter-spacing: -0.012em;
-        text-decoration: none;
-        color: $color-text-light;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        
-        &:hover {
-            color: $color-secondary;
-        }
-    }
-    
-    &__menu-text {
-        font-weight: 400;
-        font-size: 18px;
-        line-height: 20px;
-        letter-spacing: -0.012em;
-        color: $color-text-light;
-    }
-    
-    &__social {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 32px;
-        
-        &-search, &-cart {
-            cursor: pointer;
-            color: $color-text-light;
-            transition: all 0.3s ease;
-            
-            &:hover {
-                color: $color-secondary;
-            }
-        }
-    }
-    
-    &__produce {
-        font-family: 'ABeeZee';
-        font-weight: 400;
-        font-size: 12px;
-        line-height: 20px;
-        letter-spacing: -0.012em;
-        color: $color-text-light;
-        opacity: 0.8;
+        flex-direction: column;
+        gap: 40px;
     }
 
-    @media (max-width: 768px) {
-        padding: 24px 0 16px;
-
-        &__top {
-            flex-direction: column;
-            gap: 16px;
-            padding: 16px 0;
-        }
-
-        &__menu-text {
-            font-size: 16px;
-            padding: 0 20px;
-            text-align: center;
-        }
-
-        &__social {
-            gap: 20px;
-        }
-
-        hr {
-            width: 90%;
-            margin: 8px auto;
-        }
+    &__produce{
+        text-align: center;
+        color: white;
+        font-size: 14px;
+        padding-bottom: 10px;
     }
+}
+
+
+.contactUs {
+    height: 200px;
+    width: 100%;
+    background-color: $color-primary;
+    display: flex;
+    align-items: center;
+    gap: 80px;
+    padding: 50px;
+}
+
+.contactUs-section{
+
+    h3{
+        color: #ffffff;
+        margin-bottom: 10px;
+    }
+
+    p{
+        color: #ffffff;
+        line-height: 1.5;
+        margin-bottom: 6px;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+}
+
+.contactUs-section:nth-child(1){
+    width: 45%;
+}
+
+.contactUs-section:nth-child(2){
+    width: 45%;
+}
+
+.contactUs-section:nth-child(3){
+    width: 30%;
 }

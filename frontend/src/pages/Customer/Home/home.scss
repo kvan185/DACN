@@ -1,13 +1,13 @@
 @use '../../../scss/' as *;
 
 .block-product{
-    padding-top: 80px;
-    background-color: $color-background-light;
-
+    padding-top: 40px;
+    background-color: #fefdfc;
+    padding-bottom: 100px; 
     h2{
         margin-bottom: 16px;
-        font-size: 24px;
-        font-weight: 600;
+        font-size: 25px;
+        font-weight: 650;
         color: $color-text-primary;
         
         &::after {

@@ -86,7 +86,7 @@ function Cart({accessToken}) {
                     </>
                 )
                     :
-                    <h4 className='cart-no-item'>Không có giỏ hàng</h4>
+                    <h4 className='cart-no-item'>Giỏ hàng trống</h4>
                 }
 
             </div>

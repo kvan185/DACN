@@ -1,0 +1,5 @@
+1. gom thông báo đã thêm vào giỏ hàng của trnag chủ, trang tìm kiếm và trang chi tiết
+2. sửa lỗi hết token
+3. khi đang xem giỏ hàng, nhấn bên ngoài sẽ thoát khỏi giỏ hàng
+4. từ trang tìm kiếm, tuy đã mở giỏ hàng nhưng sẽ không hiện, có thể thử bằng cách quay về home
+5. sau khi nhấn tìm kiếm, hiện text đã tìm sau: "Tìm thấy 1 món ăn phù hợp từ đã tìm" + "Trứng rán" => Tìm thấy 1 món ăn phù hợp từ đã tìm: Trứng rán

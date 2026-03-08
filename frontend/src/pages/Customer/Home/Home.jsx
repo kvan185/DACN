@@ -64,7 +64,7 @@ function Home(props) {
                     )
                 }
 
-                <h2>Nổi bật hôm nay</h2>
+                <h2>Menu </h2>
                 <Category categories={categories}/>
                 <ProductList />
 

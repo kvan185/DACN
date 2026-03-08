@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
     FaSearch,
     FaBell,
@@ -27,7 +26,7 @@ function Header(props) {
             </div>
             <div className="header__search">
                 <span className="search-icon">
-                <FaSearch />
+                <FaSearch color="#8B4513" />
                 </span>
                 <input type="text" className="form-search" placeholder="Search" />
             </div>

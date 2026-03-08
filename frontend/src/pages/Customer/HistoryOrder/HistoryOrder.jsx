@@ -5,7 +5,6 @@ import socketIOClient from "socket.io-client";
 const host = "http://localhost:3000";
 
 import './history-order.scss';
-import pizza from '../../../assets/img/pizza.jpg';
 import { fetchUpdateStatusOrder } from '../../../actions/order';
 import { statusOrder } from '../../../config/statusOrder';
 import Cart from '../../../components/Customer/Cart/Cart';
@@ -75,7 +74,7 @@ function HistoryOrder(props) {
                                     <div className="history-order-item completed" key={index}>
                                         <div className="history-order-head">
                                             <label>Mã đơn hàng: <span>#{id}</span> </label>
-                                            <label>Ngày đặt hàng: <span className='order-time'>{moment(updatedAt.createdAt).format('DD-MM-YYYY')}</span> </label>
+                                            <label>Ngày đặt hàng: <span className='order-time'>{moment(updatedAt).format('DD-MM-YYYY')}</span> </label>
                                         </div>
                                         <div className="history-order-processing">
                                             <div className="row">
@@ -120,7 +119,7 @@ function HistoryOrder(props) {
                                                         return(
                                                             <Col xs={6} key={index}>
                                                                 <div className="product-item">
-                                                                    <img src={product_image ? `http://localhost:5000/static/images/${product_image}` : pizza} alt="" />
+                                                                    <img alt="" />
                                                                     <div className="product-item-info">
                                                                         <label>Tên sản phẩm: <span>{product_name}</span></label>
                                                                         <label>Số lượng: <span>{qty}</span></label>

@@ -5,7 +5,7 @@ $green-color: #388E3C;
 $turquoise-color: #F0FAF7;
 $yellow-color: #F3BA00;
 $gray-color: #929292;
-$red-color: #F20505;
+$red-color: #9b0808;
 $heading-color: #101115;
 $text-color: #1B1C21;
 $text-cart: #22262A;
@@ -17,20 +17,21 @@ $tertiary-color: #388E3C;
 
 // Bộ màu mới
 /* Màu chính (Primary Colors) */
-$color-primary: #FF9900; /* Cam đậm, đại diện cho sự năng động và ẩm thực */
-$color-secondary: #FFD700; /* Vàng sáng, tạo cảm giác vui tươi và thu hút */
+$color-primary: #395425; /* Cam đậm, đại diện cho sự năng động và ẩm thực */
+$color-secondary: #DAA520; /* Vàng sáng, tạo cảm giác vui tươi và thu hút */
 
 /* Màu phụ (Accent Colors) */
 $color-accent-green: #32CD32; /* Xanh lá tươi, gợi sự tươi mới và sạch sẽ */
 $color-accent-brown: #8B4513; /* Nâu nhạt, tạo cảm giác ấm áp, gần gũi (màu bánh burger) */
 
 /* Màu nền (Background Colors) */
-$color-background-light: #FFF9E6; /* Vàng nhạt, thân thiện và dễ chịu */
+$color-background-light: #f2f9da; /* Vàng nhạt, thân thiện và dễ chịu */
 $color-background-dark: #2F4F4F; /* Xanh đen đậm, giúp tạo sự tương phản chuyên nghiệp */
 
 /* Màu chữ (Text Colors) */
-$color-text-primary: #333333; /* Đen đậm, dễ đọc */
-$color-text-secondary: #555555; /* Xám trung tính cho phần phụ */
+$color-text-dark: #395425; 
+$color-text-primary: #4c7031; /* Đen đậm, dễ đọc */
+$color-text-secondary: #9a7414; /* Xám trung tính cho phần phụ */
 $color-text-light: #FFFFFF; /* Trắng, cho các vùng màu đậm */
 
 /* Màu trạng thái (Status Colors) */

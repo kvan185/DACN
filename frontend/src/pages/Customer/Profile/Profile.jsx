@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
-
+import { FaUser } from "react-icons/fa";
 import Cart from '../../../components/Customer/Cart/Cart';
 import './profile.scss';
 
@@ -62,7 +62,11 @@ function Profile(props) {
                         <Col xs={4}>
                             <div className="profile__image">
                                 <div className="profile__image-group">
+                                    {selectedImage || userUpdate.avatar ? (
                                     <img src={selectedImage ? URL.createObjectURL(selectedImage) : `http://localhost:5000/static/images/${userUpdate.avatar}`} alt="Selected" />
+                                     ) : (
+                                          <div className="avatar-default">
+                                             <FaUser size={160} /> </div> )}
                                     <input  type="file" name='avartar' accept="image/*" 
                                         onChange={handleImageChange}
                                     />

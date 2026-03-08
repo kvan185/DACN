@@ -41,3 +41,15 @@ Admin:
 Staff:
 - Email: staff@staff.st
 - Password: 123456
+
+- #395425
+- #4c7031
+- #538b24
+- #67ab2d
+- #6da63e
+- #abd02c
+- #e0eeaf
+
+- #9a7414
+- #DAA520
+- #ddcc9e

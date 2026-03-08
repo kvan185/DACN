@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaShoppingCart, FaTable, FaUserPlus, FaList, FaBox, FaChartBar } from 'react-icons/fa';
+import { FaHome, FaShoppingCart, FaTable, FaUserPlus, FaList, FaBox, FaChartBar, FaCarrot  } from 'react-icons/fa';
 
 import './menus.scss';
 
@@ -38,6 +38,12 @@ const sliders = [
         name: 'Sản phẩm',
         role: 'ADMIN'
     },
+    {
+        url: '/staff/ingredient',
+        icon: <FaCarrot />,
+        name: 'Nguyên liệu',
+        role: 'ADMIN'
+},
     {
         url: '/staff/revenue',
         icon: <FaChartBar />,
