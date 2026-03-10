@@ -1,17 +1,22 @@
-const express = require("express");
-const router = express.Router();
-const controller = require("../controllers/productBom.controller");
+module.exports = app => {
+    const productBom = require("../controllers/productBom.controller.js");
 
-// Lấy BOM theo product
-router.get("/product/:productId", controller.getByProduct);
+    var router = require("express").Router();
 
-// Thêm nguyên liệu vào món
-router.post("/", controller.create);
+    // Create BOM cho product
+    router.post("/", productBom.create);
 
-// Cập nhật định lượng
-router.put("/:id", controller.update);
+    // Get BOM theo product
+    router.get("/product/:productId", productBom.getByProduct);
 
-// Xóa khỏi món
-router.delete("/:id", controller.remove);
+    // Get toàn bộ BOM
+    router.get("/", productBom.getList);
 
-module.exports = router;
+    // Update BOM
+    router.put("/:id", productBom.update);
+
+    // Delete BOM
+    router.delete("/:id", productBom.remove);
+
+    app.use("/api/productBom", router);
+};
