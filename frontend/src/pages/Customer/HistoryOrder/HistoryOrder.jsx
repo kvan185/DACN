@@ -1,14 +1,14 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Col, Container, Row } from "react-bootstrap";
 import moment from "moment";
 import socketIOClient from "socket.io-client";
-
-const host = import.meta.env.VITE_API_URL;
-
+import Cart from "../../../components/Customer/Cart/Cart";
+import socket from "../../../../socket/socket";
 import "./history-order.scss";
+import React, { useEffect, useState, useRef } from "react";
+import { Col, Container, Row } from "react-bootstrap";
 import { fetchUpdateStatusOrder } from "../../../actions/order";
 import { statusOrder } from "../../../config/statusOrder";
-import Cart from "../../../components/Customer/Cart/Cart";
+
+const host = import.meta.env.VITE_API_URL;
 
 function HistoryOrder() {
     const [orderList, setOrderList] = useState(null);
@@ -19,24 +19,16 @@ function HistoryOrder() {
     const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
     const user = JSON.parse(sessionStorage.getItem("user"));
 
-    // SOCKET
     useEffect(() => {
-        socketRef.current = socketIOClient(host);
 
-        if (user?.id) {
-            socketRef.current.emit("userConnect", user.id);
-        }
-
-        socketRef.current.on("sendStatusOrder", (dataOrder) => {
-            console.log("Socket order:", dataOrder);
-            setOrderSocket(dataOrder);
+        socket.on("sendStatusOrder", (data) => {
+            setOrderSocket(data);
         });
 
         return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-            }
+            socket.off("sendStatusOrder");
         };
+
     }, []);
 
     // FETCH ORDER
@@ -124,12 +116,12 @@ function HistoryOrder() {
 
                                                 <div
                                                     className={`col-3 ${status === statusOrder.NEW
-                                                            ? "active"
-                                                            : status === statusOrder.CONFIRMED ||
-                                                                status === statusOrder.PROCESSING ||
-                                                                status === statusOrder.COMPLETED
-                                                                ? "step-success"
-                                                                : ""
+                                                        ? "active"
+                                                        : status === statusOrder.CONFIRMED ||
+                                                            status === statusOrder.PROCESSING ||
+                                                            status === statusOrder.COMPLETED
+                                                            ? "step-success"
+                                                            : ""
                                                         }`}
                                                 >
                                                     <span>
@@ -140,11 +132,11 @@ function HistoryOrder() {
 
                                                 <div
                                                     className={`col-3 ${status === statusOrder.CONFIRMED
-                                                            ? "active"
-                                                            : status === statusOrder.PROCESSING ||
-                                                                status === statusOrder.COMPLETED
-                                                                ? "step-success"
-                                                                : ""
+                                                        ? "active"
+                                                        : status === statusOrder.PROCESSING ||
+                                                            status === statusOrder.COMPLETED
+                                                            ? "step-success"
+                                                            : ""
                                                         }`}
                                                 >
                                                     <span>
@@ -155,10 +147,10 @@ function HistoryOrder() {
 
                                                 <div
                                                     className={`col-3 ${status === statusOrder.PROCESSING
-                                                            ? "active"
-                                                            : status === statusOrder.COMPLETED
-                                                                ? "step-success"
-                                                                : ""
+                                                        ? "active"
+                                                        : status === statusOrder.COMPLETED
+                                                            ? "step-success"
+                                                            : ""
                                                         }`}
                                                 >
                                                     <span>
@@ -243,14 +235,14 @@ function HistoryOrder() {
 
                                                 <span
                                                     className={`order-status ${status === statusOrder.CANCELED
-                                                            ? "canceled"
-                                                            : status === statusOrder.CONFIRMED
-                                                                ? "confirmed"
-                                                                : status === statusOrder.COMPLETED
-                                                                    ? "completed"
-                                                                    : status === statusOrder.PROCESSING
-                                                                        ? "processing"
-                                                                        : "new"
+                                                        ? "canceled"
+                                                        : status === statusOrder.CONFIRMED
+                                                            ? "confirmed"
+                                                            : status === statusOrder.COMPLETED
+                                                                ? "completed"
+                                                                : status === statusOrder.PROCESSING
+                                                                    ? "processing"
+                                                                    : "new"
                                                         }`}
                                                 >
                                                     {status === statusOrder.CANCELED

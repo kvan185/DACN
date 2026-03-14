@@ -15,5 +15,5 @@
 15. không hiện thông báo đã thêm giỏ hàng cho các sản phẩm bên dưới detail
 16. tìm kiếm thêm combobox: mã, thông tin
 17. 
-18. lỗi huỷ đơn hàng (sửa socket)
+18. 
 19. lỗi hiển thị Danh sách bàn

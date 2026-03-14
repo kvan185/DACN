@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import {Routes, Route, useLocation, useNavigate} from 'react-router-dom';
-
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import socket from '../socket/socket';
 import './App.scss';
 import Header from './components/Customer/Header/Header';
 import Footer from './components/Customer/Footer/Footer';
@@ -18,7 +18,6 @@ import Search from './pages/Customer/Search/Search';
 import TableReservation from './pages/Customer/Table/TableReservation';
 import TableCheckin from './pages/Customer/Table/TableCheckin';
 import Menu from './pages/Customer/Menu/Menu';
-
 import RegisterStaff from './pages/Staff/Resgiter/Resgister';
 import Staff from './pages/Staff/Home/HomeStaff';
 import Charts from './pages/Staff/Charts/Charts';
@@ -42,14 +41,22 @@ function App() {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const pathsCanDisplayBanner = ['/'];
 
-  useEffect(()=>{
-    if(location.pathname.includes('/staff') && user === null){
-      navigate('/staff/login');
-    }
-  },[])
+  useEffect(() => {
 
-  if(location.pathname.includes('/staff/login')){
-    return(
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    if (user && !socket.connected) {
+      socket.connect();
+      socket.emit("userConnect", user.id);
+    }
+
+    if (!user && location.pathname.includes("/staff")) {
+      navigate("/staff/login");
+    }
+
+  }, [location.pathname, navigate]);
+
+  if (location.pathname.includes('/staff/login')) {
+    return (
       <>
         <Routes>
           <Route path='/staff/login' element={<LoginStaff />} />
@@ -58,49 +65,49 @@ function App() {
     )
   }
 
-  if(location.pathname.includes('/staff')){
+  if (location.pathname.includes('/staff')) {
     return (
       <>
-      <Slider />
+        <Slider />
         <div className="main-content">
           <HeaderStaff />
           <div className="block-content">
             <Routes>
               <Route path='/staff' element={<Staff />} />
-              <Route path='/staff/category' element={<Category />}/>
-              <Route path='/staff/category/add' element={<CategoryAdd />}/>
-              <Route path='/staff/category/update/:id' element={<CategoryUpdate />}/>
-              <Route path='/staff/product' element={<Product />}/>
-              <Route path='/staff/product/add' element={<ProductAdd />}/>
-              <Route path='/staff/product/update/:id' element={<ProductUpdate />}/>
-              <Route path='/staff/order' element={<Order />}/>
-              <Route path='/staff/order/detail/:orderId' element={<OrderDetail />}/>
-              <Route path='/staff/revenue' element={<Charts />}/>
-              <Route path='/staff/register' element={<RegisterStaff />}/>
-              <Route path='/staff/table' element={<Table />}/>
-              <Route path='/staff/profile' element={<ProfileAdmin />}/>
+              <Route path='/staff/category' element={<Category />} />
+              <Route path='/staff/category/add' element={<CategoryAdd />} />
+              <Route path='/staff/category/update/:id' element={<CategoryUpdate />} />
+              <Route path='/staff/product' element={<Product />} />
+              <Route path='/staff/product/add' element={<ProductAdd />} />
+              <Route path='/staff/product/update/:id' element={<ProductUpdate />} />
+              <Route path='/staff/order' element={<Order />} />
+              <Route path='/staff/order/detail/:orderId' element={<OrderDetail />} />
+              <Route path='/staff/revenue' element={<Charts />} />
+              <Route path='/staff/register' element={<RegisterStaff />} />
+              <Route path='/staff/table' element={<Table />} />
+              <Route path='/staff/profile' element={<ProfileAdmin />} />
             </Routes>
           </div>
         </div>
-    </>
+      </>
     )
   }
 
-  if(location.pathname.includes('/')){
-    return(
+  if (location.pathname.includes('/')) {
+    return (
       <>
         <Header />
-        <Banner isDisplay={pathsCanDisplayBanner.includes(location.pathname)}/>
+        <Banner isDisplay={pathsCanDisplayBanner.includes(location.pathname)} />
         <Routes>
-          <Route path='/login' element={<Login />}/>
-          <Route path='/register' element={<Register />}/>
-          <Route path='/' element={<Home />}/>
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
+          <Route path='/' element={<Home />} />
           <Route path='/checkout' element={
             <RequireAuth>
               <Checkout />
             </RequireAuth>
           } />
-          <Route path='/detail/:id' element={<Detail />}/>
+          <Route path='/detail/:id' element={<Detail />} />
           <Route path='/history-order' element={
             <RequireAuth>
               <HistoryOrder />
@@ -111,7 +118,7 @@ function App() {
               <Profile />
             </RequireAuth>
           } />
-          <Route path='/search' element={<Search />}/>
+          <Route path='/search' element={<Search />} />
           <Route path='/table-reservation' element={
             <RequireAuth>
               <TableReservation />
@@ -122,7 +129,7 @@ function App() {
         </Routes>
         <Footer />
       </>
-    
+
     )
   }
 }
