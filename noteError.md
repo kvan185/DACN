@@ -9,11 +9,13 @@
 9. Lỗi cập nhật thông tin admin
 10. Chức năng quản lý bàn
 11. sửa lỗi fe admin infor
-12. thêm xem thông tin bàn đã đặt tại Cus
+12. lỗi hiển thị Danh sách bàn
 13. tìm kiếm bàn đã đặt bằng mã
 14. lỗi mỗi lần chuyển sang detail khác, số lượng sản phẩm phải =1
 15. không hiện thông báo đã thêm giỏ hàng cho các sản phẩm bên dưới detail
 16. tìm kiếm thêm combobox: mã, thông tin
-17. 
-18. 
-19. lỗi hiển thị Danh sách bàn
+17. hiển thị thêm Ngày đặt Giờ đặt
+huỷ đặt bàn
+
+18. thêm xem thông tin bàn đã đặt tại Cus
+19. 

@@ -34,7 +34,7 @@ const TableManagement = () => {
     useEffect(() => {
         socketRef.current = socketIOClient.connect(SOCKET_SERVER_URL);
         socketRef.current.emit('adminConnect', user.id);
-        
+
         socketRef.current.on('tableUpdated', (updatedTables) => {
             setSocketTables(updatedTables);
         });
@@ -51,17 +51,17 @@ const TableManagement = () => {
     const fetchTables = async () => {
         setLoading(true);
         try {
-          const response = await fetch('/api/tables');
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const data = await response.json();
-          setTables(data);
+            const response = await fetch('/api/tables');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            setTables(data);
         } catch (error) {
-          setError('Lỗi khi tải danh sách bàn: ' + error.message);
-          console.error("Error fetching tables:", error);
+            setError('Lỗi khi tải danh sách bàn: ' + error.message);
+            console.error("Error fetching tables:", error);
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -71,7 +71,7 @@ const TableManagement = () => {
     const handleDeleteTable = async (tableId) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa bàn này?')) {
             try {
-                const response = await fetch(`/api/tables/${tableId}`, {method: 'DELETE'});
+                const response = await fetch(`/api/tables/${tableId}`, { method: 'DELETE' });
                 if (!response.ok) {
                     throw new Error('Lỗi khi xóa bàn');
                 }
@@ -182,7 +182,7 @@ const TableManagement = () => {
         if (window.confirm('Bạn có chắc chắn muốn đánh dấu bàn này là đã hoàn thành?')) {
             try {
                 await completeReservation(accessToken, tableId);
-                
+
                 fetchTables();
                 emitTableChange();
                 toast.success('Cập nhật trạng thái bàn thành công!');
@@ -201,7 +201,7 @@ const TableManagement = () => {
         if (window.confirm('Bạn có chắc chắn muốn xóa đặt bàn này?')) {
             try {
                 await completeReservation(accessToken, tableId);
-                
+
                 fetchTables();
                 emitTableChange();
                 toast.success('Cập nhật trạng thái bàn thành công!');
@@ -225,7 +225,7 @@ const TableManagement = () => {
                 if (!response.ok) {
                     throw new Error('Lỗi khi cập nhật trạng thái bàn');
                 }
-                
+
                 fetchTables();
                 emitTableChange();
                 toast.success('Đã chuyển trạng thái bàn sang đang sử dụng!');
@@ -248,21 +248,21 @@ const TableManagement = () => {
         }
     };
 
-  if (error) {
-    return <div className="alert alert-danger">{error}</div>;
-  }
+    if (error) {
+        return <div className="alert alert-danger">{error}</div>;
+    }
 
-  return (
-      <div className="table-management">
-          <div className="table-management__header">
-              <h1>Quản lý bàn</h1>
-              <Button className="btn-add" onClick={handleShowAddModal}>Thêm bàn</Button>
-          </div>
+    return (
+        <div className="table-management">
+            <div className="table-management__header">
+                <h1>Quản lý bàn</h1>
+                <Button className="btn-add" onClick={handleShowAddModal}>Thêm bàn</Button>
+            </div>
 
-          <ToastContainer 
-              position="top-right"
-              autoClose={3000}
-          />
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+            />
 
             {/* Modal Thêm */}
             <Modal show={showAddModal} onHide={handleCloseAddModal}>
@@ -273,35 +273,35 @@ const TableManagement = () => {
                     <Form>
                         <Form.Group className="mb-3">
                             <Form.Label>Số bàn</Form.Label>
-                            <Form.Control 
-                                type="text" 
-                                value={newTable.tableNumber} 
+                            <Form.Control
+                                type="text"
+                                value={newTable.tableNumber}
                                 onChange={e => setNewTable({
-                                    ...newTable, 
+                                    ...newTable,
                                     tableNumber: e.target.value
-                                })} 
+                                })}
                                 required
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Sức chứa</Form.Label>
-                            <Form.Control 
-                                type="number" 
+                            <Form.Control
+                                type="number"
                                 min="1"
-                                value={newTable.seatingCapacity} 
+                                value={newTable.seatingCapacity}
                                 onChange={e => setNewTable({
-                                    ...newTable, 
+                                    ...newTable,
                                     seatingCapacity: Math.max(1, parseInt(e.target.value) || 1)
-                                })} 
+                                })}
                                 required
                             />
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Vị trí</Form.Label>
-                            <Form.Select 
+                            <Form.Select
                                 value={newTable.location}
                                 onChange={e => setNewTable({
-                                    ...newTable, 
+                                    ...newTable,
                                     location: e.target.value
                                 })}
                                 required
@@ -313,12 +313,12 @@ const TableManagement = () => {
                             </Form.Select>
                         </Form.Group>
                         <Form.Group className="mb-3">
-                            <Form.Check 
+                            <Form.Check
                                 type="checkbox"
                                 label="Có sẵn"
                                 checked={newTable.isAvailable}
                                 onChange={e => setNewTable({
-                                    ...newTable, 
+                                    ...newTable,
                                     isAvailable: e.target.checked
                                 })}
                             />
@@ -329,9 +329,9 @@ const TableManagement = () => {
                     <Button variant="secondary" onClick={handleCloseAddModal}>
                         Đóng
                     </Button>
-                    <Button 
-                        variant="primary" 
-                        onClick={handleAddTable} 
+                    <Button
+                        variant="primary"
+                        onClick={handleAddTable}
                         disabled={!newTable.tableNumber || !newTable.seatingCapacity}
                     >
                         Lưu
@@ -359,17 +359,17 @@ const TableManagement = () => {
                             </td>
                             <td>{table.seatingCapacity}</td>
                             <td>
-                                <Button 
-                                    variant="info" 
-                                    size="sm" 
+                                <Button
+                                    variant="info"
+                                    size="sm"
                                     onClick={() => handleShowViewModal(table)}
                                     className="me-2"
                                 >
                                     Xem
                                 </Button>
-                                <Button 
-                                    variant="primary" 
-                                    size="sm" 
+                                <Button
+                                    variant="primary"
+                                    size="sm"
                                     onClick={() => handleShowEditModal(table)}
                                     className="me-2"
                                 >
@@ -377,21 +377,21 @@ const TableManagement = () => {
                                 </Button>
                                 {(table.status === 'Trống' || table.status === 'Đã đặt') && (
                                     <>
-                                        <Button 
-                                            variant="warning" 
-                                            size="sm" 
+                                        <Button
+                                            variant="warning"
+                                            size="sm"
                                             onClick={() => handleStartUsingTable(table._id)}
                                             className="me-2"
                                         >
                                             Bắt đầu sử dụng
                                         </Button>
-                                       
+
                                     </>
                                 )}
                                 {(table.status === 'Đang sử dụng') && (
-                                    <Button 
-                                        variant="success" 
-                                        size="sm" 
+                                    <Button
+                                        variant="success"
+                                        size="sm"
                                         onClick={() => handleCompleteReservation(table._id)}
                                         className="me-2"
                                     >
@@ -399,9 +399,9 @@ const TableManagement = () => {
                                     </Button>
                                 )}
                                 {(table.status === 'Đã đặt') && (
-                                    <Button 
-                                        variant="danger" 
-                                        size="sm" 
+                                    <Button
+                                        variant="danger"
+                                        size="sm"
                                         onClick={() => handleDeleteReservation(table._id)}
                                         className="me-2"
                                     >
@@ -424,11 +424,11 @@ const TableManagement = () => {
                         <Form>
                             <Form.Group className="mb-3">
                                 <Form.Label>Số bàn</Form.Label>
-                                <Form.Control 
-                                    type="text" 
+                                <Form.Control
+                                    type="text"
                                     value={selectedTable.tableNumber}
                                     onChange={e => setSelectedTable({
-                                        ...selectedTable, 
+                                        ...selectedTable,
                                         tableNumber: e.target.value
                                     })}
                                     required
@@ -436,12 +436,12 @@ const TableManagement = () => {
                             </Form.Group>
                             <Form.Group className="mb-3">
                                 <Form.Label>Sức chứa</Form.Label>
-                                <Form.Control 
+                                <Form.Control
                                     type="number"
                                     min="1"
                                     value={selectedTable.seatingCapacity}
                                     onChange={e => setSelectedTable({
-                                        ...selectedTable, 
+                                        ...selectedTable,
                                         seatingCapacity: Math.max(1, parseInt(e.target.value) || 1)
                                     })}
                                     required
@@ -449,10 +449,10 @@ const TableManagement = () => {
                             </Form.Group>
                             <Form.Group className="mb-3">
                                 <Form.Label>Vị trí</Form.Label>
-                                <Form.Select 
+                                <Form.Select
                                     value={selectedTable.location}
                                     onChange={e => setSelectedTable({
-                                        ...selectedTable, 
+                                        ...selectedTable,
                                         location: e.target.value
                                     })}
                                     required
@@ -464,12 +464,12 @@ const TableManagement = () => {
                                 </Form.Select>
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Check 
+                                <Form.Check
                                     type="checkbox"
                                     label="Có sẵn"
                                     checked={selectedTable.isAvailable}
                                     onChange={e => setSelectedTable({
-                                        ...selectedTable, 
+                                        ...selectedTable,
                                         isAvailable: e.target.checked
                                     })}
                                 />
@@ -502,19 +502,20 @@ const TableManagement = () => {
                                 <p><strong>Sức chứa:</strong> {viewTable.seatingCapacity} người</p>
                                 <p><strong>Vị trí:</strong> {viewTable.location}</p>
                             </div>
-                            
+
                             {!viewTable.isAvailable && reservationInfo && (
                                 <div className="reservation-section mt-4">
                                     <h5>Thông tin đặt bàn</h5>
                                     <p><strong>Tên khách hàng:</strong> {reservationInfo.customerName}</p>
                                     <p><strong>Số điện thoại:</strong> {reservationInfo.phoneNumber}</p>
+                                    <p><strong>Email:</strong> {reservationInfo.email}</p>
                                     <p><strong>Thời gian đặt:</strong> {new Date(reservationInfo.createdAt).toLocaleString()}</p>
                                     {reservationInfo.specialRequests && (
                                         <p><strong>Yêu cầu đặc biệt:</strong> {reservationInfo.specialRequests}</p>
                                     )}
                                 </div>
                             )}
-                            
+
                             <div className="qr-section mt-4">
                                 <h5>Mã QR</h5>
                                 <div className="d-flex justify-content-center">
@@ -532,8 +533,8 @@ const TableManagement = () => {
                     <Button variant="secondary" onClick={handleCloseViewModal}>
                         Đóng
                     </Button>
-                    <Button 
-                        variant="danger" 
+                    <Button
+                        variant="danger"
                         onClick={() => {
                             handleDeleteTable(viewTable._id);
                             handleCloseViewModal();

@@ -8,9 +8,11 @@ module.exports = (app) => {
     // router.get('/:id', reservation.getReservationById);
     // router.put('/:id', reservation.updateReservation);
     // router.delete('/:id', reservation.deleteReservation);
+    router.get('/history', reservation.getReservationsByCustomer);
+    router.post('/checkin/:tableId', reservation.checkinReservation);
     router.get('/:tableId', reservation.getReservationByTableId);
     router.put('/:tableId/complete', reservation.completeReservation);
-    router.post('/checkin/:tableId', reservation.checkinReservation);
+
     app.use('/api/reservations', router);
 }
 

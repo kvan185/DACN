@@ -28,11 +28,11 @@ exports.addTable = async (req, res) => {
   try {
     const { tableNumber, seatingCapacity, location } = req.body;
     if (!tableNumber || !seatingCapacity || !location) {
-        return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin.' });
+      return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin.' });
     }
 
-    if(seatingCapacity < 1) {
-        return res.status(400).json({ message: 'Sức chứa phải lớn hơn 0.' });
+    if (seatingCapacity < 1) {
+      return res.status(400).json({ message: 'Sức chứa phải lớn hơn 0.' });
     }
     const newTable = new Table({ tableNumber, seatingCapacity, location });
     console.log(tableNumber, seatingCapacity, location);
@@ -50,7 +50,7 @@ exports.addTable = async (req, res) => {
     res.status(201).json(newTable);
   } catch (error) {
     if (error.code === 11000 && error.keyPattern && error.keyPattern.tableNumber) {
-        return res.status(400).json({message: 'Số bàn đã tồn tại'});
+      return res.status(400).json({ message: 'Số bàn đã tồn tại' });
     }
     console.error(error);
     res.status(400).json({ message: 'Lỗi khi thêm bàn mới.' });
@@ -100,24 +100,45 @@ exports.getAllTables = async (req, res) => {
 };
 
 exports.startUsingTable = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updatedTable = await Table.findByIdAndUpdate(
-            id, 
-            { 
-                status: 'Đang sử dụng',
-                isAvailable: false 
-            },
-            { new: true }
-        );
-        
-        if (!updatedTable) {
-            return res.status(404).json({ message: 'Bàn không tồn tại.' });
-        }
-        
-        res.json(updatedTable);
-    } catch (error) {
-        console.error(error);
-        res.status(400).json({ message: 'Lỗi khi cập nhật trạng thái bàn.' });
+  try {
+    const { id } = req.params;
+    const updatedTable = await Table.findByIdAndUpdate(
+      id,
+      {
+        status: 'Đang sử dụng',
+        isAvailable: false
+      },
+      { new: true }
+    );
+
+    if (!updatedTable) {
+      return res.status(404).json({ message: 'Bàn không tồn tại.' });
     }
+
+    res.json(updatedTable);
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ message: 'Lỗi khi cập nhật trạng thái bàn.' });
+  }
+};
+
+exports.getTableByCustomer = async (req, res) => {
+  try {
+
+    const customerId = req.user.id;
+
+    const tables = await Table.find({
+      customer_id: customerId
+    });
+
+    res.status(200).json(tables);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Error fetching tables"
+    });
+
+  }
+
 };

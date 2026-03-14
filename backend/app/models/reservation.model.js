@@ -1,6 +1,11 @@
 module.exports = mongoose => {
   var ReservationSchema = mongoose.Schema(
     {
+      customerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'customer', // Reference to the User model
+        required: true
+      },
       customerName: {
         type: String,
         required: true
@@ -11,8 +16,8 @@ module.exports = mongoose => {
         unique: true
       },
       phoneNumber: {
-          type: String,
-          required: true
+        type: String,
+        required: true
       },
       tableId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -20,11 +25,23 @@ module.exports = mongoose => {
         required: true
       },
       specialRequests: {
-          type: String
+        type: String
       },
       createdAt: {
-          type: Date,
-          default: Date.now
+        type: Date,
+        default: Date.now
+      },
+      use_date: {
+        type: Date,
+        required: true
+      },
+      use_time: {
+        type: String,
+        required: true
+      },
+      reservationTime: {
+        type: Date,
+        required: true
       },
       email: {
         type: String,
@@ -32,62 +49,62 @@ module.exports = mongoose => {
         trim: true,
         lowercase: true,
         validate: {
-          validator: function(v) {
+          validator: function (v) {
             return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v);
           },
           message: "Email không hợp lệ"
         }
+      },
+      status: {
+        type: String,
+        enum: ['Đang chờ', 'Đã xác nhận', 'Đã hủy'],
+        default: 'Đang chờ'
       }
     }
   );
-  ReservationSchema.pre("save", async function(next) {
+  ReservationSchema.pre("save", async function (next) {
     try {
       const Table = mongoose.model('table');
       const table = await Table.findById(this.tableId);
-      
+
       if (!table) {
-          throw new Error('Bàn không tồn tại');
+        throw new Error('Bàn không tồn tại');
       }
-      
+
       if (!table.isAvailable) {
-          throw new Error('Bàn đã được đặt');
+        throw new Error('Bàn đã được đặt');
       }
-      
+
       next();
-  } catch (error) {
+    } catch (error) {
       next(error);
     }
   });
-  ReservationSchema.post("save", async function(doc, next) {
-    const Table = mongoose.model('table');
-    await Table.findByIdAndUpdate(doc.tableId, { isAvailable: false, status: 'Đã đặt' });
-    next();
-  });
 
-  ReservationSchema.statics.completeReservation = async function(tableId) {
+  ReservationSchema.statics.completeReservation = async function (tableId) {
     try {
-        const Table = mongoose.model('table');
-        const reservation = await this.findOne({ tableId: tableId });
-        
-        if (!reservation) {
-            throw new Error('Không tìm thấy thông tin đặt bàn');
-        }
+      const Table = mongoose.model('table');
+      const reservation = await this.findOne({ tableId: tableId });
 
-        // Cập nhật trạng thái bàn thành available
-        await Table.findByIdAndUpdate(reservation.table, { 
-            isAvailable: true ,
-            status: 'Trống'
-        });
-        // Xóa thông tin đặt bàn
-        await this.deleteOne({ tableId: tableId });
+      if (!reservation) {
+        throw new Error('Không tìm thấy thông tin đặt bàn');
+      }
 
-        return { message: 'Đã hoàn tất và giải phóng bàn thành công' };
+      // Cập nhật trạng thái bàn thành available
+      await Table.findByIdAndUpdate(reservation.tableId, {
+        isAvailable: true,
+        status: 'Trống'
+      });
+      // Xóa thông tin đặt bàn
+      await this.deleteOne({ tableId: tableId });
+
+      return { message: 'Đã hoàn tất và giải phóng bàn thành công' };
     } catch (error) {
-        throw error;
+      throw error;
     }
   };
-  
-  ReservationSchema.statics.generateConfirmationCode = function() {
+
+  ReservationSchema.statics.generateConfirmationCode = function () {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
 

@@ -11,6 +11,7 @@ import Login from './pages/Customer/Login/Login';
 import Register from './pages/Customer/Register/Register';
 import Home from './pages/Customer/Home/Home';
 import Detail from './pages/Customer/Detail/Detail';
+import ReservationHistory from './pages/Customer/ReservationHistory/ReservationHistory';
 import Checkout from './pages/Customer/Checkout/Checkout';
 import Profile from './pages/Customer/Profile/Profile';
 import HistoryOrder from './pages/Customer/HistoryOrder/HistoryOrder';
@@ -32,7 +33,6 @@ import Order from './pages/Staff/Order/Order';
 import OrderDetail from './pages/Staff/Order/OrderDetail';
 import Table from './pages/Staff/Table/Table';
 import ProfileAdmin from './pages/Staff/Profile/Profile';
-
 import { RequireAuth } from './middleware/AuthMiddleware';
 
 function App() {
@@ -102,12 +102,16 @@ function App() {
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
           <Route path='/' element={<Home />} />
+          <Route path='/reservation-history' element={<ReservationHistory />} />
+          <Route path='/detail/:id' element={<Detail />} />
+          <Route path="/table-checkin" element={<TableCheckin />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path='/search' element={<Search />} />
           <Route path='/checkout' element={
             <RequireAuth>
               <Checkout />
             </RequireAuth>
           } />
-          <Route path='/detail/:id' element={<Detail />} />
           <Route path='/history-order' element={
             <RequireAuth>
               <HistoryOrder />
@@ -118,14 +122,11 @@ function App() {
               <Profile />
             </RequireAuth>
           } />
-          <Route path='/search' element={<Search />} />
           <Route path='/table-reservation' element={
             <RequireAuth>
               <TableReservation />
             </RequireAuth>
           } />
-          <Route path="/table-checkin" element={<TableCheckin />} />
-          <Route path="/menu" element={<Menu />} />
         </Routes>
         <Footer />
       </>
