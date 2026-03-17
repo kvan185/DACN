@@ -1,18 +1,22 @@
-1. gom thông báo đã thêm vào giỏ hàng của trnag chủ, trang tìm kiếm và trang chi tiết
-2. Viết trang Home cho Admin
-3. khi đang xem giỏ hàng, nhấn bên ngoài sẽ thoát khỏi giỏ hàng
-4. từ trang tìm kiếm, tuy đã mở giỏ hàng nhưng sẽ không hiện, có thể thử bằng cách quay về home
-5. sau khi nhấn tìm kiếm, hiện text đã tìm sau: "Tìm thấy 1 món ăn phù hợp từ đã tìm" + "Trứng rán" => Tìm thấy 1 món ăn phù hợp từ đã tìm: Trứng rán
-6. thông tin cá nhân Admin
-7. thông báo cho admin
-8. sửa lỗi focus vào thông tin trang admin
-9. Lỗi cập nhật thông tin admin
-10. Chức năng quản lý bàn
-11. sửa lỗi fe admin infor
-12. thêm xem thông tin bàn đã đặt tại Cus
+1. cập nhật trạng thái bàn cho khách (đã đặt/ đã sử dụng/ đã hủy) - ko được xóa lịch sử , chỉ cập nhật trạng thái
+2. thêm chức năng hủy bàn
+3. cố định chân trang
+4. doanh thu tháng (chỉ tính các đơn thành công)
+5. kiểm tra điều kiện chuyển trạng thái đặt bàn ( đúng ngày / đúng giờ)
+6. thiết kế lại "Hồ sơ" (staff) + có thể thay  đại diện
+7. trang thông báo cho admin
+8. xem thông tin đặt bàn (lịch đặt của từng bàn theo tuần) -  hỗ trợ cập nhật ngày / giờ cho khách
+9. Lỗi cập nhật thông tin admin - sửa lỗi fe admin infor
+10. Chức năng quản lý bàn + thêm email 
+11. Chức năng quản lý bàn
+12. Xem lịch sử đặt bàn tại CUS
 13. tìm kiếm bàn đã đặt bằng mã
 14. lỗi mỗi lần chuyển sang detail khác, số lượng sản phẩm phải =1
 15. không hiện thông báo đã thêm giỏ hàng cho các sản phẩm bên dưới detail
 16. tìm kiếm thêm combobox: mã, thông tin
-17. lỗi trang menu?table
-18. lỗi huỷ đơn hàng 
+17. lỗi trang menu?table khi load trang
+18. xoá tất cả cho giỏ hàng
+19. quản lý thông tin nv
+20. điều chỉnh menu staff : tc - đk - ql nhân viên - ql bàn - ql danh mục - ql món ăn - ql nguyên lieu - đơn hang - đặt bàn - doanh thu
+21. trang nguyên liệu cho admin
+22. công thức cho admin và cus
