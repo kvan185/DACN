@@ -16,9 +16,10 @@ import Profile from './pages/Customer/Profile/Profile';
 import HistoryOrder from './pages/Customer/HistoryOrder/HistoryOrder';
 import Search from './pages/Customer/Search/Search';
 import TableReservation from './pages/Customer/Table/TableReservation';
+import HistoryReservation from './pages/Customer/HistoryReservation/HistoryReservation';
 import TableCheckin from './pages/Customer/Table/TableCheckin';
 import Menu from './pages/Customer/Menu/Menu';
-
+import Cart from './components/Customer/Cart/Cart';
 import RegisterStaff from './pages/Staff/Resgiter/Resgister';
 import Staff from './pages/Staff/Home/HomeStaff';
 import Charts from './pages/Staff/Charts/Charts';
@@ -33,7 +34,8 @@ import Order from './pages/Staff/Order/Order';
 import OrderDetail from './pages/Staff/Order/OrderDetail';
 import Table from './pages/Staff/Table/Table';
 import ProfileAdmin from './pages/Staff/Profile/Profile';
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { RequireAuth } from './middleware/AuthMiddleware';
 
 function App() {
@@ -41,7 +43,7 @@ function App() {
   const navigate = useNavigate();
   const user = JSON.parse(sessionStorage.getItem("user"));
   const pathsCanDisplayBanner = ['/'];
-
+  const accessToken = sessionStorage.getItem("accessToken");
   useEffect(()=>{
     if(location.pathname.includes('/staff') && user === null){
       navigate('/staff/login');
@@ -90,6 +92,7 @@ function App() {
     return(
       <>
         <Header />
+        <Cart accessToken={accessToken} />
         <Banner isDisplay={pathsCanDisplayBanner.includes(location.pathname)}/>
         <Routes>
           <Route path='/login' element={<Login />}/>
@@ -117,10 +120,22 @@ function App() {
               <TableReservation />
             </RequireAuth>
           } />
+          <Route path='/history-reservation' element={
+              <HistoryReservation />
+          } />
           <Route path="/table-checkin" element={<TableCheckin />} />
           <Route path="/menu" element={<Menu />} />
         </Routes>
         <Footer />
+        <ToastContainer
+      position="top-right"
+      autoClose={1000}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick
+      pauseOnHover
+      // theme="colored"
+    />
       </>
     
     )

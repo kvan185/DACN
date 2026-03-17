@@ -19,4 +19,5 @@ db.order = require("./order.model.js")(mongoose);
 db.orderItem = require("./order.item.model.js")(mongoose);
 db.table = require("./table.model.js")(mongoose);
 db.reservation = require("./reservation.model.js")(mongoose);
+db.order_item = require("./order.item.model.js")(mongoose);
 module.exports = db;

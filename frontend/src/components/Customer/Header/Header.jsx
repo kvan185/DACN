@@ -18,14 +18,12 @@ function Header(props) {
         dispatch(action);
     }
 
-    const handleClickLogOut = (event)=>{
-        event.preventDefault();
-
-        sessionStorage.setItem('user', JSON.stringify(null));
-        sessionStorage.setItem('accessToken', JSON.stringify(''));
-        window.location.href = '/'
-    }
-
+    const handleClickLogOut = (event) => {
+    event.preventDefault();
+    sessionStorage.removeItem("accessToken");
+    sessionStorage.removeItem("user");
+    window.location.href = "/";
+};
     return (
         <div className='header'>
             <Container>
@@ -33,21 +31,6 @@ function Header(props) {
                     <img src={logo} alt="TBayEAT Logo" />
                     <span className="header__brand-name">Healthy Food</span>
                 </Link>
-{/*                 
-                <div className="menu_feature">
-                    <ul className="menu_list">
-                        <li className="menu_item">
-                            <Link to="/">Trang chủ</Link>
-                        </li>
-                        <li className="menu_item">
-                            <Link to="/menu">Thực đơn</Link>
-                        </li>
-                        <li className="menu_item">
-                            <Link to="/contact">Liên hệ</Link>
-                        </li>
-                    </ul>
-                </div> */}
-
                 <div className='header__feature'>
                     {user ? (
                         <>
@@ -106,13 +89,22 @@ function Header(props) {
                             </div>
                         </>
                     )}
-                    <Link to="/table-reservation" className="header__feature-reservation">
+                    <div className="header__feature-reservation">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="#F3BA00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M16 2V6M8 2V6M3 10H21M8 14H8.01M12 14H12.01M16 14H16.01M8 18H8.01M12 18H12.01M16 18H16.01" stroke="#F3BA00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="#F3BA00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M16 2V6M8 2V6M3 10H21M8 14H8.01M12 14H12.01M16 14H16.01M8 18H8.01M12 18H12.01M16 18H16.01" stroke="#F3BA00" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/> </svg>
                         <span className="desktop-only">Đặt bàn</span>
-                    </Link>
+                        <div className="header__reservation-dropdown">
+                            <ul>
+                                <li>
+                                    <Link to="/table-reservation">Đặt bàn ngay</Link>
+                                    </li>
+                                <li>
+                                    <Link to="/history-reservation">Lịch sử đặt bàn</Link>
+                                    </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </Container>
         </div>

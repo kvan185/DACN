@@ -39,7 +39,8 @@ module.exports = mongoose => {
       return object;
     });
   
-    const OrderItem = mongoose.model("order_item", schema);
+    const OrderItem = mongoose.models.order_item || mongoose.model("order_item", schema);
+
     return OrderItem;
   };
   

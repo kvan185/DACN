@@ -11,7 +11,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 function PopupUpdateCart(props) {
     const [inputValue, setInputValue] = useState(0);
     const inputRef = useRef();
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
     const dispatch = useDispatch();
 
     const onChangeHandler = (event) => {
@@ -92,7 +92,9 @@ function PopupUpdateCart(props) {
             )}
 
             <Modal.Footer>
-                <button onClick={hanndleUpdate}>Xác nhận</button>
+                <button className="btn-confirm" onClick={hanndleUpdate}>
+                    Xác nhận
+                </button>
                 <button className="btn-close-modal" onClick={props.onHide}>
                     Hủy bỏ
                 </button>

@@ -10,7 +10,7 @@ import { completeReservation } from '../../../actions/table.js';
 
 const TableManagement = () => {
     const [tables, setTables] = useState([]);
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [selectedTable, setSelectedTable] = useState(null);
@@ -261,7 +261,7 @@ const TableManagement = () => {
 
           <ToastContainer 
               position="top-right"
-              autoClose={3000}
+              autoClose={1000}
           />
 
             {/* Modal Thêm */}

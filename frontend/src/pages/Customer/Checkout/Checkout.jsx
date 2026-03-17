@@ -16,7 +16,7 @@ function Checkout(props) {
     const [showPopup, setShowPopup] = useState(false);
     const [orderSource, setOrderSource] = useState('online');
     const [tableNumber, setTableNumber] = useState(null);
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
     const cart = useSelector(state => state.user.cart);
     const cartItems = useSelector(state => state.user.cartItems);
     const dispatch = useDispatch();
@@ -109,7 +109,7 @@ function Checkout(props) {
         <>
             <ToastContainer 
                 position="top-right"
-                autoClose={3000}
+                autoClose={1000}
             /> 
 
             <Cart accessToken={accessToken}/>

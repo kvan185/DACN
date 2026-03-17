@@ -12,7 +12,7 @@ function OrderDetail(props) {
     const [orderPayment, setOrderPayment] = useState(null);
     const [orderItems, setOrderItems] = useState([]);
     const { orderId } = useParams();
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
 
     if(orderId && accessToken){
         useEffect(()=>{

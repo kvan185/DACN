@@ -38,7 +38,7 @@ exports.convertCartToOrder = async (cartId, typeOrder) => {
     const listOrder = await Order.find({});
     const admin = await Admin.find({});
     for (const ad of admin ) {
-        if (ad.socket_id) {
+        if (ad.socket_id && UpdateOrder) {
             UpdateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
         }
     }

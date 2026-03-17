@@ -11,12 +11,12 @@ function Order(props) {
     const [orderList, setOrderList] = useState([]);
     const [orderSocket, setOrderSocket] = useState([]);
     const socketRef = useRef();
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
     const user = JSON.parse(sessionStorage.getItem("user"));
 
     const fetchOrderList = async (accessToken) => {
         const response = await fetch('/api/order', {
-            method: 'get',
+            method: 'GET',
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             }

@@ -11,7 +11,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 function TableProduct({ cartItems }) {
     const [modalShow, setModalShow] = useState(false);
     const [itemCart, setItemCart] = useState(null);
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
     const dispatch = useDispatch();
 
     const handleOpenPopup = (item) => {

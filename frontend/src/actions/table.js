@@ -11,21 +11,28 @@ export const getAllTables = async () => {
   }
 };
 
-export const createReservation = async (accessToken, tableId, specialRequests) => {
+export const createReservation = async (accessToken, data) => {
   try {
+
+    console.log("DATA gửi lên API:", data);
+
     const response = await fetch('/api/reservations', {
       method: 'post',
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        tableId,
-        specialRequests
-      })
+      body: JSON.stringify(data)
     });
-    const data = await response.json();
-    return data;
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Đặt bàn thất bại");
+    }
+
+    return result;
+
   } catch (error) {
     console.error('Lỗi khi đặt bàn:', error);
     throw error;

@@ -14,20 +14,21 @@ import './home.scss';
 
 function Home(props) {
     const [categories, setCategories] = useState([]);
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const [accessToken, setAccessToken] = useState(
+        sessionStorage.getItem("accessToken"));
     const dispatch = useDispatch();
     const isToast = useSelector(state => state.user.isToast);
 
-    const fetchCategory = async () =>{
+    const fetchCategory = async () => {
         const response = await fetch('/api/category/');
         const data = await response.json();
 
         if (data) {
-            const categoryActive = data.filter((item)=>item.is_active);
-            if(categoryActive.length > 0) setCategories(categoryActive);
-            
-            const categoryFirst = data.find((item)=> {
-                if(item.is_active) return item.id;
+            const categoryActive = data.filter((item) => item.is_active);
+            if (categoryActive.length > 0) setCategories(categoryActive);
+
+            const categoryFirst = data.find((item) => {
+                if (item.is_active) return item.id;
             });
 
             const action = getCategoryId(categoryFirst.id);
@@ -35,48 +36,43 @@ function Home(props) {
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchCategory();
     }, []);
 
-    useEffect(()=>{
-        if(isToast) {
-            toast.success('Sản phẩm đã được thêm vào giỏ hàng');
+    useEffect(() => {
+        const token = sessionStorage.getItem("accessToken");
+        setAccessToken(token);
+    }, []);
+
+    useEffect(() => {
+        if (isToast) {
+            toast.success('Đã thêm vào giỏ hàng');
             dispatch(setDisplayToast(!isToast));
             return;
         }
     }, [isToast]);
 
     return (
-        <> 
-            <ToastContainer 
+        <>
+            <ToastContainer
                 position="top-right"
-                autoClose={3000}
-            /> 
-            <Cart accessToken={accessToken}/>
+                autoClose={1000}
+            />
+            <Cart accessToken={accessToken} />
             <Container className='block-product'>
                 {
                     accessToken && (
                         <>
                             <h2>Gợi ý cho bạn</h2>
-                            <ProductRecommender accessToken={accessToken}/>
+                            <ProductRecommender accessToken={accessToken} />
                         </>
                     )
                 }
 
                 <h2>Menu </h2>
-                <Category categories={categories}/>
+                <Category categories={categories} />
                 <ProductList />
-
-                {/* <div className='btn-see-more'>
-                    <svg width="11" height="10" viewBox="0 0 11 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5.5 9.5V5M5.5 5V0.5M5.5 5H10M5.5 5H1" stroke="#929292" strokeLinecap="round"/>
-                    </svg>
-                    <span>
-                        Xem thêm...
-                    </span>
-                </div> */}
-
                 <Contact />
             </Container>
         </>

@@ -3,7 +3,7 @@ import { Col, Container, Row } from 'react-bootstrap';
 import moment from 'moment';
 import socketIOClient from "socket.io-client";
 const host = "http://localhost:3000";
-
+import { toast } from "react-toastify";
 import './history-order.scss';
 import { fetchUpdateStatusOrder } from '../../../actions/order';
 import { statusOrder } from '../../../config/statusOrder';
@@ -13,8 +13,9 @@ function HistoryOrder(props) {
     const [orderList, setOrderList] = useState(null);
     const [orderSocket, setOrderSocket] = useState([]);
     const socketRef = useRef();
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
     const user = JSON.parse(sessionStorage.getItem("user"));
+    const API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
         socketRef.current = socketIOClient.connect(host);
@@ -44,15 +45,37 @@ function HistoryOrder(props) {
         if(accessToken) fetchOrderUser(accessToken);
     },[accessToken, orderSocket]);
 
-    const handleCancelOrder = async (orderId) =>{
-        if (orderId && accessToken) {
-            var result = await fetchUpdateStatusOrder(orderId, accessToken, statusOrder.CANCELED);
-            if (result.status === 200) {
-                return;
-            }
-        }   
-    }
+    const handleCancelOrder = async (orderId) => {
+    const isConfirm = window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?");
+    if (!isConfirm) return;
 
+    if (orderId && accessToken) {
+
+        try {
+
+            const result = await fetchUpdateStatusOrder(
+                orderId,
+                accessToken,
+                statusOrder.CANCELED
+            );
+
+            if (result) {
+
+                toast.success("Đã hủy đơn thành công");
+
+                await fetchOrderUser(accessToken);
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+            toast.error("Hủy đơn thất bại");
+
+        }
+
+    }
+};
     return (
         <>
             <Cart accessToken={accessToken}/>
@@ -100,7 +123,7 @@ function HistoryOrder(props) {
                                                     <span>
                                                         <span className="number">3</span>
                                                     </span>
-                                                    <span>Đơn hàng chờ hoàn tất</span>
+                                                    <span>Đơn hàng đã hoàn tất</span>
                                                 </div>
                                                 <div className={`col-3 ${status === statusOrder.COMPLETED ? 'active' : ''}`}>
                                                     <span>
@@ -119,7 +142,15 @@ function HistoryOrder(props) {
                                                         return(
                                                             <Col xs={6} key={index}>
                                                                 <div className="product-item">
-                                                                    <img alt="" />
+                                                                    <img
+                                                                    src={ 
+                                                                        product_image
+                                                                        ? `${API_URL}${product_image}`
+                                                                        : "/images/no-image.png"}
+                                                                        alt={product_name}
+                                                                        onError={(e) => {
+                                                                        e.target.onerror = null;
+                                                                        e.target.src = "/images/no-image.png";}}/>
                                                                     <div className="product-item-info">
                                                                         <label>Tên sản phẩm: <span>{product_name}</span></label>
                                                                         <label>Số lượng: <span>{qty}</span></label>
@@ -151,7 +182,7 @@ function HistoryOrder(props) {
 
                                                     {status === statusOrder.CANCELED ? 'Đơn đã hủy' : (status === statusOrder.CONFIRMED) ? 'Đã nhận đơn' : 
                                                     (status === statusOrder.COMPLETED ? 'Hoàn thành' : 
-                                                    (status === statusOrder.PROCESSING) ? 'Đơn hàng chờ hoàn tất' : 'Chờ nhận đơn')}
+                                                    (status === statusOrder.PROCESSING) ? 'Đơn hàng đã hoàn tất' : 'Chờ nhận đơn')}
 
                                                     </span>
                                             </div>

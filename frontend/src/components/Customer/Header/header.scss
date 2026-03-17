@@ -82,7 +82,7 @@
         &-user {
             position: relative;
             cursor: pointer;
-
+            transition: opacity 0.25s ease, transform 0.25s ease;
             svg {
                 path {
                     stroke: $color-text-light;
@@ -99,7 +99,7 @@
                 top: 100%;
                 right: 0;
                 background: $color-text-light;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                box-shadow: none;
                 border-radius: 8px;
                 min-width: 200px;
                 margin-top: 10px;
@@ -107,7 +107,7 @@
                 visibility: hidden;
                 transform: translateY(-10px);
                 transition: all 0.3s ease;
-
+                border : none;
                 &::before {
                     content: '';
                     position: absolute;
@@ -127,20 +127,32 @@
                     z-index: 1;
 
                     li {
-                        a {
-                            padding: 10px 20px;
-                            display: block;
-                            color: $color-text-primary;
-                            text-decoration: none;
-                            font-size: 0.95rem;
-                            transition: all 0.2s ease;
-                            
-                            &:hover {
-                                background: rgba($color-primary, 0.05);
-                                color: $color-primary;
-                            }
-                        }
-                    }
+  a {
+      padding: 10px 20px;
+      display: block;
+      color: $color-text-primary;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s ease;
+
+      border: none;
+      outline: none;
+      box-shadow: none;
+
+      &:hover {
+          color: $color-primary;
+      }
+
+      &:active {
+          color: $color-secondary;
+      }
+
+      &:focus {
+          outline: none;
+          box-shadow: none;
+      }
+  }
+}
                 }
             }
 
@@ -172,22 +184,91 @@
             }
         }
 
-        &-reservation {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #F3BA00;
-            text-decoration: none;
-            margin-right: 20px;
-            
-            &:hover {
-                color: darken-color(#F3BA00, 10%);
-            }
+&-reservation {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #F3BA00;
+    cursor: pointer;
+    margin-right: 20px;
+    span {
+        font-weight: 500;
+    }
 
-            span {
-                font-weight: 500;
-            }
+    svg {
+        path {
+            stroke: #F3BA00;
         }
+    }
+
+    .header__reservation-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: $color-text-light;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        min-width: 200px;
+        margin-top: 10px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        &::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            right: 20px;
+            width: 8px;
+            height: 8px;
+            background: $color-text-light;
+            transform: rotate(45deg);
+        }
+
+        ul {
+            list-style: none;
+            padding: 8px 0;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+
+            li {
+  a {
+      padding: 10px 20px;
+      display: block;
+      color: $color-text-primary;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s ease;
+
+      border: none;
+      outline: none;
+      box-shadow: none;
+
+      &:hover {
+          color: $color-primary;
+      }
+
+      &:active {
+          color: $color-secondary;
+      }
+
+      &:focus {
+          outline: none;
+          box-shadow: none;
+      }
+  }
+}
+        }
+    }
+
+    &:hover .header__reservation-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
     }
 }
 

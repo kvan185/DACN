@@ -40,12 +40,10 @@ function Product(props) {
     return (
         <section className="block-product-staff">
             <h3 className="title-admin">Danh sách sản phẩm</h3>
-    
             <div className="product-container background-radius">
                 <div className="product-add">
-                   <Link to='/staff/product/add'>Thêm mới</Link>
+                   <Link to='/staff/product/add'> + Thêm mới</Link>
                 </div>
-        
                 <Table className='product-table'>
                     <thead>
                         <tr>
@@ -61,7 +59,6 @@ function Product(props) {
                         {productList && productList.length > 0 && (
                             productList.map((proItem, index)=>{
                                 const {id, name, image, price, is_active} = proItem;
-
                                 return(
                                     <tr key={index}>
                                         <td>{index+1}</td>

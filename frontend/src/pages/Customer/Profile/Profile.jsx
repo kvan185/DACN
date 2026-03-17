@@ -9,7 +9,7 @@ function Profile(props) {
     const user = JSON.parse(sessionStorage.getItem("user"));
     const [userUpdate, setUserUpdate] = useState(user || null);
     const [selectedImage, setSelectedImage] = useState(null);
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
 
     useEffect(()=>{
         console.log('update');
@@ -53,7 +53,7 @@ function Profile(props) {
         <>
             <ToastContainer 
                 position="top-right"
-                autoClose={3000}
+                autoClose={1000}
             /> 
             <Cart accessToken={accessToken}/>
             <div className='block-profile'>

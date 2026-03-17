@@ -19,6 +19,10 @@ const ingredientSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    qty: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

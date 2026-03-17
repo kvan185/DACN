@@ -39,7 +39,7 @@ function Register(props) {
 
             if (response.ok) {
                 toast.success('Đăng ký thành công!');
-                setTimeout(() => navigate('/login'), 2000);
+                setTimeout(() => navigate('/login'), 1000);
             } else {
                 toast.error(data.message);
             }
@@ -60,7 +60,7 @@ function Register(props) {
         <>
             <ToastContainer 
                 position="top-right"
-                autoClose={3000}
+                autoClose={1000}
             />
             <Container className='block-register'>
                 <h2>Đăng ký</h2>

@@ -3,11 +3,10 @@ const express = require("express");
 const cors = require("cors");
 
 const app = express();
-
-var corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:8080"
-};
-
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 const path = require('path');
 
 app.use(
@@ -15,7 +14,6 @@ app.use(
   express.static(path.join(__dirname, "static"))
 );
 
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -50,6 +48,7 @@ require("./app/routes/paymnet.routes")(app);
 require("./app/routes/revenue.routes")(app);
 require("./app/routes/table.routes")(app);
 require("./app/routes/reservation.routes")(app);
+require("./app/routes/dashboard.routes")(app);
 
 const http = require("http");
 const server = http.createServer(app);

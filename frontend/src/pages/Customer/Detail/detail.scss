@@ -51,13 +51,14 @@
 
     &__options {
         flex: 1;
-        padding: 20px 30px 0px 30px;
+        padding: 45px 30px 0px 30px;
         background: $color-background-light;
         border-radius: 16px;
         box-shadow: 0 4px 20px rgba($color-primary, 0.08);
         border-width: 2px;
         border-color: $color-text-primary;
         border-style: solid;
+        align-items: center;
 
         hr {
             border: none;
@@ -113,12 +114,17 @@
                     background: transparent;
                     cursor: pointer;
                     transition: all 0.3s ease;
-
-                    &:hover {
+                     &:hover,
+                     &:active {
                         background: rgba($color-primary, 0.1);
+                        outline: none !important;
+                        box-shadow: none !important;}
+                    &:focus,
+                    &:focus-visible {
+                        outline: none !important;
+                        box-shadow: none !important;
                     }
                 }
-
                 input {
                     width: 50px;
                     height: 100%;

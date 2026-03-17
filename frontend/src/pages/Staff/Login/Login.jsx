@@ -35,8 +35,9 @@ function Login(props) {
       const data = await response.json();
   
       if(response.ok){
-        setAccessToken(data.accessToken);
-        sessionStorage.setItem('accessToken', JSON.stringify(data.accessToken));
+         setAccessToken(data.accessToken);
+         sessionStorage.removeItem("accessToken");
+         sessionStorage.setItem("accessToken", data.accessToken);
       } else {
         toast.error('Đăng nhập thất bại');
       }
@@ -61,12 +62,12 @@ function Login(props) {
   }
 
   if(accessToken) loginAccessToken();
-
+     
   return (
     <section className="login">
         <ToastContainer 
             position="top-right"
-            autoClose={3000}
+            autoClose={1000}
         />
         <Container fluid>
             <Row>

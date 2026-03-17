@@ -27,6 +27,7 @@ function Category({ categories = [] }) {
             setOffset(prev => Math.min(prev, Math.max(listWidth - wrapperWidth, 0)));
         };
 
+
         calc();
         window.addEventListener('resize', calc);
         return () => window.removeEventListener('resize', calc);
