@@ -8,29 +8,36 @@ import './category.scss';
 
 function Category(props) {
     const [categoryList, setCategoryList] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 10;
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentCategories = categoryList.slice(indexOfFirstItem, indexOfLastItem);
 
-    const fetchListCate = async () =>{
+    const totalPages = Math.ceil(categoryList.length / itemsPerPage);
+
+    const fetchListCate = async () => {
         const response = await fetch('/api/category');
         const data = await response.json();
-        
-        if(data && data.length > 0) setCategoryList(data);
+
+        if (data && data.length > 0) setCategoryList(data);
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchListCate();
-    },[]);
+    }, []);
 
-    const handleDeleteCateItem = async (cateId)=>{
+    const handleDeleteCateItem = async (cateId) => {
         const result = confirm('Bạn có muốn xóa');
 
-        if(result && cateId){
-            fetchDelete(cateId);
-            fetchListCate();
+        if (result && cateId) {
+            await fetchDelete(cateId);
+            await fetchListCate();
         }
     }
 
     const fetchDelete = async (cateId) => {
-        const response = await fetch(`/api/category/${cateId}`,{
+        const response = await fetch(`/api/category/${cateId}`, {
             method: 'delete',
         });
         const data = await response.json();
@@ -40,12 +47,12 @@ function Category(props) {
     return (
         <section className="block-category">
             <h3 className="title-admin">Danh sách danh mục</h3>
-    
+
             <div className="category-container background-radius">
                 <div className="category-add">
-                   <Link to='/staff/category/add'>Thêm mới</Link>
+                    <Link to='/staff/category/add'>Thêm mới</Link>
                 </div>
-        
+
                 <Table className='category-table'>
                     <thead>
                         <tr>
@@ -57,35 +64,63 @@ function Category(props) {
                         </tr>
                     </thead>
                     <tbody>
-                        {categoryList && categoryList.length > 0 && (
-                            categoryList.map((cateItem, index)=>{
-                                const {id, name, image, is_active} = cateItem;
+                        {currentCategories.length > 0 && (
+                            currentCategories.map((cateItem, index) => {
+                                const { id, name, is_active } = cateItem;
 
-                                return(
-                                    <tr key={index}>
-                                        <td>{index+1}</td>
+                                return (
+                                    <tr key={id}>
+                                        <td>{indexOfFirstItem + index + 1}</td>
+
+                                        <td>{name}</td>
+
                                         <td>
-                                            {name}
+                                            <span className={`category-status ${is_active ? 'active' : 'inactive'}`}>
+                                                {is_active ? 'active' : 'inactive'}
+                                            </span>
                                         </td>
-                                        {/* <td>
-                                            <img src={`http://localhost:5000/static/images/${image}`} alt=""/>
-                                        </td> */}
-                                        <td>
-                                            <span className={`category-status ${is_active ? 'active' : 'inactive'}`}>{is_active ? 'active' : 'inactive'}</span>
-                                        </td>
+
                                         <td>
                                             <Link to={`/staff/category/update/${id}`}>
-                                                <FaRegEdit className='icon-update'/>
+                                                <FaRegEdit className='icon-update' />
                                             </Link>
 
-                                            <MdDelete onClick={()=>handleDeleteCateItem(id)} className='icon-delete'/>
+                                            <MdDelete
+                                                onClick={() => handleDeleteCateItem(id)}
+                                                className='icon-delete'
+                                            />
                                         </td>
                                     </tr>
-                                )
+                                );
                             })
                         )}
                     </tbody>
                 </Table>
+                <div className="pagination">
+                    <button
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                    >
+                        Prev
+                    </button>
+
+                    {[...Array(totalPages)].map((_, i) => (
+                        <button
+                            key={i}
+                            className={currentPage === i + 1 ? 'active' : ''}
+                            onClick={() => setCurrentPage(i + 1)}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+
+                    <button
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                    >
+                        Next
+                    </button>
+                </div>
             </div>
         </section>
     );

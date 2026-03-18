@@ -9,6 +9,13 @@ import { statusOrder } from "../../../config/statusOrder.js";
 
 function Order(props) {
     const [orderList, setOrderList] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 10;
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentOrders = orderList.slice(indexOfFirstItem, indexOfLastItem);
+
+    const totalPages = Math.ceil(orderList.length / itemsPerPage);
     const [orderSocket, setOrderSocket] = useState([]);
     const socketRef = useRef();
     const accessToken = sessionStorage.getItem("accessToken");
@@ -22,10 +29,10 @@ function Order(props) {
             }
         });
         const data = await response.json();
-        if(data) setOrderList(data);
+        if (data) setOrderList(data);
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         if (accessToken) fetchOrderList(accessToken);
         socketRef.current = socketIOClient.connect(host);
         socketRef.current.emit('adminConnect', user.id);
@@ -35,9 +42,11 @@ function Order(props) {
         });
     }, []);
 
-    useEffect(()=>{
-        if(accessToken) fetchOrderList(accessToken);
-    },[accessToken, orderSocket]);
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages || 1);
+        }
+    }, [orderList]);
 
     return (
         <section className="block-order">
@@ -59,19 +68,19 @@ function Order(props) {
                     </thead>
                     <tbody>
                         {orderList && orderList.length > 0 && (
-                            orderList.map((orderData, index) => {
+                            currentOrders.map((orderData, index) => {
                                 const {
                                     id,
-                                    first_name, 
-                                    last_name, 
-                                    total_item, 
+                                    first_name,
+                                    last_name,
+                                    total_item,
                                     total_price,
                                     order_source,
                                     table_number,
                                     status
                                 } = orderData;
 
-                                return(
+                                return (
                                     <tr key={index}>
                                         <td>{index + 1}</td>
                                         <td>{id}</td>
@@ -88,17 +97,17 @@ function Order(props) {
                                             </span>
                                         </td>
                                         <td>
-                                            <span className={`status ${status === statusOrder.NEW ? 'status-new' : 
-                                                status === statusOrder.CONFIRMED ? 'status-confirmed' : 
-                                                status === statusOrder.PROCESSING ? 'status-processing' : 
-                                                status === statusOrder.COMPLETED ? 'status-completed' : 'status-canceled'
-                                            }`}>
-                                            { 
-                                                status === statusOrder.NEW ? 'Đơn mới' : 
-                                                status === statusOrder.CONFIRMED ? 'Nhận đơn' : 
-                                                status === statusOrder.PROCESSING ? 'Đang chờ làm' : 
-                                                status === statusOrder.COMPLETED ? 'Hoàn thành' : 'Đã hủy'
-                                            }</span>
+                                            <span className={`status ${status === statusOrder.NEW ? 'status-new' :
+                                                status === statusOrder.CONFIRMED ? 'status-confirmed' :
+                                                    status === statusOrder.PROCESSING ? 'status-processing' :
+                                                        status === statusOrder.COMPLETED ? 'status-completed' : 'status-canceled'
+                                                }`}>
+                                                {
+                                                    status === statusOrder.NEW ? 'Đơn mới' :
+                                                        status === statusOrder.CONFIRMED ? 'Nhận đơn' :
+                                                            status === statusOrder.PROCESSING ? 'Đang chờ làm' :
+                                                                status === statusOrder.COMPLETED ? 'Hoàn thành' : 'Đã hủy'
+                                                }</span>
                                         </td>
                                         <td>
                                             <Link to={`/staff/order/detail/${id}`}>
@@ -111,6 +120,31 @@ function Order(props) {
                         )}
                     </tbody>
                 </Table>
+                <div className="pagination">
+                    <button
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                    >
+                        Prev
+                    </button>
+
+                    {[...Array(totalPages)].map((_, i) => (
+                        <button
+                            key={i}
+                            className={currentPage === i + 1 ? 'active' : ''}
+                            onClick={() => setCurrentPage(i + 1)}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+
+                    <button
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                    >
+                        Next
+                    </button>
+                </div>
             </div>
         </section>
     );

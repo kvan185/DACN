@@ -1,12 +1,13 @@
 const ProductBOM = require("../models/productBom.model");
+const mongoose = require("mongoose");
 
-// Lấy BOM theo product
 exports.getByProduct = async (req, res) => {
   try {
+    const productId = new mongoose.Types.ObjectId(req.params.productId);
+
     const data = await ProductBOM.find({
-      product_id: req.params.productId,
-    })
-      .populate("ingredient_id", "name unit");
+      product_id: productId,
+    }).populate("ingredient_id", "name unit");
 
     res.json(data);
   } catch (err) {
@@ -45,5 +46,14 @@ exports.remove = async (req, res) => {
     res.json({ message: "Deleted successfully" });
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+};
+
+exports.getList = async (req, res) => {
+  try {
+    const data = await ProductBOM.find();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

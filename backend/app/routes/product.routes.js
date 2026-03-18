@@ -1,31 +1,16 @@
 module.exports = app => {
-    const product = require("../controllers/product.controller.js");
-  
-    var router = require("express").Router();
+  const product = require("../controllers/product.controller.js");
 
-    // Recommender
-    router.get("/recommender", product.recommender);
-  
-    // Create
-    router.post("/", product.create);
+  var router = require("express").Router();
 
-    // Get list
-    router.get("/", product.getList);
+  router.get("/recommender", product.recommender);
+  router.post("/", product.create);
+  router.get("/", product.getList);
+  router.get("/category/:id", product.getListByCategory);
+  router.get("/:id", product.getProductById);
+  router.put('/:id', product.update);
+  router.delete('/:id', product.delete);
+  router.get("/search/:key", product.search);
 
-    // Get list by category
-    router.get("/category/:id", product.getListByCategory);
-
-    // Get by Id
-    router.get("/:id", product.getProductById);
-
-    // Update
-    router.put('/:id', product.update);
-
-    // Delete
-    router.delete('/:id', product.delete);
-
-    // search
-    router.get("/search/:key", product.search);
-
-    app.use("/api/product", router);
-  };
+  app.use("/api/product", router);
+};

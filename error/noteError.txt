@@ -1,6 +1,6 @@
 1. cập nhật trạng thái bàn cho khách (đã đặt/ đã sử dụng/ đã hủy) - ko được xóa lịch sử , chỉ cập nhật trạng thái
-2. thêm chức năng hủy bàn
-3. cố định chân trang
+2. (Uyên) thêm chức năng hủy bàn
+3. (Uyên) cố định chân trang
 4. doanh thu tháng (chỉ tính các đơn thành công)
 5. kiểm tra điều kiện chuyển trạng thái đặt bàn ( đúng ngày / đúng giờ)
 6. thiết kế lại "Hồ sơ" (staff) + có thể thay  đại diện
@@ -15,8 +15,9 @@
 15. không hiện thông báo đã thêm giỏ hàng cho các sản phẩm bên dưới detail
 16. tìm kiếm thêm combobox: mã, thông tin
 17. lỗi trang menu?table khi load trang
-18. xoá tất cả cho giỏ hàng
+18. (Uyên) xoá tất cả cho giỏ hàng
 19. quản lý thông tin nv
 20. điều chỉnh menu staff : tc - đk - ql nhân viên - ql bàn - ql danh mục - ql món ăn - ql nguyên lieu - đơn hang - đặt bàn - doanh thu
-21. trang nguyên liệu cho admin
-22. công thức cho admin và cus
+21. (Văn) trang nguyên liệu cho admin
+22. (Văn) công thức cho admin và cus
+23. đồng bộ các trang admin: phân trang, bố cục, màu sắc

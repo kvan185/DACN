@@ -24,4 +24,4 @@ const productBomSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("ProductBOM", productBomSchema);
+module.exports = mongoose.model("ProductBOM", productBomSchema, "product_boms");

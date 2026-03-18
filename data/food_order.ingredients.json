@@ -1,0 +1,452 @@
+[
+  {
+    "_id": {
+      "$oid": "675300000000000000000001"
+    },
+    "name": "Ức gà",
+    "unit": "gram",
+    "note": "Phi lê không da",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000002"
+    },
+    "name": "Xà lách",
+    "unit": "gram",
+    "note": "Rau nền salad",
+    "qty": 5000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000003"
+    },
+    "name": "Sốt mè rang",
+    "unit": "ml",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000004"
+    },
+    "name": "Cá ngừ",
+    "unit": "gram",
+    "note": "Ngâm dầu",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000005"
+    },
+    "name": "Dầu oliu",
+    "unit": "ml",
+    "note": "Extra virgin",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000006"
+    },
+    "name": "Tôm",
+    "unit": "gram",
+    "note": "Tôm luộc bóc vỏ",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000007"
+    },
+    "name": "Trứng gà",
+    "unit": "gram",
+    "note": "Trứng luộc",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000008"
+    },
+    "name": "Quinoa",
+    "unit": "gram",
+    "note": "Đã nấu chín",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000009"
+    },
+    "name": "Rau củ luộc",
+    "unit": "gram",
+    "note": "Cà rốt, bông cải",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000010"
+    },
+    "name": "Bơ",
+    "unit": "gram",
+    "note": "Bơ chín",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000011"
+    },
+    "name": "Cá hồi",
+    "unit": "gram",
+    "note": "Phi lê tươi",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000012"
+    },
+    "name": "Cá basa",
+    "unit": "gram",
+    "note": "Phi lê",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000013"
+    },
+    "name": "Đậu hũ non",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000014"
+    },
+    "name": "Nấm",
+    "unit": "gram",
+    "note": "Nấm đông cô / nấm kim châm",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000015"
+    },
+    "name": "Gừng",
+    "unit": "gram",
+    "note": "Thái sợi",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000016"
+    },
+    "name": "Chanh",
+    "unit": "ml",
+    "note": "Nước cốt chanh",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000017"
+    },
+    "name": "Rau củ hỗn hợp",
+    "unit": "gram",
+    "note": "Cà rốt, bắp, đậu Hà Lan",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000018"
+    },
+    "name": "Gạo lứt",
+    "unit": "gram",
+    "note": "Đã nấu chín",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000019"
+    },
+    "name": "Khoai lang",
+    "unit": "gram",
+    "note": "Khoai lang mật",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000020"
+    },
+    "name": "Yến mạch",
+    "unit": "gram",
+    "note": "Yến mạch cán",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000021"
+    },
+    "name": "Sữa hạt",
+    "unit": "ml",
+    "note": "Sữa hạnh nhân / óc chó",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000022"
+    },
+    "name": "Bún gạo lứt",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000023"
+    },
+    "name": "Mì gạo lứt",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000024"
+    },
+    "name": "Rong biển",
+    "unit": "gram",
+    "qty": 10000,
+    "note": "Rong biển khô",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000025"
+    },
+    "name": "Bí đỏ",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000026"
+    },
+    "name": "Xương heo",
+    "unit": "gram",
+    "note": "Hầm lấy nước dùng",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000027"
+    },
+    "name": "Súp lơ xanh",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000028"
+    },
+    "name": "Cà chua",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000029"
+    },
+    "name": "Trứng gà",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000030"
+    },
+    "name": "Hạt sen",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000031"
+    },
+    "name": "Long nhãn",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000032"
+    },
+    "name": "Đường phèn",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000033"
+    },
+    "name": "Sữa chua Hy Lạp",
+    "unit": "gram",
+    "qty": 10000,
+    "note": "",
+    "is_active": true
+  },
+  {
+    "qty": 10000,
+    "_id": {
+      "$oid": "675300000000000000000034"
+    },
+    "name": "Táo",
+    "unit": "gram",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000035"
+    },
+    "qty": 10000,
+    "name": "Bột mì",
+    "unit": "gram",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000036"
+    },
+    "name": "Bột quế",
+    "qty": 10000,
+    "unit": "gram",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000037"
+    },
+    "name": "Hạt chia",
+    "qty": 10000,
+    "unit": "gram",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000038"
+    },
+    "qty": 10000,
+    "name": "Sữa hạnh nhân",
+    "unit": "ml",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000039"
+    },
+    "name": "Cam",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000040"
+    },
+    "name": "Cà rốt",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  },
+  {
+    "qty": 10000,
+    "_id": {
+      "$oid": "675300000000000000000041"
+    },
+    "name": "Kiwi",
+    "unit": "gram",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000042"
+    },
+    "name": "Dâu tây",
+    "qty": 10000,
+    "unit": "gram",
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000043"
+    },
+    "name": "Xoài",
+    "unit": "gram",
+    "qty": 10000,
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000044"
+    },
+    "name": "Rau má",
+    "unit": "gram",
+    "qty": 10000,
+    "note": "",
+    "is_active": true
+  },
+  {
+    "_id": {
+      "$oid": "675300000000000000000045"
+    },
+    "name": "Đậu xanh",
+    "unit": "gram",
+    "note": "",
+    "qty": 10000,
+    "is_active": true
+  }
+]

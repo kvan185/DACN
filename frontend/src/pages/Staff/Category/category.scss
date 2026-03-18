@@ -1,15 +1,15 @@
 @use '../../../scss/' as *;
 
-.block-category{
-    .category-container{
+.block-category {
+    .category-container {
         margin-top: 48px;
         padding: 30px 20px;
     }
 
-    .category-add{
+    .category-add {
         margin: 0 0 20px 12px;
 
-        a{
+        a {
             text-decoration: none;
             font-weight: 400;
             font-size: 14px;
@@ -17,11 +17,13 @@
         }
     }
 
-    .category-table{
+    .category-table {
         border-collapse: collapse !important;
         padding-bottom: 30px;
 
-        thead, tbody, tr {
+        thead,
+        tbody,
+        tr {
             border-bottom: 1px solid #e9ecef !important;
             border-top: 1px solid #e9ecef !important;
         }
@@ -42,44 +44,68 @@
             text-align: center;
         }
 
-        .category-status{
+        .category-status {
             font-size: 12px;
             font-weight: 600;
             color: $white-color;
             padding: 4px 8px;
             border-radius: 33px;
 
-            &.active{
+            &.active {
                 background: $green-color;
             }
-            &.inactive{
+
+            &.inactive {
                 background: $red-color;
                 opacity: 0.7;
             }
         }
 
-        .icon-update, .icon-delete{
+        .icon-update,
+        .icon-delete {
             font-size: 18px;
         }
 
-        .icon-delete{
+        .icon-delete {
             color: $red-color;
             cursor: pointer;
         }
 
-        .icon-update{
+        .icon-update {
             color: $green-color;
             margin-right: 10px;
         }
     }
 
-    .category-form{
-        .btn-add{
+    .category-form {
+        .btn-add {
             background: $green-color;
             box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
             border-radius: 10px;
             color: $white-color;
             border: none;
+        }
+    }
+}
+
+.pagination {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+
+    button {
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        cursor: pointer;
+
+        &.active {
+            background: #007bff;
+            color: #fff;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     }
 }
