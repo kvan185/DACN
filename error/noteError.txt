@@ -18,6 +18,5 @@
 18. (Uyên) xoá tất cả cho giỏ hàng
 19. quản lý thông tin nv
 20. điều chỉnh menu staff : tc - đk - ql nhân viên - ql bàn - ql danh mục - ql món ăn - ql nguyên lieu - đơn hang - đặt bàn - doanh thu
-21. (Văn) trang nguyên liệu cho admin
-22. (Văn) công thức cho admin và cus
+21. chỉnh logic khi đơn hàng hoàn tất sẽ giảm nguyên liệu, khi thiếu nguyên liệu món ăn sẽ chuyển trạng thái
 23. đồng bộ các trang admin: phân trang, bố cục, màu sắc
