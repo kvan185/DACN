@@ -14,11 +14,11 @@ function OrderDetail(props) {
     const { orderId } = useParams();
     const accessToken = sessionStorage.getItem("accessToken");
 
-    if (orderId && accessToken) {
-        useEffect(() => {
+    useEffect(() => {
+        if (orderId && accessToken) {
             fetchOrderDetail(orderId, accessToken);
-        }, [orderId, accessToken, orderStatus, orderPayment]);
-    }
+        }
+    }, [orderId, accessToken, orderStatus, orderPayment]);
 
     const fetchOrderDetail = async (orderId, accessToken) => {
         const response = await fetch(`/api/order/${orderId}`, {
@@ -110,7 +110,7 @@ function OrderDetail(props) {
                             <span className='order-status'>{orderDetail && orderDetail.status}</span>
                         </label>
                         <label>
-                            Tổng cộng:
+                            Tổng thanh toán:
                             <span>{orderDetail && orderDetail.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}</span>
                         </label>
                         <label>

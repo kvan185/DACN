@@ -56,7 +56,12 @@ const http = require("http");
 const server = http.createServer(app);
 
 // gắn socket vào server
-require("./app/socket")(server);
+const socketInit = require("./app/socket");
+
+const listSocket = socketInit(server);
+
+// 👉 lưu global để dùng ở controller
+global._io = listSocket;
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

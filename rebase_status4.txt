@@ -1,0 +1,58 @@
+﻿[detached HEAD 650f196] Code productBom & ingredient
+ Author: Khanh Van <kvan18052004@gmail.com>
+ 4 files changed, 329 insertions(+), 202 deletions(-)
+ create mode 100644 rebase_status3.txt
+Auto-merging backend/app/controllers/order.controller.js
+CONFLICT (content): Merge conflict in backend/app/controllers/order.controller.js
+Auto-merging backend/app/socket/index.js
+Auto-merging backend/server.js
+Auto-merging frontend/src/pages/Customer/HistoryOrder/HistoryOrder.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Customer/HistoryOrder/HistoryOrder.jsx
+Auto-merging frontend/src/pages/Staff/Order/OrderDetail.jsx
+CONFLICT (content): Merge conflict in frontend/src/pages/Staff/Order/OrderDetail.jsx
+Auto-merging frontend/src/pages/Staff/Table/Table.jsx
+git : Rebasing (5/8)
+At line:1 char:37
++ ... it add . ; $env:G
+IT_EDITOR="true"; git 
+rebase --continue 2>&1 
+| Out-F ...
++                      
+                  ~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Rebasing (5/8   
+ ):String) [], Remo    
+teException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+error: could not apply 
+de25549... update 
+order inger
+hint: Resolve all 
+conflicts manually, 
+mark them as resolved 
+with
+hint: "git add/rm 
+<conflicted_files>", 
+then run "git rebase 
+--continue".
+hint: You can instead 
+skip this commit: run 
+"git rebase --skip".
+hint: To abort and get 
+back to the state 
+before "git rebase", 
+run "git rebase 
+--abort".
+hint: Disable this 
+message with "git 
+config set 
+advice.mergeConflict 
+false"
+Could not apply 
+de25549... update 
+order inger
