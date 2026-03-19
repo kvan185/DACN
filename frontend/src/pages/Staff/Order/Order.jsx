@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import socketIOClient from "socket.io-client";
 import { Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-const host = "http://localhost:3000";
+const host = import.meta.env.VITE_API_URL;
 
 import './order.scss';
 import { statusOrder } from "../../../config/statusOrder.js";

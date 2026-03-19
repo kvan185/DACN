@@ -35,7 +35,7 @@ const TableManagement = () => {
     const [socketTables, setSocketTables] = useState([]);
     const socketRef = useRef();
     const user = JSON.parse(sessionStorage.getItem("user"));
-    const SOCKET_SERVER_URL = 'http://localhost:3000';
+    const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
     const CLIENT_URL = window.location.origin;
 
     useEffect(() => {
