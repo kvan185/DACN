@@ -1,4 +1,6 @@
 const Ingredient = require("../models/ingredient.model");
+const { checkManyProducts } = require("../services/product.service");
+const ProductBOM = require("../models/productBom.model");
 
 exports.getAll = async (req, res) => {
   try {
@@ -25,7 +27,15 @@ exports.update = async (req, res) => {
       req.body,
       { new: true }
     );
+
+    const boms = await ProductBOM.find({
+      ingredient_id: updated._id
+    });
+
+    const productIds = boms.map(b => b.product_id);
+    await checkManyProducts(productIds);
     res.json(updated);
+
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

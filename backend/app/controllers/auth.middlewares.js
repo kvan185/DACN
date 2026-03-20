@@ -37,7 +37,7 @@ async function findCustomerByEmail(email) {
 	return customer;
 }
 
-exports.checkAuth = async(req) => {
+exports.checkAuth = async (req) => {
 	// Get access token from header
 	const accessTokenFromHeader = req.headers.authorization.split(' ');
 	if (!accessTokenFromHeader[1]) {

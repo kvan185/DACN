@@ -10,6 +10,7 @@ const Admin = db.admin;
 const ProductBOM = require("../models/productBom.model");
 const Ingredient = db.ingredient;
 const Product = db.product;
+const { checkManyProducts } = require("../services/product.service");
 
 exports.createCashOrder = async (req, res) => {
     try {

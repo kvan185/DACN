@@ -1,23 +1,14 @@
+
 module.exports = app => {
-    const cart = require("../controllers/cart.controller.js");
-  
-    var router = require("express").Router();
-  
-    // init cart
-    router.post("/", cart.initOrRetrieveCart);
+  const cart = require("../controllers/cart.controller.js");
 
-    // add p to cart
-    router.post("/add", cart.addProductToCart);
+  var router = require("express").Router();
 
-    // update cart
-    router.post("/update", cart.updateCartItem);
-
-    // update cart
-    router.get("/", cart.getCart);
-
-    // delete cart
-    router.delete("/:id", cart.deleteCartItem);
-
-    app.use("/api/cart", router);
-  };
-  
+  router.post("/", cart.initOrRetrieveCart);
+  router.post("/add", cart.addProductToCart);
+  router.post("/update", cart.updateCartItem);
+  router.get("/", cart.getCart);
+  router.delete("/:id", cart.deleteCartItem);
+  // router.get("/validate", cart.validateCart);
+  app.use("/api/cart", router);
+};

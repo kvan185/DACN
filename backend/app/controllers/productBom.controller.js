@@ -7,7 +7,10 @@ exports.getByProduct = async (req, res) => {
 
     const data = await ProductBOM.find({
       product_id: productId,
-    }).populate("ingredient_id", "name unit");
+    }).populate({
+      path: "ingredient_id",
+      select: "name unit qty"
+    });
 
     res.json(data);
   } catch (err) {
