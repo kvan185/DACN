@@ -1,62 +1,58 @@
-const ProductBOM = require("../models/productBom.model");
-const mongoose = require("mongoose");
+const productBomService = require("../services/productBom.service");
+
+const handleError = (res, error) => {
+  console.error(error);
+  res.status(error.status || 500).json({
+    message: error.message || "Lỗi server",
+  });
+};
 
 exports.getByProduct = async (req, res) => {
   try {
-    const productId = new mongoose.Types.ObjectId(req.params.productId);
-
-    const data = await ProductBOM.find({
-      product_id: productId,
-    }).populate({
-      path: "ingredient_id",
-      select: "name unit qty"
-    });
-
+    const data = await productBomService.getByProduct(
+      req.params.productId
+    );
     res.json(data);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    handleError(res, err);
   }
 };
 
-// Thêm định lượng nguyên liệu cho món
 exports.create = async (req, res) => {
   try {
-    const bom = await ProductBOM.create(req.body);
+    const bom = await productBomService.create(req.body);
     res.status(201).json(bom);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    handleError(res, err);
   }
 };
 
-// Cập nhật định lượng
 exports.update = async (req, res) => {
   try {
-    const updated = await ProductBOM.findByIdAndUpdate(
+    const updated = await productBomService.update(
       req.params.id,
-      req.body,
-      { new: true }
+      req.body
     );
     res.json(updated);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    handleError(res, err);
   }
 };
 
-// Xóa 1 nguyên liệu khỏi món
 exports.remove = async (req, res) => {
   try {
-    await ProductBOM.findByIdAndDelete(req.params.id);
+    await productBomService.remove(req.params.id);
     res.json({ message: "Deleted successfully" });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    handleError(res, err);
   }
 };
 
 exports.getList = async (req, res) => {
   try {
-    const data = await ProductBOM.find();
+    const data = await productBomService.getList();
     res.json(data);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    handleError(res, err);
   }
 };

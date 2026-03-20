@@ -1,53 +1,47 @@
-const Ingredient = require("../models/ingredient.model");
-const { checkManyProducts } = require("../services/product.service");
-const ProductBOM = require("../models/productBom.model");
+const ingredientService = require("../services/ingredient.service");
+
+const handleError = (res, error) => {
+  console.error(error);
+  res.status(error.status || 500).json({
+    message: error.message || "Server error",
+  });
+};
 
 exports.getAll = async (req, res) => {
   try {
-    const data = await Ingredient.find({ is_active: true });
+    const data = await ingredientService.getAll();
     res.json(data);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    handleError(res, error);
   }
 };
 
 exports.create = async (req, res) => {
   try {
-    const ingredient = await Ingredient.create(req.body);
-    res.status(201).json(ingredient);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    const data = await ingredientService.create(req.body);
+    res.status(201).json(data);
+  } catch (error) {
+    handleError(res, error);
   }
 };
 
 exports.update = async (req, res) => {
   try {
-    const updated = await Ingredient.findByIdAndUpdate(
+    const data = await ingredientService.update(
       req.params.id,
-      req.body,
-      { new: true }
+      req.body
     );
-
-    const boms = await ProductBOM.find({
-      ingredient_id: updated._id
-    });
-
-    const productIds = boms.map(b => b.product_id);
-    await checkManyProducts(productIds);
-    res.json(updated);
-
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.json(data);
+  } catch (error) {
+    handleError(res, error);
   }
 };
 
 exports.remove = async (req, res) => {
   try {
-    await Ingredient.findByIdAndUpdate(req.params.id, {
-      is_active: false,
-    });
+    await ingredientService.remove(req.params.id);
     res.json({ message: "Deleted successfully" });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+  } catch (error) {
+    handleError(res, error);
   }
 };
