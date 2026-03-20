@@ -32,7 +32,6 @@ db.mongoose
     process.exit();
   });
 
-// routes test
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to application." });
 });
@@ -54,12 +53,9 @@ require("./app/routes/dashboard.routes")(app);
 const http = require("http");
 const server = http.createServer(app);
 
-// gắn socket vào server
 const socketInit = require("./app/socket");
-
 const listSocket = socketInit(server);
 
-// 👉 lưu global để dùng ở controller
 global._io = listSocket;
 
 const PORT = process.env.PORT || 5000;
