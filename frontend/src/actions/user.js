@@ -39,3 +39,10 @@ export const setDisplayToast = (isToast) => {
     payload: isToast
   };
 };
+
+export const visibilityOrderedList = (isOrderedList) => {
+  return {
+    type: "VISIBILITY_ORDERED_LIST",
+    payload: isOrderedList
+  };
+};

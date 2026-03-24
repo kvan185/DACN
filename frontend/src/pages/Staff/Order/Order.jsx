@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import socketIOClient from "socket.io-client";
 import { Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-const host = import.meta.env.VITE_APP_HOST;
+const host = "http://localhost:3000";
 
 import './order.scss';
 import { statusOrder } from "../../../config/statusOrder.js";
@@ -11,21 +11,21 @@ function Order(props) {
     const [orderList, setOrderList] = useState([]);
     const [orderSocket, setOrderSocket] = useState([]);
     const socketRef = useRef();
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
     const user = JSON.parse(sessionStorage.getItem("user"));
 
     const fetchOrderList = async (accessToken) => {
         const response = await fetch('/api/order', {
-            method: 'get',
+            method: 'GET',
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             }
         });
         const data = await response.json();
-        if (data) setOrderList(data);
+        if(data) setOrderList(data);
     }
 
-    useEffect(() => {
+    useEffect(()=>{
         if (accessToken) fetchOrderList(accessToken);
         socketRef.current = socketIOClient.connect(host);
         socketRef.current.emit('adminConnect', user.id);
@@ -35,9 +35,9 @@ function Order(props) {
         });
     }, []);
 
-    useEffect(() => {
-        if (accessToken) fetchOrderList(accessToken);
-    }, [accessToken, orderSocket]);
+    useEffect(()=>{
+        if(accessToken) fetchOrderList(accessToken);
+    },[accessToken, orderSocket]);
 
     return (
         <section className="block-order">
@@ -62,16 +62,16 @@ function Order(props) {
                             orderList.map((orderData, index) => {
                                 const {
                                     id,
-                                    first_name,
-                                    last_name,
-                                    total_item,
+                                    first_name, 
+                                    last_name, 
+                                    total_item, 
                                     total_price,
                                     order_source,
                                     table_number,
                                     status
                                 } = orderData;
 
-                                return (
+                                return(
                                     <tr key={index}>
                                         <td>{index + 1}</td>
                                         <td>{id}</td>
@@ -88,17 +88,17 @@ function Order(props) {
                                             </span>
                                         </td>
                                         <td>
-                                            <span className={`status ${status === statusOrder.NEW ? 'status-new' :
-                                                status === statusOrder.CONFIRMED ? 'status-confirmed' :
-                                                    status === statusOrder.PROCESSING ? 'status-processing' :
-                                                        status === statusOrder.COMPLETED ? 'status-completed' : 'status-canceled'
-                                                }`}>
-                                                {
-                                                    status === statusOrder.NEW ? 'Đơn mới' :
-                                                        status === statusOrder.CONFIRMED ? 'Nhận đơn' :
-                                                            status === statusOrder.PROCESSING ? 'Đang chờ làm' :
-                                                                status === statusOrder.COMPLETED ? 'Hoàn thành' : 'Đã hủy'
-                                                }</span>
+                                            <span className={`status ${status === statusOrder.NEW ? 'status-new' : 
+                                                status === statusOrder.CONFIRMED ? 'status-confirmed' : 
+                                                status === statusOrder.PROCESSING ? 'status-processing' : 
+                                                status === statusOrder.COMPLETED ? 'status-completed' : 'status-canceled'
+                                            }`}>
+                                            { 
+                                                status === statusOrder.NEW ? 'Đơn mới' : 
+                                                status === statusOrder.CONFIRMED ? 'Nhận đơn' : 
+                                                status === statusOrder.PROCESSING ? 'Đang chờ làm' : 
+                                                status === statusOrder.COMPLETED ? 'Hoàn thành' : 'Đã hủy'
+                                            }</span>
                                         </td>
                                         <td>
                                             <Link to={`/staff/order/detail/${id}`}>

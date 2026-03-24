@@ -9,7 +9,7 @@ import "./profile.scss";
 function Profile() {
 
     const user = JSON.parse(sessionStorage.getItem("user"));
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
 
     const [userUpdate, setUserUpdate] = useState(user);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -62,7 +62,7 @@ function Profile() {
 
     return (
         <>
-            <ToastContainer position="top-right" autoClose={3000} />
+            <ToastContainer position="top-right" autoClose={1000} />
 
             <div className="staff-profile">
 

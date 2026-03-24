@@ -51,7 +51,7 @@ function Category(props) {
                         <tr>
                             <th>STT</th>
                             <th>Tên danh mục</th>
-                            <th>Hình ảnh</th>
+                            {/* <th>Hình ảnh</th> */}
                             <th>Trạng thái</th>
                             <th>Hành động</th>
                         </tr>
@@ -67,9 +67,9 @@ function Category(props) {
                                         <td>
                                             {name}
                                         </td>
-                                        <td>
+                                        {/* <td>
                                             <img src={`http://localhost:5000/static/images/${image}`} alt=""/>
-                                        </td>
+                                        </td> */}
                                         <td>
                                             <span className={`category-status ${is_active ? 'active' : 'inactive'}`}>{is_active ? 'active' : 'inactive'}</span>
                                         </td>

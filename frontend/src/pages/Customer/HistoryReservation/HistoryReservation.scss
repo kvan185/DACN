@@ -59,17 +59,20 @@
   margin-right: 50px;
 
     .reservation-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0px;
-  margin-top: 10px;
-  color: #28a745;
-  font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 10px;
+      font-weight: 600;
 
-  i {
-    font-size: 20px;
-  }
-}
+      &.confirmed { color: #28a745; }
+      &.in-use { color: #17a2b8; }
+      &.cancelled { color: #dc3545; }
+
+      i {
+        font-size: 20px;
+      }
+    }
 
 .btn-cancel {
   border: none;

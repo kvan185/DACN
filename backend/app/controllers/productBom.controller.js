@@ -38,15 +38,6 @@ exports.update = async (req, res) => {
   }
 };
 
-exports.getList = async (req, res) => {
-  try {
-    const data = await ProductBOM.find();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
 // Xóa 1 nguyên liệu khỏi món
 exports.remove = async (req, res) => {
   try {

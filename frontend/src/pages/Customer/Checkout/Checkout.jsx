@@ -1,14 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Form, Table } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer, toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import Cart from '../../../components/Customer/Cart/Cart';
 import PopupOrderSuccess from '../../../components/Customer/PopupOrderSuccess/PopupOrderSuccess';
 import { fetchGetCart } from '../../../actions/cart';
 import { setCartItems, setCartStore } from '../../../actions/user';
-import { fetchOrder, fetchPayment, fetchUpdateIsPayment } from '../../../actions/order';
+import { fetchOrder, fetchPayment, fetchUpdateIsPayment, fetchGuestOrder, fetchGuestPayment, fetchPayGuestOrdersByTable } from '../../../actions/order';
 import './checkout.scss';
 
 function Checkout(props) {
@@ -16,19 +16,32 @@ function Checkout(props) {
     const [showPopup, setShowPopup] = useState(false);
     const [orderSource, setOrderSource] = useState('online');
     const [tableNumber, setTableNumber] = useState(null);
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
     const cart = useSelector(state => state.user.cart);
-    const cartItems = useSelector(state => state.user.cartItems);
+    const allCartItems = useSelector(state => state.user.cartItems);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
 
-    useEffect(()=>{
-        if(accessToken){
-            const getItemsCart = async ()=>{
+    const selectedItemIds = location.state?.selectedItems || [];
+    const guestItemsFromState = location.state?.guestItems || [];
+    const isFullTablePayment = location.state?.isFullTablePayment || false;
+    const passedOrderSource = location.state?.orderSource;
+
+    const cartItems = isFullTablePayment
+        ? guestItemsFromState
+        : (allCartItems.filter(item => selectedItemIds.includes(item.id)));
+
+    const cartTotalPrice = cartItems.reduce((sum, item) => sum + item.total_price, 0);
+
+    useEffect(() => {
+        const savedOrderSource = localStorage.getItem('orderSource');
+        if (accessToken) {
+            const getItemsCart = async () => {
                 const response = await fetchGetCart(accessToken);
                 const data = await response.json();
-    
-                if(data){
+
+                if (data) {
                     const cartAction = setCartStore(data.cart);
                     const cartItemsAction = setCartItems(data.cartItems);
                     dispatch(cartAction);
@@ -36,50 +49,97 @@ function Checkout(props) {
                 }
             }
             getItemsCart();
+        } else if (savedOrderSource === 'table') {
+            const guestItems = JSON.parse(localStorage.getItem('guestCart')) || [];
+            dispatch(setCartItems(guestItems));
+            dispatch(setCartStore({
+                id: 'guest',
+                total_item: guestItems.reduce((sum, i) => sum + i.qty, 0),
+                total_price: guestItems.reduce((sum, i) => sum + i.total_price, 0)
+            }));
         }
-    }, []);
+    }, [accessToken]);
 
     useEffect(() => {
         // Khôi phục trạng thái orderSource và tableNumber
-        const savedOrderSource = localStorage.getItem('orderSource');
-        const savedTableNumber = localStorage.getItem('tableNumber');
-        
-        if (savedOrderSource) {
-            setOrderSource(savedOrderSource);
-            if (savedOrderSource === 'table' && savedTableNumber) {
-                setTableNumber(savedTableNumber);
+        if (passedOrderSource) {
+            setOrderSource(passedOrderSource);
+            if (passedOrderSource === 'table') {
+                const savedTableNumber = localStorage.getItem('tableNumber');
+                if (savedTableNumber) {
+                    setTableNumber(savedTableNumber);
+                }
+            }
+        } else {
+            const savedOrderSource = localStorage.getItem('orderSource');
+            const savedTableNumber = localStorage.getItem('tableNumber');
+
+            if (savedOrderSource) {
+                setOrderSource(savedOrderSource);
+                if (savedOrderSource === 'table' && savedTableNumber) {
+                    setTableNumber(savedTableNumber);
+                }
             }
         }
-    }, []);
+    }, [passedOrderSource]);
 
-    const handleSelectPayment = (event)=>{
+    const handleSelectPayment = (event) => {
         const paymentMethodValue = event.target.value;
         setPaymentMethod(paymentMethodValue);
     }
 
-    const handleOrder = async (event)=>{
-        event.preventDefault;
-        const cartId = cart.id;
-        
-        if(paymentMethod === '' || cartId === null){
+    const handleOrder = async (event) => {
+        event.preventDefault();
+        const cartId = cart ? cart.id : null;
+
+        if (paymentMethod === '') {
             toast.error('Vui lòng chọn phương thức thanh toán');
             return;
         }
-    
-        if(paymentMethod === 'cash'){
-            const data = await fetchOrder(cartId, orderSource, tableNumber);
 
-            if(data.success) {
+        if (!isFullTablePayment && cartId === null) {
+            toast.error('Gặp lỗi khi truy xuất giỏ hàng. Vui lòng thử lại!');
+            return;
+        }
+
+        if (cartItems.length === 0) {
+            toast.error('Không có sản phẩm nào được chọn để thanh toán');
+            return;
+        }
+
+        if (paymentMethod === 'cash') {
+            let data;
+            if (isFullTablePayment) {
+                data = await fetchPayGuestOrdersByTable(tableNumber);
+            } else if (accessToken) {
+                data = await fetchOrder(cartId, orderSource, tableNumber, selectedItemIds);
+            } else {
+                const guestItemsToOrder = allCartItems.filter(item => selectedItemIds.includes(item.id));
+                data = await fetchGuestOrder(guestItemsToOrder, tableNumber, orderSource);
+            }
+
+            if (data && data.success) {
                 if (orderSource === 'table') {
+                    localStorage.removeItem('guestCart');
                     localStorage.removeItem('tableNumber');
                     localStorage.removeItem('orderSource');
+                    localStorage.removeItem('guestHasOrdered');
+                }
+                if (isFullTablePayment) {
+                    return navigate(`/menu?table=${tableNumber}`, { state: { showPaymentSuccess: true } });
                 }
                 return setShowPopup(true);
             }
-        }else{
-            const data = await fetchPayment(cartId);
+        } else {
+            let data;
+            if (accessToken) {
+                data = await fetchPayment(cartId, selectedItemIds);
+            } else {
+                const guestItemsToOrder = isFullTablePayment ? guestItemsFromState : allCartItems.filter(item => selectedItemIds.includes(item.id));
+                data = await fetchGuestPayment(guestItemsToOrder, tableNumber, orderSource);
+            }
 
-            if(data && data.paymentUrl !== ''){
+            if (data && data.paymentUrl !== '') {
                 window.location.href = `${data.paymentUrl}`;
             }
         }
@@ -87,7 +147,7 @@ function Checkout(props) {
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
-        
+
         const myParam = urlParams.get('vnp_TransactionStatus');
         const orderInfo = urlParams.get('vnp_OrderInfo');
         var arrOId = '';
@@ -95,27 +155,37 @@ function Checkout(props) {
             arrOId = orderInfo.split(':');
         }
 
-        if(myParam === '00'){ 
+        if (myParam === '00') {
             fetchUpdateIsPayment(arrOId[1], true);
+
+            const savedOrderSource = localStorage.getItem('orderSource');
+            if (savedOrderSource === 'table') {
+                localStorage.removeItem('guestCart');
+                localStorage.removeItem('tableNumber');
+                localStorage.removeItem('orderSource');
+                localStorage.removeItem('guestHasOrdered');
+            }
+
             return setShowPopup(true);
         }
     }, []);
 
-    if(!accessToken){
+    if (!accessToken && orderSource !== 'table' && !isFullTablePayment) {
         navigate(`/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`);
     }
 
     return (
         <>
-            <ToastContainer 
+            <ToastContainer
                 position="top-right"
-                autoClose={3000}
-            /> 
+                autoClose={1000}
+            />
 
-            <Cart accessToken={accessToken}/>
-            <PopupOrderSuccess 
+            <Cart accessToken={accessToken} />
+            <PopupOrderSuccess
                 show={showPopup}
                 backdrop="static"
+                isPayment={isFullTablePayment}
             />
             <Container className='block-checkout'>
                 <div className="checkout-title">
@@ -138,8 +208,8 @@ function Checkout(props) {
                         </thead>
                         <tbody>
                             {
-                                cartItems.map((item, index)=>{
-                                    const {id, product_name, product_image, price, qty, total_price} = item;
+                                cartItems.map((item, index) => {
+                                    const { id, product_name, product_image, price, qty, total_price } = item;
                                     return (
                                         <tr key={index}>
                                             <td>
@@ -189,15 +259,15 @@ function Checkout(props) {
                         <div className="checkout-box">
                             <div className="box-group">
                                 <label>Tổng tiền hàng</label>
-                                <span>{cart && cart.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}</span>
+                                <span>{cartTotalPrice.toLocaleString('vi', { style: 'currency', currency: 'VND' })}</span>
                             </div>
                             <hr />
                             <div className="box-group">
                                 <label className='title-order'>Số tiền thanh toán</label>
-                                <span className='price-order'>{cart && cart.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}</span>
+                                <span className='price-order'>{cartTotalPrice.toLocaleString('vi', { style: 'currency', currency: 'VND' })}</span>
                             </div>
 
-                            <button onClick={handleOrder} className='btn-checkout'>Đặt hàng</button>
+                            <button onClick={handleOrder} className='btn-checkout'>{orderSource === 'table' ? 'Thanh toán' : 'Đặt hàng'}</button>
                         </div>
                     </div>
                 </div>

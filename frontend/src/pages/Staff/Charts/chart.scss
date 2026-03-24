@@ -1,60 +1,128 @@
-@use '../../../scss/' as *;
+.revenue-page {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 80px);
 
-.chart {
-    background-color: #F6F7FD;
-    &-box {
-        margin-top: 48px;
-        padding: 30px;
-        border-radius: 10px;
-        background-color: #FFFFFF;
-
-        canvas{
-            height: 560px;
-        }
-    }
-
-    .btn-export{
-        background: $yellow-color;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
-        border-radius: 10px;
-        color: $white-color;
-        border: none;
-        margin-bottom: 20px;
-    }
-
-    &-time{
+    .revenue-container {
+        max-width: 1200px;
+        margin: 0 auto;
         display: flex;
-        justify-content: space-between;
-        margin-bottom: 45px;
+        flex-direction: column;
+        gap: 25px;
+    }
 
-        &__group{
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+    .filter-box, .stats-section, .chart-section {
+        background: #ffffff;
+        padding: 24px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
 
-            span{
+    h5 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+        border-left: 4px solid #1ac073;
+        padding-left: 12px;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        align-items: flex-end;
+
+        .form-group {
+            margin-bottom: 0;
+            
+            label {
                 font-weight: 500;
-                font-size: 16px;
-                line-height: 150%;
-                margin-right: 10px;
+                color: #64748b;
+                margin-bottom: 8px;
+                font-size: 0.9rem;
             }
 
-            input, select{
-                width: 180px;
-            }
-
-            .form-group{
-                display: flex;
-                align-items: center;
-            }
-
-            .btn-revenue{
-                background: $green-color;
-                box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
-                border-radius: 10px;
-                color: $white-color;
-                border: none;
+            .form-control, .form-select {
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 10px 12px;
+                
+                &:focus {
+                    border-color: #1ac073;
+                    box-shadow: 0 0 0 3px rgba(26, 192, 115, 0.1);
+                }
             }
         }
+
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+
+            .btn {
+                flex: 1;
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-weight: 500;
+            }
+
+            .btn-revenue {
+                background: #1ac073;
+                color: white;
+                border: none;
+                
+                &:hover {
+                    background: #15a361;
+                }
+            }
+
+            .btn-export {
+                background: #f1f5f9;
+                color: #475569;
+                border: 1px solid #e2e8f0;
+
+                &:hover {
+                    background: #e2e8f0;
+                }
+            }
+        }
+    }
+
+    .table-revenue {
+        margin-bottom: 0;
+        
+        thead th {
+            border-top: none;
+            background: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            padding: 15px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        tbody td {
+            padding: 20px 15px;
+            font-size: 1.1rem;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .font-weight-bold {
+            font-weight: 700;
+        }
+    }
+
+    .chart-container {
+        width: 100%;
+        height: 400px;
+        position: relative;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
     }
 }

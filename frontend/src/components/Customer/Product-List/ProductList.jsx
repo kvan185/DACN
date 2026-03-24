@@ -8,12 +8,12 @@ import './productList.scss';
 function ProductList(props) {
     const [products, setProducts] = useState([]);
     const categoryId = useSelector(state => state.user.categoryId);
-        
+
     const fetchProducts = async () =>{
         if(categoryId){
             const response = await fetch(`/api/product/category/${categoryId}`);
             const data = await response.json();
-            
+    
             if (data.length > 0) {
                 setProducts(data);
             }else{
@@ -21,11 +21,11 @@ function ProductList(props) {
             }
         }
     }
-    
+
     useEffect(()=>{
         fetchProducts();
     },[categoryId]);
-    
+
     return (
         <div className='product-list'>
             <Row>

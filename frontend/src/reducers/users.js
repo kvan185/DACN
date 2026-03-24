@@ -1,6 +1,7 @@
 const initialState = {
     user:{},
     isCart: false,
+    isOrderedList: false,
     categoryId: '', 
     cart: null,
     cartItems: [],
@@ -13,6 +14,8 @@ const userReducer = (state = initialState, action) =>{
             return {...state, user: action.payload}
         case "VISIBILITY_CART":
             return {...state, isCart: action.payload}
+        case "VISIBILITY_ORDERED_LIST":
+            return {...state, isOrderedList: action.payload}
         case "GET_CATEGORY_ID":
             return {...state, categoryId: action.payload}
         case "SET_CART":

@@ -3,42 +3,47 @@
 .block__search{
     padding: 80px 0 120px;
 
-    .search__form{
-        margin-bottom: 40px;
+  .search__form{
+    margin-bottom: 40px;
 
-        form{
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    form{
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
 
-        input {
-            width: 398px;
-            height: 58px;
-            background: #FFFFFF;
-            border-radius: 10px 0 0 10px;
-            padding: 20px;
-            border: 1px solid $black-color;
-        }
+    input {
+        width: 420px;
+        height: 50px;
+        background: #fff;
+        padding: 0 20px;
+        border: 1px solid $color-text-secondary;
+        border-radius: 50px;
+        outline: none;
+        transition: all 0.2s ease;
 
-        button {
-            font-weight: 400;
-            font-size: 16px;
-            line-height: 20px;
-            letter-spacing: -0.012em;
-            height: 58px;
-            text-align: center;
-    
-            width: 125px;
-            line-height: 58px;
-            margin-left: -10px;
-            color: #FFFFFF;
-            background: #F3BA00;
-            border-radius: 0px 10px 10px 0px;
-            border: none;
+        &:focus{
+            border-color: #F3BA00;
+            box-shadow: 0 0 0 2px rgba(243,186,0,0.15);
         }
     }
 
+    button {
+        height: 50px;
+        width: 130px;
+        background: #F3BA00;
+        color: #fff;
+        border: 1px solid #F3BA00;
+        border-radius: 40px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover{
+            background: #e0a800;
+        }
+    }
+}
     .search__product{
         &-quantity{
             font-size: 18px;

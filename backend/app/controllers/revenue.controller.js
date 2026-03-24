@@ -14,6 +14,9 @@ exports.calcu = async (req, res) => {
 
         const arrayDate = await ConvertHelper.getArrayDate(startDate, endDate, typeRevenue);
 
+        let totalRevenueSum = 0;
+        let totalOrdersCount = 0;
+
         if (typeRevenue === "Date") {
             for (let i = 0; i < arrayDate.length; i++) {
                 const startDate = new Date(arrayDate[i]);
@@ -32,6 +35,8 @@ exports.calcu = async (req, res) => {
                 for (const order of orders) {
                     totalRevenue += order.total_price;
                 }
+                totalRevenueSum += totalRevenue;
+                totalOrdersCount += orders.length;
 
                 result.push([arrayDate[i], totalRevenue]);
             }
@@ -53,6 +58,8 @@ exports.calcu = async (req, res) => {
                 for (const order of orders) {
                     totalRevenue += order.total_price;
                 }
+                totalRevenueSum += totalRevenue;
+                totalOrdersCount += orders.length;
 
                 result.push([arrayDate[i], totalRevenue]);
             }
@@ -74,11 +81,20 @@ exports.calcu = async (req, res) => {
                 for (const order of orders) {
                     totalRevenue += order.total_price;
                 }
+                totalRevenueSum += totalRevenue;
+                totalOrdersCount += orders.length;
 
                 result.push([arrayDate[i], totalRevenue]);
             }
         }
-        res.status(200).send({ typeRevenue, result });
+
+        const summary = {
+            totalRevenue: totalRevenueSum,
+            totalOrders: totalOrdersCount,
+            avgOrderValue: totalOrdersCount > 0 ? Math.round(totalRevenueSum / totalOrdersCount) : 0
+        };
+
+        res.status(200).send({ typeRevenue, result, summary });
     } catch (error) {
         return res.status(500).json({ error: "Internal server error" });
     }

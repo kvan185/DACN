@@ -32,6 +32,7 @@ function Charts(props) {
     const [timerRequest, setTimerRequest] = useState({startDate: '', endDate: '', typeRevenue: ''});
     const [timer, setTimer] = useState([]);
     const [totalRevenue, setTotalRevenue] = useState([]);
+    const [summary, setSummary] = useState(null);
 
     const data = {
         labels: timer || [],
@@ -39,20 +40,50 @@ function Charts(props) {
             {
                 label: 'Doanh thu',
                 data: totalRevenue || [],
-                backgroundColor: 'rgba(26, 192, 115, 1)',
-                borderWidth: .5,
-                type: 'bar'
+                backgroundColor: 'rgba(26, 192, 115, 0.6)',
+                borderColor: 'rgba(26, 192, 115, 1)',
+                borderWidth: 1,
+                type: 'bar',
+                yAxisID: 'y',
             },
             {
-                label: 'Line',
+                label: 'Xu hướng',
                 fill: false,
                 data: totalRevenue || [],
                 backgroundColor: 'rgba(251, 140, 9, 1)',
                 borderColor: 'rgba(251, 140, 9, 1)',
-                borderWidth: 2,
-                type: 'line'
+                borderWidth: 3,
+                pointRadius: 4,
+                type: 'line',
+                yAxisID: 'y',
             },
         ],
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+            },
+        },
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Doanh thu (đ)'
+                }
+            },
+        },
     };
     
     const fetchStatistical = async(event)=>{
@@ -65,17 +96,17 @@ function Charts(props) {
             },
             body: JSON.stringify({ startDate: timerRequest.startDate, endDate: timerRequest.endDate, typeRevenue: timerRequest.typeRevenue })
         })
-        const revenue = await response.json();
+        const data = await response.json();
 
-        if(revenue && revenue.result.length > 0){
-
-            const timerNew = revenue.result.map((item) => {
+        if(data && data.result.length > 0){
+            const timerNew = data.result.map((item) => {
                 let timeUnit;
-                if(revenue.typeRevenue === 'Date'){
+                if(data.typeRevenue === 'Date'){
                     timeUnit = new Date(item[0]).getDate();
-                    return 'Ngày ' + timeUnit;
-                } else if(revenue.typeRevenue === 'Month') {
-                    timeUnit = new Date(item[0]).getMonth();
+                    const month = new Date(item[0]).getMonth() + 1;
+                    return `${timeUnit}/${month}`;
+                } else if(data.typeRevenue === 'Month') {
+                    timeUnit = new Date(item[0]).getMonth() + 1;
                     return 'Tháng ' + timeUnit;
                 } else {
                     timeUnit = new Date(item[0]).getFullYear();
@@ -84,22 +115,11 @@ function Charts(props) {
             });
             setTimer(timerNew);
 
-            const totalRevenueNew = revenue.result.map((item) => item[1]);
+            const totalRevenueNew = data.result.map((item) => item[1]);
             setTotalRevenue(totalRevenueNew);
+            setSummary(data.summary);
         }
     }
-
-    // const fetchExportFile = async () => {
-    //     const response = await fetch('/api/revenue/exportCSV',{
-    //         method: 'post',
-    //         headers: {
-    //             'Content-Type': 'application/json'
-    //         },
-    //         body: JSON.stringify({ startDate: timerRequest.startDate, endDate: timerRequest.endDate })
-    //     });
-    //     const exportFile = await response.json();
-    //     console.log(exportFile);
-    // }
     const fetchExportFile = async () => {      
         try {
           const response = await fetch('/api/revenue/exportCSV', {
@@ -112,11 +132,9 @@ function Charts(props) {
       
           if (response.ok) {
             const blob = await response.blob();
-            console.log(blob);
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            console.log(url);
             a.download = 'export.csv';
             a.click();
             URL.revokeObjectURL(url);
@@ -128,30 +146,17 @@ function Charts(props) {
         }
       };
 
-    // const options = {
-    //     responsive: true,
-    //     plugins: {
-    //         legend: {
-    //             position: 'bottom',
-    //         },
-    //         title: {
-    //             display: true,
-    //             text: 'Doanh thus',
-    //         },
-    //     },
-    // };
-
     return (
         <>
-            <div className='chart'>
-                <h3 className="title-admin">Thống kê doanh thu</h3>
+            <div className='revenue-page'>
+                <h3 className="title-admin">Quản lý doanh thu</h3>
 
-                <div className='chart-box'>
-                    <form onSubmit={(event)=>fetchStatistical(event)}>
-                        <div className='chart-time'>
-                            <div className='chart-time__group'>
+                <div className='revenue-container'>
+                    <div className='filter-box'>
+                        <form onSubmit={(event)=>fetchStatistical(event)}>
+                            <div className='filter-grid'>
                                 <Form.Group className='form-group'>
-                                    <span>Thời gian bắt đầu: </span>
+                                    <Form.Label>Từ ngày</Form.Label>
                                     <Form.Control onChange={(event)=>setTimerRequest({...timerRequest, startDate: event.target.value})} 
                                         type="date" name='startDate' 
                                         required
@@ -159,30 +164,61 @@ function Charts(props) {
                                 </Form.Group>
 
                                 <Form.Group className='form-group'>
-                                    <span>Thời gian kết thúc: </span>
+                                    <Form.Label>Đến ngày</Form.Label>
                                     <Form.Control onChange={(event)=>setTimerRequest({...timerRequest, endDate: event.target.value})} 
                                         type="date" name='endDate' required
                                     />
                                 </Form.Group>
-                            </div>
 
-                            <div className='chart-time__group'>
                                 <Form.Group className='form-group'>
-                                    <span>Loại thời gian: </span>
+                                    <Form.Label>Loại thống kê</Form.Label>
                                     <Form.Select onChange={(event)=>setTimerRequest({...timerRequest, typeRevenue: event.target.value})} 
                                         name="typeTime" required>
-                                        <option value="">Chọn thời gian</option>
-                                        <option value="Date">Ngày</option>
-                                        <option value="Month">Tháng</option>
-                                        <option value="Year">Năm</option>
+                                        <option value="">Chọn loại</option>
+                                        <option value="Date">Theo ngày</option>
+                                        <option value="Month">Theo tháng</option>
+                                        <option value="Year">Theo năm</option>
                                     </Form.Select>
                                 </Form.Group>
-                                <button className='btn btn-revenue'>Thống kê</button>
+                                
+                                <div className='filter-actions'>
+                                    <button className='btn btn-revenue'>Thống kê</button>
+                                    <button type="button" className='btn btn-export' onClick={fetchExportFile}>Xuất Excel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    {summary && (
+                        <div className='stats-section'>
+                            <h5>Thống kê số liệu</h5>
+                            <div className='table-responsive'>
+                                <table className='table table-revenue'>
+                                    <thead>
+                                        <tr>
+                                            <th>Tổng doanh thu</th>
+                                            <th>Tổng đơn hàng</th>
+                                            <th>Giá trị trung bình/đơn</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td className='text-success font-weight-bold'>{summary.totalRevenue.toLocaleString()} đ</td>
+                                            <td>{summary.totalOrders} đơn</td>
+                                            <td>{summary.avgOrderValue.toLocaleString()} đ</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                    </form>
-                    <button className='btn btn-export' onClick={fetchExportFile}>Xuất file</button>
-                    <Chart type='bar' data={data} />
+                    )}
+
+                    <div className='chart-section'>
+                        <h5>Biến động doanh thu</h5>
+                        <div className='chart-container'>
+                            <Chart type='bar' data={data} options={options} height={350} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </>

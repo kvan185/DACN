@@ -8,8 +8,7 @@ import './search.scss';
 
 function Search(props) {
     const location = useLocation();
-    let key = location && location.search.substring(5);
-    const [productSearch, setProductSearch] = useState([]);
+    let key = new URLSearchParams(location.search).get('key') || '';    const [productSearch, setProductSearch] = useState([]);
     const [keyWords, setKeyWords] = useState('');
 
     const fetchSearch = async ()=>{
@@ -28,8 +27,10 @@ function Search(props) {
     }
 
     useEffect(()=>{
-        fetchSearch();
-    },[]);
+        if(key){
+            fetchSearch();
+        }
+    },[key]);
 
     return (
         <div className='block__search container'>
@@ -42,7 +43,7 @@ function Search(props) {
             {
                 productSearch && productSearch.length > 0  ? (
                     <div className="search__product">
-                        { productSearch.length > 0 && <span className='search__product-quantity'>Tìm thấy {productSearch.length} món ăn phù hợp</span> }
+                        { productSearch.length > 0 && <span className='search__product-quantity'> Tìm thấy {productSearch.length} món ăn phù hợp với "{key}"</span> }
 
                         <div className="search__product-list">
                             <Row>
@@ -55,9 +56,7 @@ function Search(props) {
                 )
                 :
                 (
-                    <div className='search__no'>
-                        <span>Rất tiếc, không có món ăn nào phù hợp với tìm kiếm của Quý khách!</span>
-                        <img src={contactImg} alt="" />
+                    <div className='search__no'> <span>Rất tiếc, không có món ăn nào phù hợp với "{key}"</span>                        <img src={contactImg} alt="" />
                     </div>
                 )
             }

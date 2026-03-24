@@ -3,40 +3,84 @@ import { Container, Row, Col } from "react-bootstrap";
 import moment from "moment";
 import "./HistoryReservation.scss";
 import Cart from "../../../components/Customer/Cart/Cart";
+import socketIOClient from 'socket.io-client';
 
 function ReservationHistory() {
+  const [reservations, setReservations] = useState([]);
+  const accessToken = sessionStorage.getItem('accessToken');
+  useEffect(() => {
+    if (!accessToken) return;
+    const fetchReservations = async () => {
+      try {
+        const res = await fetch(
+          "http://localhost:5000/api/reservations/history",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          }
+        );
+        const data = await res.json();
 
-    const [reservations, setReservations] = useState([]);
-    const API_URL = "http://localhost:5000/api/reservations/history";
-const accessToken = sessionStorage.getItem("accessToken")
-  ? JSON.parse(sessionStorage.getItem("accessToken"))
-  : null;
-  
-useEffect(() => {
-
-  if (!accessToken) return;
-
-  const fetchReservations = async () => {
-    try {
-
-      const res = await fetch(API_URL, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`
+        if (!res.ok) {
+          throw new Error(data.message);
         }
+
+        const sortedData = data.sort((a, b) => new Date(a.reservationTime) - new Date(b.reservationTime));
+        setReservations(sortedData);
+
+      } catch (error) {
+        console.error("Lỗi khi lấy lịch sử đặt bàn:", error);
+      }
+    };
+
+    if (accessToken) {
+      fetchReservations();
+      const socket = socketIOClient('http://localhost:5000');
+
+      socket.on('tableUpdated', () => {
+        fetchReservations();
       });
 
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [accessToken]);
+
+  const handleCancelReservation = async (reservationId) => {
+    const isConfirm = window.confirm("Bạn có chắc chắn muốn hủy đặt bàn này không?");
+    if (!isConfirm) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/reservations/${reservationId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+
       const data = await res.json();
-      setReservations(data);
+
+      if (!res.ok) {
+        throw new Error(data.message);
+      }
+
+      alert("Hủy bàn thành công");
+
+      setReservations(prev =>
+        prev.map(r => r._id === reservationId ? { ...r, status: "Đã hủy" } : r)
+      );
 
     } catch (error) {
-      console.error("Lỗi khi lấy lịch sử đặt bàn:", error);}
+      console.error("Lỗi khi hủy bàn:", error);
+      alert(error.message || "Có lỗi xảy ra khi hủy bàn");
+    }
   };
-
-  fetchReservations();
-
-}, [accessToken]);
 
   return (
     <>
@@ -48,6 +92,10 @@ useEffect(() => {
           <h2>Lịch sử đặt bàn</h2>
 
           <div className="reservation-list">
+
+            {reservations.length === 0 && (
+              <p>Không có lịch sử đặt bàn</p>
+            )}
 
             {reservations.map((items) => {
 
@@ -66,8 +114,8 @@ useEffect(() => {
 
               return (
                 <div className="reservation-item" key={_id}>
-                  <div className="reservation-head">
 
+                  <div className="reservation-head">
                     <label>
                       Mã xác nhận: <span>#{confirmationCode}</span>
                     </label>
@@ -78,7 +126,6 @@ useEffect(() => {
                         {moment(createdAt).format("DD-MM-YYYY HH:mm")}
                       </span>
                     </label>
-
                   </div>
 
                   <div className="info">
@@ -138,13 +185,25 @@ useEffect(() => {
 
                   <div className="reservation-footer">
 
-                    <span className="reservation-status confirmed">
-                      <i className="fa-solid fa-check"></i> {status}
+                    <span className={`reservation-status ${status === "Đã hủy" ? "cancelled" : status === "Đang sử dụng" ? "in-use" : "confirmed"}`}>
+                      {status === "Đã hủy" ? (
+                        <i className="fa-solid fa-times-circle"></i>
+                      ) : status === "Đang sử dụng" ? (
+                        <i className="fa-solid fa-utensils"></i>
+                      ) : (
+                        <i className="fa-solid fa-check-circle"></i>
+                      )}
+                      <span>{status}</span>
                     </span>
 
-                    <button className="btn-cancel">
-                      Hủy bàn
-                    </button>
+                    {status === "Đã đặt" && (
+                      <button
+                        className="btn-cancel"
+                        onClick={() => handleCancelReservation(_id)}
+                      >
+                        Hủy bàn
+                      </button>
+                    )}
 
                   </div>
 

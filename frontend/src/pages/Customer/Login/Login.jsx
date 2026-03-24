@@ -62,7 +62,9 @@ function Login() {
             const data = await response.json();
             if(response.ok){
                 setAccessToken(data.accessToken);
-                sessionStorage.setItem('accessToken', JSON.stringify(data.accessToken));
+             sessionStorage.removeItem("accessToken");
+             sessionStorage.setItem("accessToken", data.accessToken);
+            //  sessionStorage.setItem('accessToken', JSON.stringify(data.accessToken));
             }else{
                 toast.error('Đăng nhập thất bại');
             }
@@ -75,7 +77,7 @@ function Login() {
         <>
             <ToastContainer 
                 position="top-right"
-                autoClose={3000}
+                autoClose={1000}
             />
             <Container className='block-login'>
                 <h2>Đăng nhập</h2>

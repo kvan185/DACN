@@ -1,37 +1,45 @@
-import { Toast } from "react-bootstrap";
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; 
-import { useDispatch } from 'react-redux';
 import { Row } from 'react-bootstrap';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { setCartStore, setCartItems, setDisplayToast } from '../../../actions/user';
 import Cart from '../../../components/Customer/Cart/Cart';
 import ProductCard from '../../../components/Customer/Product-Card/ProductCard';
 import { fetchAddProductToCart, fetchGetCart } from '../../../actions/cart';
-import {setCartStore, setCartItems} from '../../../actions/user';
-import './detail.scss';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";import './detail.scss';
 import "swiper/css";
 import "swiper/css/navigation";
-
+//
 function Detail(props) {
     const [productItem, setProductItem] = useState(null);
     const [categoryID, setCategoryID] = useState(null);
     const [productRelated, setProductRelated] = useState([]);
     const [inputValue, setInputValue] = useState(1);
-    const [showToast, setShowToast] = useState(false);
-
+    const dispatch = useDispatch();
+    const isToast = useSelector(state => state.user.isToast);
+    
     useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
+    if (isToast) {
+        toast.success("Đã thêm vào giỏ hàng", {
+            position: "top-right",
+            autoClose: 1000,
+        });
+
+        dispatch(setDisplayToast(false));
+    }
+    }, [isToast, dispatch]);
+
+    
     const API_URL = import.meta.env.VITE_API_URL;
     const imageSrc = productItem?.image_url
         ? `${API_URL}${productItem.image_url}`
         : '/images/no-image.png';
-    const dispatch = useDispatch();
     const inputRef =useRef();
     let { id } = useParams();
     const navigate = useNavigate();
     const user = JSON.parse(sessionStorage.getItem("user"));
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
 
     const fetchProductDetail = async()=>{
         const response = await fetch(`/api/product/${id}`);
@@ -46,6 +54,7 @@ function Detail(props) {
         }
     }
 
+
     const fetchProductRelated = async () =>{
         const response = await fetch(`/api/product/category/${categoryID}`);
         const products = await response.json();
@@ -53,10 +62,18 @@ function Detail(props) {
         if(products) setProductRelated(products);
         return;
     }
+    
+    useEffect(() => {
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+    }, [id]);
 
     useEffect(() => {
         if (id) {
             fetchProductDetail();
+            setInputValue(1);
         }
     }, [id]);
 
@@ -84,12 +101,16 @@ function Detail(props) {
             const response = await fetchGetCart(accessToken);
             const data = await response.json();
 
-            if(data){
+            if(data && data.cart){
                 const cartAction = setCartStore(data.cart);
                 const cartItemsAction = setCartItems(data.cartItems);
                 dispatch(cartAction);
                 dispatch(cartItemsAction);
-                setShowToast(true);
+                dispatch(setDisplayToast(true));
+            } else {
+                sessionStorage.removeItem("accessToken");
+                sessionStorage.removeItem("user");
+                navigate('/login');
             }
 
         }else{
@@ -120,7 +141,7 @@ function Detail(props) {
                 <div className='product-details container'>
                     <div className='product-details__nav'>
                         <button className='product-details__back' onClick={() => navigate('/')}>
-                            {/* ← Trang chủ */}
+                             {/* ← Trang chủ  */}
                             </button>
                     </div>
                     <div className='product-details__head'>
@@ -181,22 +202,6 @@ function Detail(props) {
                     </div>
                 </div>
             </div>
-
-            <Toast
-                show={showToast}
-                onClose={() => setShowToast(false)}
-                delay={2000}
-                autohide
-                style={{
-                    position: "fixed",
-                    top: 20,
-                    right: 20,
-                    zIndex: 9999
-                }}
-            >
-                <Toast.Body>Đã thêm vào giỏ hàng</Toast.Body>
-            </Toast>
-
         </>
     );
 }

@@ -1,7 +1,6 @@
 @use '../../../scss/' as *;
 
 .table-management {
-    padding: 24px;
 
     &__header {
         display: flex;
@@ -41,6 +40,31 @@
                 font-weight: 600;
                 padding: 16px;
                 border-bottom: 2px solid #e2e8f0;
+
+                &:nth-child(1) {
+                    width: 100px;
+                    text-align: center;
+                }
+
+                &:nth-child(2) {
+                    width: 200px;
+                    text-align: center;
+                }
+
+                &:nth-child(3) {
+                    width: 150px;
+                    text-align: center;
+                }
+
+                &:nth-child(4) {
+                    width: 400px;
+                    text-align: right;
+                }
+
+                &:nth-child(5) {
+                    width: auto;
+                    min-width: 300px;
+                }
             }
         }
 
@@ -55,6 +79,31 @@
                     vertical-align: middle;
                     color: #4a5568;
 
+                    &:nth-child(1) {
+                        width: 100px;
+                        text-align: center;
+                    }
+
+                    &:nth-child(2) {
+                        width: 200px;
+                        text-align: center;
+                    }
+
+                    &:nth-child(3) {
+                        width: 150px;
+                        text-align: center;
+                    }
+
+                    &:nth-child(4) {
+                        width: 400px;
+                        white-space: nowrap;
+                    }
+
+                    &:nth-child(5) {
+                        width: auto;
+                        min-width: 300px;
+                    }
+
                     .table-status {
                         display: inline-block;
                         padding: 6px 12px;
@@ -63,22 +112,22 @@
                         font-weight: 500;
                         text-align: center;
                         min-width: 100px;
-                        
+
                         &.bg-success {
                             background-color: $color-success !important;
                             color: $color-text-light;
                         }
-                        
+
                         &.bg-danger {
                             background-color: $color-error !important;
                             color: $color-text-light;
                         }
-                        
+
                         &.bg-warning {
                             background-color: $color-warning !important;
                             color: $color-text-primary !important;
                         }
-                        
+
                         &.bg-secondary {
                             background-color: $color-text-secondary !important;
                             color: $color-text-light;
@@ -89,11 +138,11 @@
                         padding: 6px 12px;
                         font-size: 14px;
                         border-radius: 6px;
-                        
+
                         &-info {
                             background-color: #4299e1;
                             border-color: #4299e1;
-                            
+
                             &:hover {
                                 background-color: #3182ce;
                             }
@@ -102,7 +151,7 @@
                         &-primary {
                             background-color: #4a5568;
                             border-color: #4a5568;
-                            
+
                             &:hover {
                                 background-color: #2d3748;
                             }
@@ -111,7 +160,7 @@
                         &-success {
                             background-color: #48bb78;
                             border-color: #48bb78;
-                            
+
                             &:hover {
                                 background-color: #38a169;
                             }
@@ -150,7 +199,8 @@
             color: #4a5568;
         }
 
-        .form-control, .form-select {
+        .form-control,
+        .form-select {
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             padding: 10px 12px;
@@ -162,11 +212,13 @@
         }
 
         .table-details {
-            .info-section, .reservation-section {
+
+            .info-section,
+            .reservation-section {
                 background-color: #f8fafc;
                 padding: 16px;
                 border-radius: 8px;
-                margin-bottom: 16px;
+                // margin-bottom: 16px;
 
                 h5 {
                     color: #2d3748;
@@ -187,12 +239,14 @@
 
             .qr-section {
                 text-align: center;
+                margin-bottom: 16px;
 
                 h5 {
                     color: #2d3748;
                     font-size: 16px;
                     font-weight: 600;
                     margin-bottom: 16px;
+                    margin-top: 10px;
                 }
             }
         }
@@ -216,7 +270,7 @@
             background-color: #fef3c7;
             color: #92400e;
             border: none;
-            
+
             &:hover {
                 background-color: #fde68a;
                 color: #92400e;
@@ -227,7 +281,7 @@
             background-color: #dcfce7;
             color: #166534;
             border: none;
-            
+
             &:hover {
                 background-color: #bbf7d0;
                 color: #166534;
@@ -301,4 +355,93 @@
 td .badge:hover {
     transform: scale(1.05);
     transition: transform 0.2s ease;
+}
+
+.date-text {
+    margin-right: 16px;
+    font-weight: 500;
+    font-size: 15px;
+    color: #3c7543;
+    margin-left: auto;
+}
+
+.reservation-schedule {
+    background-color: #f8fafc;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+
+    h5 {
+        color: #2d3748;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .schedule-list-wrapper {
+        max-height: 250px;
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        background: white;
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+
+            th {
+                background-color: #f1f5f9;
+                color: #475569;
+                font-weight: 600;
+                padding: 10px;
+                text-align: left;
+                position: sticky;
+                top: 0;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            td {
+                padding: 10px;
+                border-bottom: 1px solid #f1f5f9;
+                color: #64748b;
+            }
+
+            tr.current-res {
+                background-color: #f0fdf4;
+
+                td {
+                    color: #166534;
+                    font-weight: 500;
+                }
+            }
+        }
+    }
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+
+    &.status-đã-đặt {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    &.status-đang-sử-dụng {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    &.status-hoàn-thành {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+
+    &.status-đã-hủy {
+        background-color: #f1f5f9;
+        color: #475569;
+    }
 }

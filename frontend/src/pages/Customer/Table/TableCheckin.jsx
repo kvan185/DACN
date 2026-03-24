@@ -50,7 +50,7 @@ const TableCheckin = () => {
     e.preventDefault();
     
     // Kiểm tra xác thực
-    const accessToken = JSON.parse(sessionStorage.getItem('accessToken'));
+    const accessToken = sessionStorage.getItem("accessToken");
     if (!accessToken) {
         navigate(`/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`);
         return;
@@ -105,7 +105,7 @@ const TableCheckin = () => {
     <>
       <ToastContainer
         position="top-right"
-        autoClose={3000}
+        autoClose={1500}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick

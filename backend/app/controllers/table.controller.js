@@ -89,10 +89,78 @@ exports.deleteTable = async (req, res) => {
   }
 };
 
+exports.getTablesListInternal = async () => {
+  const tables = await Table.find().sort({ tableNumber: 1 });
+
+  // Tìm các lịch đặt bàn của ngày hôm nay
+  const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+  const localISO = new Date(Date.now() - tzoffset).toISOString().split('T')[0];
+  const todayDateQuery = new Date(localISO + "T00:00:00.000Z");
+
+  const now = new Date();
+  const expiryLimit = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+
+  // Tự động hủy các đơn đặt bàn quá 3 tiếng
+  await db.reservation.updateMany(
+    {
+      use_date: todayDateQuery,
+      status: 'Đã đặt',
+      reservationTime: { $lt: expiryLimit }
+    },
+    { status: 'Đã hủy' }
+  );
+
+  const todayReservations = await db.reservation.find({
+    use_date: todayDateQuery,
+    status: { $nin: ['Đã hủy', 'Hoàn thành'] }
+  });
+
+  const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+
+  return tables.map(table => {
+    const t = table.toObject();
+    t.note = ""; // Khởi tạo ghi chú trống
+
+    // Tìm reservation của bàn này trong hôm nay (không bao gồm 'Đã hủy', 'Hoàn thành')
+    const res = todayReservations.find(r => r.tableId.toString() === t._id.toString());
+
+    if (res) {
+      const resTime = new Date(res.reservationTime);
+      const diffMs = resTime - now;
+      const diffMinutes = Math.floor(diffMs / 60000);
+
+        if (resTime <= oneHourFromNow) {
+          // Trong khoảng 1 tiếng trước giờ đặt
+          if (t.status === 'Đang sử dụng') {
+            t.note = ""; // Xóa ghi chú khi nhân viên đã xác nhận sử dụng
+          } else {
+            // Nếu không đang sử dụng, bàn chuyển sang 'Đã đặt' để giữ chỗ
+            t.status = 'Đã đặt';
+            t.isAvailable = false;
+            t.note = "Bàn đang giữ chỗ";
+          }
+        } else {
+        // Ngoài khoảng 1 tiếng, nếu không đang sử dụng thì là Trống
+        if (t.status !== 'Đang sử dụng') {
+          t.status = 'Trống';
+          t.isAvailable = true;
+        }
+      }
+    } else {
+      // Không có reservation, nếu không đang sử dụng thì là Trống
+      if (t.status !== 'Đang sử dụng') {
+        t.status = 'Trống';
+        t.isAvailable = true;
+      }
+    }
+    return t;
+  });
+};
+
 exports.getAllTables = async (req, res) => {
   try {
-    const tables = await Table.find().sort({ tableNumber: 1 });
-    res.json(tables);
+    const result = await exports.getTablesListInternal();
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Lỗi khi lấy tất cả bàn.' });
@@ -102,6 +170,35 @@ exports.getAllTables = async (req, res) => {
 exports.startUsingTable = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Cập nhật trạng thái reservation nếu có cho ngày hôm nay
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+    const localISO = new Date(Date.now() - tzoffset).toISOString().split('T')[0];
+    const todayDateQuery = new Date(localISO + "T00:00:00.000Z");
+    const now = new Date();
+    const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+
+    const reservation = await db.reservation.findOne({
+      tableId: id,
+      use_date: todayDateQuery,
+      status: 'Đã đặt',
+      reservationTime: { $lte: oneHourFromNow }
+    });
+
+    if (reservation) {
+      const now = new Date();
+      const expiryTime = new Date(reservation.reservationTime.getTime() + 3 * 60 * 60 * 1000);
+
+      if (now > expiryTime) {
+        reservation.status = 'Đã hủy';
+        await reservation.save();
+        return res.status(400).json({ message: 'Đã quá thời gian nhận bàn (quá 3 tiếng).' });
+      }
+
+      reservation.status = 'Đang sử dụng';
+      await reservation.save();
+    }
+
     const updatedTable = await Table.findByIdAndUpdate(
       id,
       {
@@ -120,25 +217,4 @@ exports.startUsingTable = async (req, res) => {
     console.error(error);
     res.status(400).json({ message: 'Lỗi khi cập nhật trạng thái bàn.' });
   }
-};
-
-exports.getTableByCustomer = async (req, res) => {
-  try {
-
-    const customerId = req.user.id;
-
-    const tables = await Table.find({
-      customer_id: customerId
-    });
-
-    res.status(200).json(tables);
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: "Error fetching tables"
-    });
-
-  }
-
 };

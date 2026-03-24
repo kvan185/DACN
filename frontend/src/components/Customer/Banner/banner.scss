@@ -1,11 +1,11 @@
 @use '../../../scss/' as *;
 
 .banner {
-    background: linear-gradient(135deg, $color-primary 0%, darken-color($color-primary, 15%) 100%);
-    padding: 60px 0;
+    background: $color-background-light;
+    padding-top: 100px ;
     position: relative;
     overflow: hidden;
-    
+    padding-bottom: 30px;
     &::before {
         content: '';
         position: absolute;
@@ -21,10 +21,8 @@
         position: relative;
         z-index: 1;
         display: flex;
-        align-items: center;
         gap: 60px;
-        
-        @media (max-width: 992px) {
+        @media (max-width: 900px) {
             flex-direction: column;
             text-align: center;
             gap: 40px;
@@ -37,7 +35,7 @@
         &__title {
             font-size: 48px;
             font-weight: 700;
-            color: $color-text-light;
+            color: $color-text-primary;
             margin-bottom: 24px;
             line-height: 1.2;
             
@@ -64,7 +62,7 @@
         &__desc {
             font-size: 18px;
             line-height: 1.6;
-            color: rgba($color-text-light, 0.9);
+            color: rgba($color-text-dark, 0.9);
             margin-bottom: 40px;
             
             @media (max-width: 768px) {
@@ -97,7 +95,7 @@
                         width: 100%;
                         padding: 16px 16px 16px 48px;
                         border-radius: 30px;
-                        border: none;
+                        border: 2px solid rgba($color-text-dark, 0.2);
                         background: rgba($color-text-light, 0.95);
                         font-size: 16px;
                         transition: all 0.3s ease;
@@ -118,7 +116,7 @@
                     border-radius: 30px;
                     border: none;
                     background: $color-secondary;
-                    color: $color-text-primary;
+                    color: $color-text-light;
                     font-weight: 600;
                     font-size: 16px;
                     cursor: pointer;
@@ -150,7 +148,7 @@
                 
                 span {
                     font-size: 16px;
-                    color: $color-text-light;
+                    color: $color-text-dark;
                 }
             }
         }
@@ -158,7 +156,7 @@
     &__image {
         width: 50%;
         position: relative;
-        
+        padding-top: 50px;
         .image-wrapper {
             animation: float 6s ease-in-out infinite;
         }

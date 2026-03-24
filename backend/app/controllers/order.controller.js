@@ -5,17 +5,17 @@ const CartItem = db.cartItem;
 const Order = db.order;
 const OrderItem = db.orderItem;
 const convertHelper = require("../helpers/convert.helper.js");
+const listSocket = require("../socket");
 const Customer = db.customer;
 const Admin = db.admin;
-const { sendOrderStatus, sendListOrder } = require("../socket/order.socket");
 
 exports.createCashOrder = async (req, res) => {
     try {
-        const { cartId, tableNumber } = req.body;
+        const { cartId, tableNumber, selectedItemIds } = req.body;
         if (!cartId) {
             return res.status(400).send({ success: false, message: "No cart ID provided." });
         }
-        const order = await convertHelper.convertCartToOrder(cartId, "cash");
+        const order = await convertHelper.convertCartToOrder(cartId, "cash", selectedItemIds);
 
         if (tableNumber) {
             order.table_number = tableNumber;
@@ -23,6 +23,25 @@ exports.createCashOrder = async (req, res) => {
         }
         await order.save();
         res.status(200).send({ success: true, message: "Order created successfully.", order });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ success: false, message: "An error occurred while processing your request." });
+    }
+};
+
+exports.createGuestOrder = async (req, res) => {
+    try {
+        const { items, tableNumber, typeOrder } = req.body;
+        if (!items || items.length === 0) {
+            return res.status(400).send({ success: false, message: "No items provided." });
+        }
+        const order = await convertHelper.createOrderFromGuestItems(items, typeOrder, tableNumber);
+
+        if (!order) {
+            return res.status(500).send({ success: false, message: "Failed to create order." });
+        }
+
+        res.status(200).send({ success: true, message: "Guest order created successfully.", order });
     } catch (error) {
         console.error(error);
         res.status(500).send({ success: false, message: "An error occurred while processing your request." });
@@ -85,12 +104,10 @@ exports.getOrder = async (req, res) => {
 
 exports.updateStatusOrder = async (req, res) => {
     try {
-
         const auth = await middlewares.checkAuth(req);
         if (!auth) {
             return res.status(401).json({ message: "Authentication failed" });
         }
-
         if (!req.body.orderId || !req.body.status) {
             return res.status(400).send({ message: "No order ID provided or Status." });
         }
@@ -99,41 +116,91 @@ exports.updateStatusOrder = async (req, res) => {
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
         }
-
-        if (
-            req.body.status === "canceled" &&
-            (order.status === "processing" || order.status === "completed")
-        ) {
+        if (req.body.status == "canceled" && (order.status == "processing" || order.status == "completed")) {
             return res.status(400).send({ message: "Can't cancel." });
         }
-
-        // update status
         order.status = req.body.status;
         await order.save();
 
         const userId = order.customer_id;
-        const customer = await Customer.findById(userId);
 
-        // realtime cho customer
-        if (customer?.socket_id) {
-            sendOrderStatus(customer.socket_id, order);
-        }
-
-        // realtime cho admin
-        const listOrder = await Order.find({});
-        const admin = await Admin.find({});
-
-        for (const ad of admin) {
-            if (ad?.socket_id) {
-                sendListOrder(ad.socket_id, listOrder);
+        if (userId) {
+            const customer = await Customer.findById(userId);
+            if (customer && customer.socket_id) {
+                listSocket.updateOrder.to(customer.socket_id).emit('sendStatusOrder', order);
             }
         }
-
+        const listOrder = await Order.find({});
+        const admin = await Admin.find({});
+        for (const ad of admin ) {
+            if (ad.socket_id) {
+                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
+            }
+        }
         res.status(200).json({ message: "Updated status." });
-
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "An error occurred while processing your request." });
+    }
+};
+
+exports.getGuestOrdersByTable = async (req, res) => {
+    try {
+        const { tableNumber } = req.params;
+        if (!tableNumber) {
+            return res.status(400).send({ success: false, message: "No table number provided." });
+        }
+
+        const orders = await Order.find({ 
+            table_number: tableNumber, 
+            order_source: 'table',
+            is_payment: false 
+        }).sort({ createdAt: -1 });
+
+        const orderList = await Promise.all(
+            orders.map(async (order) => {
+                const orderItems = await OrderItem.find({ order_id: order.id });
+                return {
+                    order,
+                    orderItems,
+                };
+            })
+        );
+        res.status(200).json(orderList);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "An error occurred while fetching orders." });
+    }
+};
+
+exports.payGuestOrdersByTable = async (req, res) => {
+    try {
+        const { tableNumber } = req.params;
+        if (!tableNumber) {
+            return res.status(400).send({ success: false, message: "No table number provided." });
+        }
+
+        const result = await Order.updateMany(
+            { table_number: tableNumber, order_source: 'table', is_payment: false },
+            { $set: { is_payment: true } }
+        );
+
+        if (result.matchedCount === 0 && result.modifiedCount === 0) {
+            return res.status(404).send({ success: false, message: "No unpaid orders found for this table." });
+        }
+
+        const listOrder = await Order.find({});
+        const admin = await Admin.find({});
+        for (const ad of admin) {
+            if (ad.socket_id) {
+                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
+            }
+        }
+
+        res.status(200).send({ success: true, message: "Guest orders marked as paid." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ success: false, message: "An error occurred while paying orders." });
     }
 };
 

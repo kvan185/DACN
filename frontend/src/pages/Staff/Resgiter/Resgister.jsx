@@ -54,7 +54,7 @@ function Resgister(props) {
         <>
             <ToastContainer 
                 position="top-right"
-                autoClose={3000}
+                autoClose={1000}
             /> 
 
             <div className='resgister__staff'>
@@ -66,33 +66,33 @@ function Resgister(props) {
                             <div className='register-form-input'>
                                 <Form.Control required type="text" name='first_name' value={formData.first_name} 
                                 onChange={(event)=>setFormData({...formData, first_name: event.target.value})} 
-                                placeholder='Nhập tên của bạn' />
+                                placeholder='Nhập tên nhân viên' />
                             </div>
 
                             <div className='register-form-input'>
                                 <Form.Control required type="text" name='last_name' value={formData.last_name} 
                                 onChange={(event)=>setFormData({...formData, last_name: event.target.value})}
-                                placeholder='Nhập họ của bạn'/>
+                                placeholder='Nhập họ nhân viên'/>
                             </div>
                         </div>
 
                         <div className='register-form-input'>
                             <Form.Control required type="text" name='email' value={formData.email} 
                             onChange={(event)=>setFormData({...formData, email: event.target.value})} 
-                            placeholder='Nhập email của bạn'/>
+                            placeholder='Nhập email'/>
                         </div>
 
                         <div className='register-form-input'>
                             <Form.Control required type={ showPassword[0] ? 'text' : 'password' } name='password' value={formData.password} 
                             onChange={(event)=>setFormData({...formData, password: event.target.value})} 
-                            placeholder='Nhập mật khẩu của bạn'/>
+                            placeholder='Nhập mật khẩu'/>
                             { showPassword[0] ? <FaEyeSlash onClick={()=>handleTogglePassword(0)} /> : <FaEye onClick={()=>handleTogglePassword(0)} /> }
                         </div>
 
                         <div className='register-form-input'>
                             <Form.Control required type={ showPassword[1] ? 'text' : 'password' } name='confirm_password' value={formData.confirm_password} 
                             onChange={(event)=>setFormData({...formData, confirm_password: event.target.value})} 
-                            placeholder='Nhập lại mật khẩu của bạn'/>
+                            placeholder='Nhập lại mật khẩu'/>
                             { showPassword[1] ? <FaEyeSlash onClick={()=>handleTogglePassword(1)} /> : <FaEye onClick={()=>handleTogglePassword(1)} /> }
                         </div>
 

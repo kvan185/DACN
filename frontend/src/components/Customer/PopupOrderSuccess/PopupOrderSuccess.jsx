@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 
 import './popupOrderSuccess.scss';
 
-function PopupOrderSuccess(props) {
+function PopupOrderSuccess({ isPayment, ...props }) {
+    const accessToken = sessionStorage.getItem("accessToken");
 
     return (
         <>
@@ -40,12 +41,21 @@ function PopupOrderSuccess(props) {
                         </defs>
                     </svg>
 
-                    <h4 className='success-title'>Đặt hàng thành công</h4>
+                    <h4 className='success-title'>
+                        {isPayment ? 'Thanh toán thành công' : 'Đặt hàng thành công'}
+                    </h4>
+                    {isPayment && (
+                        <p className='text-center mt-2 fs-5'>Cảm ơn quý khách đã dùng bữa!</p>
+                    )}
 
                 </Modal.Body>
                 <Modal.Footer>
-                    <Link to='/history-order' className='btn-success-follow'>Theo dõi đơn hàng</Link>
-                    <Link to='/' className='btn-success-continue'>Tiếp tục mua hàng</Link>
+                    {accessToken && (
+                        <Link to='/history-order' className='btn-success-follow'>Theo dõi đơn hàng</Link>
+                    )}
+                    <Link to={isPayment ? '/menu' : '/'} className='btn-success-continue'>
+                        {isPayment ? 'Trở về màn hình gọi món' : 'Tiếp tục mua hàng'}
+                    </Link>
                 </Modal.Footer>
             </Modal>
         </>

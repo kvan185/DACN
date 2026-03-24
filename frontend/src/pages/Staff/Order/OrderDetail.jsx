@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import {Row, Col} from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 import moment from 'moment';
 
 import { fetchUpdateIsPayment, fetchUpdateStatusOrder } from '../../../actions/order';
@@ -12,16 +12,16 @@ function OrderDetail(props) {
     const [orderPayment, setOrderPayment] = useState(null);
     const [orderItems, setOrderItems] = useState([]);
     const { orderId } = useParams();
-    const accessToken = JSON.parse(sessionStorage.getItem("accessToken"));
+    const accessToken = sessionStorage.getItem("accessToken");
 
-    if(orderId && accessToken){
-        useEffect(()=>{
+    if (orderId && accessToken) {
+        useEffect(() => {
             fetchOrderDetail(orderId, accessToken);
-        },[orderId, accessToken,  orderStatus, orderPayment]);
+        }, [orderId, accessToken, orderStatus, orderPayment]);
     }
 
-    const fetchOrderDetail = async (orderId, accessToken)=>{
-        const response = await fetch(`/api/order/${orderId}`,{
+    const fetchOrderDetail = async (orderId, accessToken) => {
+        const response = await fetch(`/api/order/${orderId}`, {
             method: 'get',
             headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -30,7 +30,7 @@ function OrderDetail(props) {
         const data = await response.json();
         console.log(data)
 
-        if(data){
+        if (data) {
             setOrderDetail(data.order);
             setOrderItems(data.orderItems);
             return;
@@ -44,7 +44,7 @@ function OrderDetail(props) {
                 setOrderStatus("CONFIRMED");
                 return;
             }
-        }        
+        }
     }
 
     const handleProcessingOrder = async (orderId) => {
@@ -87,8 +87,8 @@ function OrderDetail(props) {
                 </div>
                 <div className="order__detail-group">
                     <Row>
-                        {orderItems && orderItems.map((item, index)=>{
-                            const {id, product_name, product_image, price, qty} = item;
+                        {orderItems && orderItems.map((item, index) => {
+                            const { id, product_name, product_image, price, qty } = item;
 
                             return (
                                 <Col xs={6} className='' key={index}>
@@ -107,10 +107,10 @@ function OrderDetail(props) {
                 <div className="order__detail-foot">
                     <div className="order__detail-status">
                         <label>Trạng thái đơn hàng:
-                            <span className='order-status'>{orderDetail &&  orderDetail.status}</span>
+                            <span className='order-status'>{orderDetail && orderDetail.status}</span>
                         </label>
                         <label>
-                            Tổng thanh toán:
+                            Tổng cộng:
                             <span>{orderDetail && orderDetail.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}</span>
                         </label>
                         <label>
@@ -120,16 +120,16 @@ function OrderDetail(props) {
                     </div>
                     <div className="order__detail-group-btn">
                         <button disabled={(orderDetail && orderDetail.status !== statusOrder.NEW)} className="btn btn-confirm"
-                            onClick={()=>handleConfirmOrder(orderDetail && orderDetail.id)}>Nhận đơn</button>
+                            onClick={() => handleConfirmOrder(orderDetail && orderDetail.id)}>Nhận đơn</button>
 
-                        <button disabled={orderDetail && orderDetail.status !== statusOrder.CONFIRMED} className="btn btn-processing" 
-                            onClick={()=>handleProcessingOrder(orderDetail && orderDetail.id)}>Đang làm</button>
+                        <button disabled={orderDetail && orderDetail.status !== statusOrder.CONFIRMED} className="btn btn-processing"
+                            onClick={() => handleProcessingOrder(orderDetail && orderDetail.id)}>Đang làm</button>
 
                         <button disabled={orderDetail && orderDetail.status !== statusOrder.PROCESSING} className="btn btn-complete"
-                            onClick={()=>handleCompleteOrder(orderDetail && orderDetail.id)}>Hoàn thành</button>
-                            
+                            onClick={() => handleCompleteOrder(orderDetail && orderDetail.id)}>Hoàn thành</button>
+
                         <button hidden={orderDetail && orderDetail.is_payment} className="btn"
-                            onClick={()=>handlePayment(orderDetail && orderDetail.id)}>Đã thanh toán</button>
+                            onClick={() => handlePayment(orderDetail && orderDetail.id)}>Đã thanh toán</button>
                     </div>
                 </div>
             </div>

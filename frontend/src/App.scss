@@ -87,6 +87,12 @@ p {
     }
 }
 
+.main-customer-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .block-content {
     padding: 2rem;
     

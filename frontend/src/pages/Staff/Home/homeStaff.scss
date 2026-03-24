@@ -1,0 +1,97 @@
+.staff-dashboard {
+  padding: 10px 20px;
+  max-height: 100vh;
+  overflow-y: hidden;
+
+  .row {
+    margin-top: 10px !important;
+  }
+}
+
+/* loading spinner */
+.loading {
+  height: 60vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* stat cards */
+.stat-card {
+  border: none;
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+
+  h6 {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 5px;
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 24px;
+    color: #212529;
+    margin: 0;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* màu từng card */
+.col-md-3:nth-child(1) .stat-card { border-left: 4px solid #0d6efd; }
+.col-md-3:nth-child(2) .stat-card { border-left: 4px solid #20c997; }
+.col-md-3:nth-child(3) .stat-card { border-left: 4px solid #ffc107; }
+.col-md-3:nth-child(4) .stat-card { border-left: 4px solid #dc3545; }
+
+/* chart cards */
+.chart-card {
+  height: 280px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border: none;
+  overflow: hidden;
+
+  h5 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #89782c;
+  }
+
+  .card-body {
+    padding: 15px;
+  }
+}
+
+/* chart container */
+.chart-wrapper {
+  width: 100%;
+  height: 220px;
+}
+
+.dashboard-title {
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 5px;
+  font-size: 1.2rem;
+}
+
+/* responsive */
+@media (max-width: 992px) {
+  .staff-dashboard {
+    overflow-y: auto;
+    max-height: none;
+  }
+  .stat-card, .chart-card {
+    margin-bottom: 15px;
+  }
+}

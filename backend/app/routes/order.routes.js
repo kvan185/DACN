@@ -5,9 +5,12 @@ module.exports = app => {
 
   // create cash order
   router.post("/", order.createCashOrder);
+  router.post("/guest", order.createGuestOrder);
 
   // get list order
   router.get("/", order.getListOrder);
+  router.get("/guest/table/:tableNumber", order.getGuestOrdersByTable);
+  router.put("/guest/table/:tableNumber/payment", order.payGuestOrdersByTable);
 
   // get order
   router.get("/:orderId", order.getOrder);

@@ -11,23 +11,28 @@ export const getAllTables = async () => {
   }
 };
 
-export const createReservation = async (accessToken, tableId, use_date, use_time, specialRequests) => {
+export const createReservation = async (accessToken, data) => {
   try {
+
+    console.log("DATA gửi lên API:", data);
+
     const response = await fetch('/api/reservations', {
       method: 'post',
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        tableId,
-        use_date,
-        use_time,
-        specialRequests
-      })
+      body: JSON.stringify(data)
     });
-    const data = await response.json();
-    return data;
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Đặt bàn thất bại");
+    }
+
+    return result;
+
   } catch (error) {
     console.error('Lỗi khi đặt bàn:', error);
     throw error;
@@ -49,7 +54,7 @@ export const getTableByQRCode = async (qrCode) => {
 
 export const getReservationByTableId = async (accessToken, tableId) => {
   try {
-    const response = await fetch(`/api/reservations/table/${tableId}`, {
+    const response = await fetch(`/api/reservations/${tableId}`, {
       method: 'get',
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -176,9 +181,4 @@ export const checkTableAvailability = async (tableId) => {
     console.error('Lỗi khi kiểm tra trạng thái bàn:', error);
     throw error;
   }
-};
-
-export const getReservationByUser = async (userId) => {
-  const response = await fetch(`/api/reservation/user/${userId}`);
-  return await response.json();
 };
