@@ -106,12 +106,16 @@ function Product(props) {
                                     <td>
                                         {viewingRow === id ? (
                                             <div>
-                                                <button onClick={() => setViewingRow(null)}>
+                                                <button 
+                                                    className="btn btn-secondary px-4 py-2"
+                                                    onClick={() => setViewingRow(null)}
+                                                >
                                                     Đóng
                                                 </button>
                                             </div>
                                         ) : (
                                             <button
+                                                className="btn btn-info btn-sm text-white"
                                                 onClick={() => {
                                                     setSelectedProduct(proItem);
                                                     setShowModal(true);
@@ -137,40 +141,48 @@ function Product(props) {
                             );
                         })}
                     </tbody>
-                </Table>{showModal && (
+                </Table>
+                {showModal && (
                     <div className="modal-overlay">
-                        <div className="modal-content">
-                            <h4>Thành phần sản phẩm</h4>
+                        <div className="modal-content border-0 shadow">
+                            <h4 className="mb-4 text-center" style={{ color: '#007bff', fontWeight: 'bold' }}>Thành phần sản phẩm</h4>
 
                             {ingredients.length > 0 ? (
-                                <table className="modal-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Tên</th>
-                                            <th>Số lượng</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {ingredients.map((ing) => (
-                                            <tr key={ing._id}>
-                                                <td>{ing.ingredient_id?.name}</td>
-                                                <td>{ing.quantity} {ing.unit}</td>
+                                <div className="table-responsive">
+                                    <table className="table table-hover table-bordered modal-table mb-0">
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th className="text-center align-middle">Tên nguyên liệu</th>
+                                                <th className="text-center align-middle">Số lượng</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {ingredients.map((ing) => (
+                                                <tr key={ing._id}>
+                                                    <td className="align-middle fw-medium">{ing.ingredient_id?.name}</td>
+                                                    <td className="text-center align-middle">
+                                                        <span className="badge bg-primary px-3 py-2" style={{ fontSize: '0.9rem' }}>
+                                                            {ing.quantity} {ing.unit}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             ) : (
-                                <p>Không có thành phần</p>
+                                <div className="text-center py-4 text-muted">Không có thành phần</div>
                             )}
 
-                            <div className="modal-actions">
-                                <button onClick={() => setShowModal(false)}>Đóng</button>
+                            <div className="modal-actions text-center mt-4">
+                                <button className="btn btn-secondary px-4 py-2" onClick={() => setShowModal(false)}>Đóng</button>
                             </div>
                         </div>
                     </div>
                 )}
-                <div className="pagination">
+                <div className="pagination d-flex justify-content-center mt-3 gap-2">
                     <button
+                        className="btn btn-secondary"
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(currentPage - 1)}
                     >
@@ -180,7 +192,7 @@ function Product(props) {
                     {[...Array(totalPages)].map((_, i) => (
                         <button
                             key={i}
-                            className={currentPage === i + 1 ? 'active' : ''}
+                            className={`btn ${currentPage === i + 1 ? 'btn-primary' : 'btn-outline-primary'}`}
                             onClick={() => setCurrentPage(i + 1)}
                         >
                             {i + 1}
@@ -188,6 +200,7 @@ function Product(props) {
                     ))}
 
                     <button
+                        className="btn btn-secondary"
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage(currentPage + 1)}
                     >

@@ -102,27 +102,20 @@
 
     .modal-content {
         background: white;
-        padding: 20px;
-        border-radius: 10px;
-        width: 500px;
-        max-height: 80vh;
+        padding: 30px;
+        border-radius: 12px;
+        width: 550px;
+        max-height: 85vh;
         overflow-y: auto;
     }
 
     .modal-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .modal-table th,
-    .modal-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
+        border-radius: 8px;
+        overflow: hidden;
     }
 
     .modal-actions {
         margin-top: 15px;
-        text-align: right;
     }
 }
 

@@ -228,9 +228,14 @@ exports.completeReservation = async (req, res) => {
 
 exports.getReservationByTableId = async (req, res) => {
   try {
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+    const localISO = new Date(Date.now() - tzoffset).toISOString().split('T')[0];
+    const todayDateQuery = new Date(localISO + "T00:00:00.000Z");
+
     const reservations = await Reservation.find({ 
       tableId: req.params.tableId,
-      status: { $ne: 'Đã hủy' }
+      status: { $ne: 'Đã hủy' },
+      use_date: { $gte: todayDateQuery }
     });
     res.status(200).send(reservations);
   } catch (error) {

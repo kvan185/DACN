@@ -57,7 +57,11 @@ function Login(props) {
     
     if(user){
         sessionStorage.setItem('user', JSON.stringify(user));
-        navigate('/staff');
+        if (user.role === 'STAFF') {
+            navigate('/staff/order');
+        } else {
+            navigate('/staff');     
+        }
     }
   }
 

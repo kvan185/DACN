@@ -248,5 +248,12 @@
         .btn-complete{
             background-color: $green-color;
         }
+
+        .btn-payment{
+            background-color: #007bff;
+            border: 2px solid #0056b3;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.4);
+            font-weight: bold;
+        }
     }
 }

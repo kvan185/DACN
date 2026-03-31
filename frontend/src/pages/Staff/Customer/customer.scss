@@ -1,0 +1,260 @@
+.block-customer-admin {
+    .customer-container {
+        margin-top: 48px;
+        padding: 30px 20px;
+    }
+
+    .product-add {
+        margin: 0 0 20px 12px;
+
+        a {
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 16px;
+
+            &:hover {
+                text-decoration: none;
+            }
+        }
+    }
+
+    // Style cho form thêm khách hàng
+    .customer-form {
+        max-width: 800px;
+        margin: 0 auto;
+
+        .row-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+
+            @media (max-width: 768px) {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+
+        .required {
+            color: red;
+            margin-left: 4px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+
+            .btn-add {
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                padding: 10px 24px;
+                margin: 0;
+
+                &:hover {
+                    background-color: #45a049;
+                    transform: translateY(-2px);
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            }
+
+            .btn-cancel {
+                background-color: #6c757d;
+                color: white;
+                border: none;
+                padding: 10px 24px;
+
+                &:hover {
+                    background-color: #5a6268;
+                    transform: translateY(-2px);
+                }
+            }
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-control,
+        .form-select {
+            &:focus {
+                border-color: #4CAF50;
+                box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+            }
+        }
+
+        .invalid-feedback {
+            font-size: 12px;
+        }
+    }
+}
+
+// CSS cho bảng danh sách khách hàng (giữ nguyên)
+.customer-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    tr {
+        transition: background-color 0.3s;
+
+        &:hover {
+            background-color: #f5f5f5;
+        }
+
+        &.locked-row {
+            background-color: #fff3f3;
+            opacity: 0.8;
+
+            &:hover {
+                background-color: #ffe6e6;
+            }
+        }
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+
+        &.active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        &.banned,
+        &.inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    }
+
+    .icon-update {
+        color: #ffc107;
+        cursor: pointer;
+        font-size: 18px;
+        margin-right: 10px;
+        transition: all 0.3s;
+
+        &:hover {
+            color: #e0a800;
+            transform: scale(1.1);
+        }
+    }
+
+    .icon-update-link {
+        display: inline-block;
+        margin-right: 10px;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    .icon-update {
+        color: #ffc107;
+        cursor: pointer;
+        font-size: 18px;
+        transition: all 0.3s;
+
+        &:hover {
+            color: #e0a800;
+            transform: scale(1.1);
+        }
+    }
+
+    .lock-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: all 0.3s;
+        font-size: 14px;
+
+        &.lock {
+            background-color: #dc3545;
+            color: white;
+
+            &:hover {
+                background-color: #c82333;
+                transform: translateY(-2px);
+            }
+        }
+
+        &.unlock {
+            background-color: #28a745;
+            color: white;
+
+            &:hover {
+                background-color: #218838;
+                transform: translateY(-2px);
+            }
+        }
+
+        svg {
+            font-size: 16px;
+        }
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 30px;
+        text-align: center;
+    }
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+
+    button {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        background-color: white;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover:not(:disabled) {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        &.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+}

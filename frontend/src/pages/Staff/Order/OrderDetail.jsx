@@ -128,7 +128,7 @@ function OrderDetail(props) {
                         <button disabled={orderDetail && orderDetail.status !== statusOrder.PROCESSING} className="btn btn-complete"
                             onClick={() => handleCompleteOrder(orderDetail && orderDetail.id)}>Hoàn thành</button>
 
-                        <button hidden={orderDetail && orderDetail.is_payment} className="btn"
+                        <button hidden={orderDetail && orderDetail.is_payment} className="btn btn-payment"
                             onClick={() => handlePayment(orderDetail && orderDetail.id)}>Đã thanh toán</button>
                     </div>
                 </div>

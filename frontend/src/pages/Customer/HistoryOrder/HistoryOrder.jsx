@@ -168,9 +168,16 @@ function HistoryOrder(props) {
                                                 </Row>
                                             </div>
                                             <div className="history-order-footer">
-                                                <label>Tổng cộng: <span>
-                                                    {total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
-                                                </span></label>
+                                                <div className="footer-left-info">
+                                                    <label>Tổng cộng: <span>
+                                                        {total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
+                                                    </span></label>
+                                                    <label className="mt-2 d-block" style={{ fontSize: '15px' }}>
+                                                        <span style={{ color: items.order.is_payment ? '#28a745' : '#dc3545', fontWeight: 'bold' }}>
+                                                            {items.order.is_payment ? 'Đã Thanh Toán' : 'Chưa Thanh Toán'}
+                                                        </span>
+                                                    </label>
+                                                </div>
 
                                                 <div className="history-order-status">
                                                     {status === statusOrder.NEW && (

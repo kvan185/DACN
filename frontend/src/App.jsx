@@ -39,6 +39,9 @@ import { ToastContainer } from 'react-toastify';
 import Ingredient from './pages/Staff/Ingredient/Ingredient';
 import 'react-toastify/dist/ReactToastify.css';
 import { RequireAuth } from './middleware/AuthMiddleware';
+import Customer from './pages/Staff/Customer/Customer';
+import CustomerAdd from './pages/Staff/Customer/CustomerAdd';
+import CustomerUpdate from './pages/Staff/Customer/CustomerUpdate';
 
 function App() {
   const location = useLocation();
@@ -84,6 +87,9 @@ function App() {
               <Route path='/staff/register' element={<RegisterStaff />} />
               <Route path='/staff/table' element={<Table />} />
               <Route path='/staff/profile' element={<ProfileAdmin />} />
+              <Route path='/staff/customer' element={<Customer />} />
+              <Route path='/staff/customer/add' element={<CustomerAdd />} />
+              <Route path="/staff/customer/update/:id" element={<CustomerUpdate />} />
             </Routes>
           </div>
         </div>

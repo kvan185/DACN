@@ -1,0 +1,41 @@
+KẾ HOẠCH THỰC HIỆN ĐỒ ÁN
+
+Tuần 1:
+- Tìm hiểu đề tài, xác định mục tiêu nghiên cứu và phạm vi thực hiện. 
+
+Tuần 2:
+- Thu thập tài liệu liên quan đến hệ thống POS, Smart POS và quản lý nhà hàng.
+
+Tuần 3:
+- Hoàn thành đề cương.
+
+Tuần 4:
+- Phân tích hệ thống nghiệp vụ đặt món sử dụng công nghệ Smart POS.
+- Thiết kế cơ sở dữ liệu.
+- Vẽ các biểu đồ: Usecase, Sequence, BFD.
+
+Tuần 5:
+- Xây dựng kiến trúc hệ thống Client-Server.
+- Khởi tạo repo dự án, thiết lập môi trường phát triển cho Frontend và Backend.
+
+Tuần 6:
+- Xây dựng giao diện người dùng (UI/UX) cho Khách hàng, Nhân viên (phục vụ, bếp) và Quản trị viên (Admin).
+- Phát triển các API quản lý danh mục cơ bản: Quản lý tài khoản người dùng, Quản lý món ăn, danh mục, và quản lý bàn ăn.
+
+Tuần 7:
+- Xây dựng quy trình cốt lõi: Chức năng quét mã QR đặt món tại bàn (dành cho khách không cần đăng nhập) và đặt hàng trực tuyến.
+- Hoàn thiện chức năng giỏ hàng, quản lý đơn hàng cơ bản và quy trình thanh toán (tiền mặt, thanh toán trực tuyến).
+
+Tuần 8:
+- Tích hợp Socket.io để đồng bộ realtime đơn hàng giữa khách hàng, bếp và thu ngân (nhận luồng thông báo, cập nhật trạng thái đơn).
+
+Tuần 9:
+- Xây dựng chức năng quản lý kho nguyên vật liệu theo định mức BOM (Bill of Materials).
+- Tích hợp logic xử lý tự động trừ tồn kho nguyên vật liệu khi đơn hàng được xác nhận hoặc hoàn tất.
+
+Tuần 10:
+- Xây dựng Chatbot sử dụng Gemini AI (hệ thống trò chuyện thông minh được phát triển dựa trên công nghệ trí tuệ nhân tạo tiên tiến của Google) hỗ trợ khách hàng.
+
+Tuần 11:
+- Triển khai (Deploy) và kiểm thử (Testing) toàn bộ hệ thống để đảm bảo luồng hoạt động ổn định.
+- Cập nhật báo cáo hết các chương còn lại, tinh chỉnh tài liệu và nộp đồ án.

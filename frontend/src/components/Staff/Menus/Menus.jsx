@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaShoppingCart, FaTable, FaUserPlus, FaList, FaBox, FaChartBar, FaCarrot  } from 'react-icons/fa';
+import { FaHome, FaShoppingCart, FaTable, FaUserPlus, FaList, FaBox, FaChartBar, FaCarrot, FaUser } from 'react-icons/fa';
 
 import './menus.scss';
 
@@ -9,6 +9,7 @@ const sliders = [
         url: '/staff',
         icon: <FaHome />,
         name: 'Trang chủ',
+        role: 'ADMIN'
     },
     {
         url: '/staff/order',
@@ -19,6 +20,11 @@ const sliders = [
         url: '/staff/table',
         icon: <FaTable />,
         name: 'Quản lý bàn',
+    },
+    {
+        url: '/staff/customer',
+        icon: <FaUser />,
+        name: 'Khách hàng',
     },
     {
         url: '/staff/register',
@@ -43,7 +49,7 @@ const sliders = [
         icon: <FaCarrot />,
         name: 'Nguyên liệu',
         role: 'ADMIN'
-},
+    },
     {
         url: '/staff/revenue',
         icon: <FaChartBar />,
@@ -62,16 +68,17 @@ function Menus() {
             <ul className="slider__menu-list">
                 {sliders.map((item, index) => {
                     const { url, icon, name, role } = item;
+                    if (role && role !== roleUser) return null;
                     const isActive = location.pathname === url;
 
                     return (
-                        <li 
+                        <li
                             className={`slider__menu-item ${isActive ? 'active' : ''}`}
                             key={index}
                         >
-                            <Link 
-                                to={url} 
-                                className={`slider__menu-link ${role && role !== roleUser ? 'disable' : ''}`}
+                            <Link
+                                to={url}
+                                className="slider__menu-link"
                             >
                                 {icon}
                                 <span className="slider__menu-name">{name}</span>

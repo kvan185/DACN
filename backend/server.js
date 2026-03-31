@@ -50,6 +50,7 @@ require("./app/routes/reservation.routes")(app);
 require("./app/routes/ingredient.routes")(app);
 require("./app/routes/dashboard.routes")(app);
 require("./app/routes/chatbot.routes")(app);
+require("./app/routes/admin.customer.routes")(app);
 
 const http = require("http");
 const server = http.createServer(app);

@@ -178,7 +178,7 @@ const TableManagement = () => {
             let todayRes = null;
             if (Array.isArray(data)) {
                 setAllReservations(data);
-                todayRes = data.find(r => r.use_date.startsWith(localISO) && r.status !== 'Đã hủy');
+                todayRes = data.find(r => r.use_date.startsWith(localISO) && r.status !== 'Đã hủy' && r.status !== 'Hoàn thành' && r.status !== 'Đã hoàn thành');
             } else {
                 setAllReservations([]);
                 todayRes = data;
@@ -666,7 +666,7 @@ const TableManagement = () => {
                                     </div>
                                 </div>
 
-                                {!viewTable.isAvailable && reservationInfo && (
+                                {reservationInfo && (
                                     <div className="reservation-section mt-2">
                                         <h5>Thông tin khách (Hôm nay)</h5>
                                         <p><strong>Khách hàng:</strong> {reservationInfo.customerName}</p>
