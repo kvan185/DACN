@@ -10,23 +10,64 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 function PopupUpdateCart(props) {
     const [inputValue, setInputValue] = useState(0);
+    const [maxQuantity, setMaxQuantity] = useState(Infinity);
     const inputRef = useRef();
     const accessToken = sessionStorage.getItem("accessToken");
     const dispatch = useDispatch();
     const orderSource = localStorage.getItem('orderSource');
 
+    const fetchIngredientsByProduct = async (productId) => {
+        try {
+            const res = await fetch(`/api/productBom/product/${productId}`);
+            const data = await res.json();
+            if (data && data.length > 0) {
+                let max = Infinity;
+
+                data.forEach(item => {
+                    const stock = item.ingredient_id?.qty;
+                    if (stock === undefined) return;
+                    const need = item.quantity;
+                    if (!need || need <= 0) return;
+                    const possible = Math.floor(stock / need);
+                    max = Math.min(max, possible);
+                });
+
+                const finalMax = max === Infinity ? 0 : max;
+                setMaxQuantity(finalMax);
+            } else {
+                setMaxQuantity(0);
+            }
+        } catch (err) {
+            console.error(err);
+            setMaxQuantity(0);
+        }
+    };
+
     useEffect(() => {
         if (props.itemcart) {
             setInputValue(props.itemcart.qty);
+            const pId = props.itemcart.product_id || props.itemcart.id;
+            if (pId) {
+                fetchIngredientsByProduct(pId);
+            } else {
+                setMaxQuantity(Infinity);
+            }
         }
     }, [props.itemcart]);
 
     const onChangeHandler = (event) => {
-        setInputValue(Number(event.target.value));
+        let value = Number(event.target.value);
+        if (maxQuantity !== Infinity && value > maxQuantity) {
+            value = maxQuantity;
+        }
+        setInputValue(value);
     };
 
     const handlePlusProduct = () => {
-        const quantity = Number(inputRef.current.value) + 1;
+        let quantity = Number(inputRef.current.value) + 1;
+        if (maxQuantity !== Infinity && quantity > maxQuantity) {
+            quantity = maxQuantity;
+        }
         setInputValue(quantity);
     };
 
@@ -105,6 +146,17 @@ function PopupUpdateCart(props) {
                     <h4 className="modal__product-name">
                         {props.itemcart.product_name}
                     </h4>
+
+                    {maxQuantity !== Infinity && maxQuantity > 0 && (
+                        <p style={{ color: "green", fontSize: "14px", marginTop: "10px", textAlign: "center" }}>
+                            Có thể đặt tối đa: {maxQuantity} món
+                        </p>
+                    )}
+                    {maxQuantity === 0 && (
+                        <p style={{ color: "red", fontSize: "14px", marginTop: "10px", textAlign: "center" }}>
+                            Món ăn đã hết nguyên liệu
+                        </p>
+                    )}
 
                     <div className="modal__product-update">
                         <div className="minus" onClick={handleMinusProduct}>

@@ -15,8 +15,15 @@ function Header(props) {
     const dispatch = useDispatch();
     const location = useLocation();
 
-    const orderSource = localStorage.getItem('orderSource');
-    const tableNumber = localStorage.getItem('tableNumber');
+    const params = new URLSearchParams(location.search);
+    const tableParam = params.get('table');
+
+    let orderSource = localStorage.getItem('orderSource');
+    if (tableParam) {
+        orderSource = 'table';
+    }
+
+    const tableNumber = localStorage.getItem('tableNumber') || tableParam;
     const isOrderingPage = location.pathname === '/menu' || location.pathname === '/checkout' || location.pathname.startsWith('/detail/');
 
     function handleShowCart() {
