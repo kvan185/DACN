@@ -2,8 +2,12 @@ const Ingredient = require("../models/ingredient.model");
 const ProductBOM = require("../models/productBom.model");
 const { checkManyProducts } = require("./product.service");
 
-const getAll = async () => {
-    return await Ingredient.find({ is_active: true });
+const getAll = async (searchQuery) => {
+    let query = {};
+    if (searchQuery) {
+        query.name = { $regex: searchQuery, $options: 'i' };
+    }
+    return await Ingredient.find(query).sort({ createdAt: -1 });
 };
 
 const create = async (data) => {

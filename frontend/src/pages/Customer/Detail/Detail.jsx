@@ -1,26 +1,32 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Row } from 'react-bootstrap';
+import { Row, Col, Spinner } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCartStore, setCartItems, setDisplayToast } from '../../../actions/user';
 import Cart from '../../../components/Customer/Cart/Cart';
-import ProductCard from '../../../components/Customer/Product-Card/ProductCard';
 import { fetchAddProductToCart, fetchGetCart } from '../../../actions/cart';
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; import './detail.scss';
-import "swiper/css";
-import "swiper/css/navigation";
-//
+import "react-toastify/dist/ReactToastify.css";
+import './detail.scss';
+
 function Detail(props) {
     const [productItem, setProductItem] = useState(null);
     const [categoryID, setCategoryID] = useState(null);
     const [productRelated, setProductRelated] = useState([]);
     const [inputValue, setInputValue] = useState(1);
+    const [isLoading, setIsLoading] = useState(true);
     const dispatch = useDispatch();
     const isToast = useSelector(state => state.user.isToast);
     const [ingredients, setIngredients] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [maxQuantity, setMaxQuantity] = useState(0);
+
+    const API_URL = import.meta.env.VITE_API_URL;
+    const inputRef = useRef();
+    let { id } = useParams();
+    const navigate = useNavigate();
+    const user = JSON.parse(sessionStorage.getItem("user"));
+    const accessToken = sessionStorage.getItem("accessToken");
 
     const fetchIngredientsByProduct = async (productId) => {
         try {
@@ -33,16 +39,10 @@ function Detail(props) {
 
                 data.forEach(item => {
                     const stock = item.ingredient_id?.qty;
-                    if (stock === undefined) {
-                        console.error("thiếu qty:", item);
-                        return;
-                    }
+                    if (stock === undefined) return;
 
                     const need = item.quantity;
-                    if (!need || need <= 0) {
-                        console.error("need lỗi:", item);
-                        return;
-                    }
+                    if (!need || need <= 0) return;
 
                     const possible = Math.floor(stock / need);
                     max = Math.min(max, possible);
@@ -67,11 +67,10 @@ function Detail(props) {
     }, [productItem]);
 
     useEffect(() => {
-        if (inputValue > maxQuantity) {
-            setInputValue(maxQuantity || 1);
+        if (inputValue > maxQuantity && maxQuantity !== 0) {
+            setInputValue(maxQuantity);
         }
-        console.log("maxQuantity state:", maxQuantity);
-    }, [maxQuantity]);
+    }, [maxQuantity, inputValue]);
 
     useEffect(() => {
         if (isToast) {
@@ -84,39 +83,42 @@ function Detail(props) {
         }
     }, [isToast, dispatch]);
 
-
-    const API_URL = import.meta.env.VITE_API_URL;
-    const imageSrc = productItem?.image_url
-        ? `${API_URL}${productItem.image_url}`
-        : '/images/no-image.png';
-    const inputRef = useRef();
-    let { id } = useParams();
-    const navigate = useNavigate();
-    const user = JSON.parse(sessionStorage.getItem("user"));
-    const accessToken = sessionStorage.getItem("accessToken");
-
     const fetchProductDetail = async () => {
-        const response = await fetch(`/api/product/${id}`);
-        const data = await response.json();
+        setIsLoading(true);
+        try {
+            const response = await fetch(`/api/product/${id}`);
+            const data = await response.json();
 
-        // console.log("Product detail API:", data);
-
-        if (data) {
-            setProductItem(data);
-            setCategoryID(data.category_id);
-            return;
+            if (data) {
+                setProductItem(data);
+                setCategoryID(data.category_id);
+            }
+        } catch (error) {
+            console.error("Error fetching product detail:", error);
         }
     }
 
-
     const fetchProductRelated = async () => {
-        const response = await fetch(`/api/product/category/${categoryID}`);
-        const products = await response.json();
+        if (!categoryID) return;
+        try {
+            const response = await fetch(`/api/product/category/${categoryID}`);
+            const products = await response.json();
 
-        if (products) setProductRelated(products);
-        return;
+            if (products && Array.isArray(products)) {
+                // Lọc bỏ sản phẩm hiện tại để không bị lặp trong danh sách Gợi ý
+                const filteredProducts = products.filter(
+                    (product) => product._id !== id && product.id !== id
+                );
+                setProductRelated(filteredProducts);
+            }
+        } catch (error) {
+            console.error("Error fetching related products:", error);
+        } finally {
+            setIsLoading(false);
+        }
     }
 
+    // Scroll to top khi thay đổi sản phẩm
     useEffect(() => {
         window.scrollTo({
             top: 0,
@@ -124,6 +126,7 @@ function Detail(props) {
         });
     }, [id]);
 
+    // Fetch lại Detail mỗi khi `id` thay đổi
     useEffect(() => {
         if (id) {
             fetchProductDetail();
@@ -131,16 +134,14 @@ function Detail(props) {
         }
     }, [id]);
 
+    // Fetch Danh sách Related khi tìm ra CategoryID
     useEffect(() => {
         if (categoryID) {
             fetchProductRelated();
         }
-    }, [categoryID]);
+    }, [categoryID, id]);
 
     const addProductInCart = async (idProduct) => {
-        // console.log("Product ID nhận được:", idProduct);
-        // console.log("productItem:", productItem);
-
         if (maxQuantity === 0) {
             toast.error("Món đã hết nguyên liệu");
             return;
@@ -152,10 +153,7 @@ function Detail(props) {
         }
 
         if (user && accessToken) {
-            if (!idProduct) {
-                console.error("❌ idProduct bị undefined");
-                return;
-            }
+            if (!idProduct) return;
 
             let itemProduct = [{ id: idProduct, qty: inputValue }];
 
@@ -211,8 +209,6 @@ function Detail(props) {
         }
     }
 
-
-
     const onChangeHandler = event => {
         let value = +event.target.value;
 
@@ -234,133 +230,190 @@ function Detail(props) {
         }
     }
 
+    const imageSrc = productItem?.image_url
+        ? `${API_URL}${productItem.image_url}`
+        : '/images/no-image.png';
+
     return (
         <>
             <Cart accessToken={accessToken} />
-            <div className=''>
+            <div className='detail-page-wrapper'>
                 <div className='product-details container'>
                     <div className='product-details__nav'>
                         <button className='product-details__back' onClick={() => navigate('/')}>
-                            {/* ← Trang chủ  */}
+                            <i className="fa fa-arrow-left pe-2"></i>
                         </button>
                     </div>
-                    <div className='product-details__head'>
-                        <div className='product-details__images'>
-                            <div className='product-details__images-main'>
-                                <img src={imageSrc} alt={productItem?.name || 'product image'}
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = '/images/no-image.png';
-                                    }} />
-                            </div>
+
+                    {isLoading ? (
+                        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+                            <Spinner animation="border" variant="success" />
                         </div>
-                        <div className='product-details__options'>
-                            <div className='product-details__options__name'>
-                                {productItem && productItem.name}
-                            </div>
-                            <div className='product-details__desc'>
-                                <div className='product-details__desc__text'>
-                                    {productItem && productItem.detail}
+                    ) : (
+                        <>
+                            <div className='product-details__head'>
+                                <div className='product-details__images'>
+                                    <div className='product-details__images-main'>
+                                        <img src={imageSrc} alt={productItem?.name || 'product image'}
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = '/images/no-image.png';
+                                            }} />
+                                    </div>
+                                </div>
+                                <div className='product-details__options'>
+                                    <div className='product-details__options__name'>
+                                        {productItem && productItem.name}
+                                    </div>
+                                    <div className='product-details__desc'>
+                                        <div className='product-details__desc__text'>
+                                            {productItem && productItem.detail}
+                                        </div>
+                                    </div>
+                                    <div className='product-details__options__price'>
+                                        {productItem && productItem.price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
+                                    </div>
+                                    <div style={{ marginTop: "10px" }}>
+                                        {maxQuantity > 0 ? (
+                                            <p style={{ color: "#1ac073", fontWeight: "600", fontSize: "15px" }}>
+                                                <i className="fa fa-check-circle pe-1"></i> Có thể đặt tối đa: {maxQuantity} món
+                                            </p>
+                                        ) : (
+                                            <p style={{ color: "red", fontWeight: "600", fontSize: "15px" }}>
+                                                <i className="fa fa-times-circle pe-1"></i> Món ăn đã hết nguyên liệu
+                                            </p>
+                                        )}
+                                    </div>
+                                    <button
+                                        className="btn-view-ingredients mt-2"
+                                        onClick={() => {
+                                            setShowModal(true);
+                                        }}
+                                    >
+                                        <i className="fa fa-list pe-1"></i> Xem thành phần
+                                    </button>
+                                    <hr className="my-4" />
+                                    <div className='product-details__options__group'>
+                                        <div className='product-details__options__group-quantity'>
+                                            <button className='minus' type='button' onClick={() => handleMinusProduct()}>
+                                                <i className="fa fa-minus" style={{ color: "#1AC073" }}></i>
+                                            </button>
+                                            <input
+                                                disabled={maxQuantity === 0}
+                                                ref={inputRef}
+                                                type='number'
+                                                value={inputValue}
+                                                min={1}
+                                                max={maxQuantity}
+                                                onChange={onChangeHandler}
+                                            />
+                                            <button className='add' type='button' onClick={() => handlePlusProduct()}>
+                                                <i className="fa fa-plus" style={{ color: "#1AC073" }}></i>
+                                            </button>
+                                        </div>
+                                        <button
+                                            className='product-details__submit'
+                                            disabled={maxQuantity === 0}
+                                            onClick={() => addProductInCart(productItem._id)}
+                                        >
+                                            <i className="fa fa-shopping-cart pe-2"></i> Thêm vào giỏ hàng
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div className='product-details__options__price'>
-                                {productItem && productItem.price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
-                            </div>
-                            <div style={{ marginTop: "10px" }}>
-                                {maxQuantity > 0 ? (
-                                    <p style={{ color: "green" }}>
-                                        Có thể đặt tối đa: {maxQuantity} món
-                                    </p>
-                                ) : (
-                                    <p style={{ color: "red" }}>
-                                        Món ăn đã hết nguyên liệu
-                                    </p>
-                                )}
-                            </div>
-                            <button
-                                className="btn-view-ingredients"
-                                onClick={() => {
-                                    setShowModal(true);
-                                }}
-                            >
-                                Xem thành phần
-                            </button>
-                            <hr />
-                            <div className='product-details__options__group'>
-                                <div className='product-details__options__group-quantity'>
-                                    <button className='minus' type='button' onClick={() => handleMinusProduct()}>
-                                        <svg width="10" height="3" viewBox="0 0 10 3" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9.1904 0.393311H0.169434V2.51996H9.1904V0.393311Z" fill="#1AC073" />
-                                        </svg>
-                                    </button>
-                                    {/* <input ref={inputRef} id='quantity' type='number' value={inputValue} name='quantity' onChange={onChangeHandler} /> */}
-                                    <input
-                                        disabled={maxQuantity === 0}
-                                        ref={inputRef}
-                                        type='number'
-                                        value={inputValue}
-                                        min={1}
-                                        max={maxQuantity}
-                                        onChange={onChangeHandler}
-                                    />
-                                    <button className='add' type='button' onClick={() => handlePlusProduct()}>
-                                        <svg width="10" height="9" viewBox="0 0 10 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M9.63367 3.39331H0.612793V5.51996H9.63367V3.39331Z" fill="#1AC073" />
-                                            <path d="M6.25098 8.70996L6.25098 0.203308L3.99573 0.203308L3.99573 8.70996H6.25098Z" fill="#1AC073" />
-                                        </svg>
-                                    </button>
+
+                            {/* KHU VỰC SẢN PHẨM LIÊN QUAN */}
+                            <div className='product-details__related mt-5 mb-5'>
+                                <div className='product-details__related__title mb-4 pb-2'>
+                                    <h3 className="fs-4 fw-bold m-0">Gợi ý cho bạn</h3>
+                                    <div className="title-underline"></div>
                                 </div>
-                                <button
-                                    className='product-details__submit'
-                                    disabled={maxQuantity === 0}
-                                    onClick={() => addProductInCart(productItem._id)}
-                                >
-                                    Add To Cart
-                                </button>
+                                <div className='product-details__related__list'>
+                                    {productRelated.length > 0 ? (
+                                        <Row className="g-4">
+                                            {productRelated.slice(0, 4).map((product, index) => {
+                                                const isHot = index % 2 === 0;
+                                                return (
+                                                    <Col lg={3} md={4} sm={6} xs={12} key={product._id || index}>
+                                                        <div className="modern-product-card" onClick={() => navigate(`/detail/${product._id || product.id}`)}>
+                                                            <div className="mpc-image-wrapper">
+                                                                <img
+                                                                    src={product.image_url ? `${API_URL}${product.image_url}` : `${API_URL}/static/images/${product.image}`}
+                                                                    alt={product.name}
+                                                                    className="mpc-image"
+                                                                    onError={(e) => {
+                                                                        e.target.onerror = null;
+                                                                        e.target.src = '/images/no-image.png';
+                                                                    }}
+                                                                />
+                                                                {isHot && (
+                                                                    <div className="mpc-badge mpc-badge-hot">Bán chạy</div>
+                                                                )}
+                                                                {!isHot && (
+                                                                    <div className="mpc-badge mpc-badge-new">Mới</div>
+                                                                )}
+                                                                <div className="mpc-overlay">
+                                                                    <button className="mpc-btn-view">Xem chi tiết</button>
+                                                                </div>
+                                                            </div>
+                                                            <div className="mpc-info">
+                                                                <h5 className="mpc-name" title={product.name}>{product.name}</h5>
+                                                                <p className="mpc-price">
+                                                                    {product.price?.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </Col>
+                                                )
+                                            })}
+                                        </Row>
+                                    ) : (
+                                        <div className="text-center py-4 text-muted fst-italic">
+                                            Không tìm thấy sản phẩm liên quan nào cùng danh mục.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <hr />
-                        </div>
-                    </div>
-                    <div className='product-details__related'>
-                        <div className='product-details__related__title'>Sản phẩm liên quan</div>
-                        <div className='product-details__related__list'>
-                            <Row>
-                                {productRelated.length > 0 && productRelated.map((product, index) => {
-                                    return <ProductCard key={index} items={product} />
-                                })}
-                            </Row>
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
             </div>
+
+            {/* Modal Components */}
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h4>Thành phần sản phẩm</h4>
+                    <div className="modal-content border-0 p-4 rounded-4" onClick={(e) => e.stopPropagation()}>
+                        <h4 className="border-bottom pb-3 mb-3 text-success fw-bold">Thành phần chi tiết</h4>
 
                         {ingredients.length > 0 ? (
-                            <table className="modal-table">
-                                <thead>
-                                    <tr>
-                                        <th>Tên</th>
-                                        <th>Số lượng</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {ingredients.map((ing) => (
-                                        <tr key={ing._id}>
-                                            <td>{ing.ingredient_id?.name}</td>
-                                            <td>{ing.quantity} {ing.unit}</td>
+                            <div className="table-responsive">
+                                <table className="table table-hover modal-table">
+                                    <thead className="table-light">
+                                        <tr>
+                                            <th>Nguyên liệu</th>
+                                            <th className="text-center">Mức tiêu hao</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {ingredients.map((ing) => (
+                                            <tr key={ing._id}>
+                                                <td className="fw-medium text-dark">{ing.ingredient_id?.name}</td>
+                                                <td className="text-center">
+                                                    <span className="badge bg-success bg-opacity-10 text-success px-3 py-2 fs-6 rounded-pill">
+                                                        {ing.quantity} {ing.unit}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         ) : (
-                            <p>Không có thành phần</p>
+                            <p className="text-muted text-center py-4">Sản phẩm này chưa được kê khai thành phần.</p>
                         )}
 
-                        <div className="modal-actions">
-                            <button onClick={() => setShowModal(false)}>Đóng</button>
+                        <div className="modal-actions mt-3 d-flex justify-content-end">
+                            <button className="btn btn-secondary px-4 py-2 rounded-3" onClick={() => setShowModal(false)}>Đóng</button>
                         </div>
                     </div>
                 </div>

@@ -109,3 +109,102 @@
         }
     }
 }
+
+/* Modal styles mapped from Product module for UI consistency */
+.custom-global-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.custom-global-modal-content {
+    background: $white-color;
+    padding: 30px;
+    border-radius: 12px;
+    width: 500px;
+    max-width: 90%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+    .modal-header-title {
+        color: $green-color;
+        font-weight: 700;
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .modal-body-scroll {
+        overflow-y: auto;
+        flex-grow: 1;
+        padding-right: 5px;
+    }
+
+    .modal-form {
+        .form-control {
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+            &:focus {
+                border-color: $green-color;
+                box-shadow: 0 0 0 0.2rem rgba($green-color, 0.25);
+            }
+        }
+        
+        .img-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            img {
+                border-radius: 6px;
+                object-fit: cover;
+                background-color: #f8f9fa;
+                border: 1px solid #e9ecef;
+            }
+        }
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 15px;
+
+        .btn-close-modal {
+            background: $green-color;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            color: $white-color;
+            border: none;
+            padding: 10px 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+
+            &:hover {
+                opacity: 0.8;
+                transform: translateY(-2px);
+                box-shadow: 0px 6px 6px rgba(0, 0, 0, 0.3);
+            }
+            
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none;
+            }
+        }
+    }
+}

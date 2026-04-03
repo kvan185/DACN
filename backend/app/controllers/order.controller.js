@@ -59,7 +59,23 @@ exports.getListOrder = async (req, res) => {
             return res.status(401).json({ message: "Authentication failed" });
         }
 
-        var orders = auth.role == "user" ? await Order.find({ customer_id: auth.id }) : await Order.find({});
+        let query = auth.role == "user" ? { customer_id: auth.id } : {};
+        const { search } = req.query;
+        if (search) {
+            const searchRegex = { $regex: search, $options: 'i' };
+            query = {
+                ...query,
+                $or: [
+                    { first_name: searchRegex },
+                    { last_name: searchRegex },
+                    { phone: searchRegex }
+                ]
+            };
+            if (search.match(/^[0-9a-fA-F]{24}$/)) {
+                query.$or.push({ _id: search });
+            }
+        }
+        var orders = await Order.find(query);
         orders.sort((a, b) => b.created_at - a.created_at);
         orders.reverse();
 

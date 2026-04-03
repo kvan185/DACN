@@ -25,11 +25,8 @@ import RegisterStaff from './pages/Staff/Resgiter/Resgister';
 import Staff from './pages/Staff/Home/HomeStaff';
 import Charts from './pages/Staff/Charts/Charts';
 import Category from './pages/Staff/Category/Category';
-import CategoryAdd from './pages/Staff/Category/CategoryAdd';
-import CategoryUpdate from './pages/Staff/Category/CategoryUpdate';
+
 import Product from './pages/Staff/Product/Product';
-import ProductAdd from './pages/Staff/Product/ProductAdd';
-import ProductUpdate from './pages/Staff/Product/ProductUpdate';
 import LoginStaff from './pages/Staff/Login/Login';
 import Order from './pages/Staff/Order/Order';
 import OrderDetail from './pages/Staff/Order/OrderDetail';
@@ -74,11 +71,7 @@ function App() {
             <Routes>
               <Route path='/staff' element={<Staff />} />
               <Route path='/staff/category' element={<Category />} />
-              <Route path='/staff/category/add' element={<CategoryAdd />} />
-              <Route path='/staff/category/update/:id' element={<CategoryUpdate />} />
               <Route path='/staff/product' element={<Product />} />
-              <Route path='/staff/product/add' element={<ProductAdd />} />
-              <Route path='/staff/product/update/:id' element={<ProductUpdate />} />
               <Route path='/staff/ingredient' element={<Ingredient />} />
               <Route path='/staff/order' element={<Order />} />
               <Route path='/staff/order/detail/:orderId' element={<OrderDetail />} />

@@ -177,6 +177,60 @@
               }
             }
           }
+
+          /* CART CARD MỚI */
+          .chat-cart-card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #fdfdfd;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+
+            .ccc-info {
+              display: flex;
+              flex-direction: column;
+              border-bottom: 1px dashed #e2e8f0;
+              padding-bottom: 8px;
+
+              .ccc-name {
+                font-weight: 700;
+                color: #2d3748;
+                font-size: 15px;
+              }
+
+              .ccc-price {
+                color: $color-primary;
+                font-weight: 600;
+                font-size: 14px;
+                margin-top: 4px;
+              }
+            }
+
+            .ccc-btn {
+              background: $color-primary;
+              color: white;
+              border: none;
+              padding: 8px;
+              border-radius: 8px;
+              font-size: 13px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.2s;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 6px;
+
+              &:hover {
+                background: darken-color($color-primary, 5%);
+                transform: translateY(-1px);
+              }
+            }
+          }
         }
 
         .loading {

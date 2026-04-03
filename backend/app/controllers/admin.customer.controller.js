@@ -7,9 +7,20 @@ const mongoose = require('mongoose'); // ← THÊM DÒNG NÀY
 // 🔹 Lấy danh sách tất cả khách hàng (cho admin)
 const getCustomers = async (req, res) => {
     try {
-        console.log("Getting all customers...");
-        const customers = await Customer.find({}).sort({ createdAt: -1 });
-        console.log(`Found ${customers.length} customers`);
+        const { search } = req.query;
+        let query = {};
+        if (search) {
+            const searchRegex = { $regex: search, $options: 'i' };
+            query = {
+                $or: [
+                    { first_name: searchRegex },
+                    { last_name: searchRegex },
+                    { email: searchRegex },
+                    { phone: searchRegex }
+                ]
+            };
+        }
+        const customers = await Customer.find(query).sort({ createdAt: -1 });
         res.status(200).json(customers);
     } catch (error) {
         console.error('Error fetching customers:', error);

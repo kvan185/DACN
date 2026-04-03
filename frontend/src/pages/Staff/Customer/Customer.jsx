@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Table, Modal, Form, Button } from 'react-bootstrap';
 import { FaRegEdit } from 'react-icons/fa';
 import { MdLock, MdLockOpen } from 'react-icons/md';
@@ -34,11 +34,17 @@ function Customer() {
     const currentCustomers = customerList.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(customerList.length / itemsPerPage);
 
+    const debounceTimeoutRef = useRef(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+
     // 🔹 Lấy danh sách khách hàng
-    const fetchCustomers = async () => {
+    const fetchCustomers = async (searchQuery = '') => {
         setLoading(true);
+        setIsSearching(true);
         try {
-            const res = await fetch('/api/admin/customer');
+            const url = searchQuery ? `/api/admin/customer?search=${encodeURIComponent(searchQuery)}` : '/api/admin/customer';
+            const res = await fetch(url);
             const data = await res.json();
             
             if (Array.isArray(data)) {
@@ -50,17 +56,35 @@ function Customer() {
             } else {
                 setCustomerList([]);
             }
+            if (searchQuery) setCurrentPage(1);
         } catch (error) {
             console.error('Error fetching customers:', error);
             setCustomerList([]);
         } finally {
             setLoading(false);
+            setIsSearching(false);
         }
     };
 
     useEffect(() => {
         fetchCustomers();
     }, []);
+
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = setTimeout(() => {
+            fetchCustomers(value);
+        }, 500);
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        fetchCustomers('');
+    };
 
     // 🔹 Khóa/Mở khóa tài khoản
     const handleToggleLock = async (id, currentStatus) => {
@@ -80,16 +104,7 @@ function Customer() {
 
                 if (res.ok) {
                     toast.success(`${action} tài khoản thành công!`);
-                    
-                    setCustomerList(prevList => {
-                        return prevList.map(customer => {
-                            const customerId = customer._id || customer.id;
-                            if (customerId === id) {
-                                return { ...customer, is_active: data.customer.is_active };
-                            }
-                            return customer;
-                        });
-                    });
+                    fetchCustomers(searchTerm);
                 } else {
                     toast.error(`Lỗi: ${data.message || 'Không thể thay đổi trạng thái'}`);
                 }
@@ -184,14 +199,14 @@ function Customer() {
 
             toast.success(result.message || (isEditMode ? 'Cập nhật thành công!' : 'Thêm mới thành công!'));
             handleCloseModal();
-            fetchCustomers(); // Re-fetch
+            fetchCustomers(searchTerm); // Re-fetch
         } catch (error) {
             toast.error(error.message);
         }
     };
 
 
-    if (loading && customerList.length === 0) {
+    if (loading && customerList.length === 0 && !isSearching) {
         return (
             <section className="block-customer-admin">
                 <h3 className="title-admin">Danh sách khách hàng</h3>
@@ -210,10 +225,36 @@ function Customer() {
             <h3 className="title-admin">Danh sách khách hàng</h3>
 
             <div className="customer-container background-radius">
-                <div className="product-add mt-3 mb-3 d-flex justify-content-end">
-                    <Button variant="success" onClick={handleShowAddModal}>
-                        + Thêm mới
-                    </Button>
+                <div className="d-flex justify-content-between align-items-center mb-4 mt-3">
+                    <div className="product-add mb-0">
+                        <Button variant="success" onClick={handleShowAddModal}>
+                            + Thêm mới
+                        </Button>
+                    </div>
+
+                    <div className="search-container" style={{ width: '380px' }}>
+                        <div className="input-group">
+                            <span className="input-group-text bg-white border-end-0">
+                                <i className="fa fa-search text-muted"></i>
+                            </span>
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm theo Tên, Email hoặc Số điện thoại..."
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                className="form-control border-start-0 border-end-0 shadow-none"
+                            />
+                            {searchTerm && (
+                                <span 
+                                    className="input-group-text bg-white border-start-0" 
+                                    onClick={handleClearSearch}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <i className="fa fa-times text-secondary"></i>
+                                </span>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <Table striped bordered hover className="customer-table text-center align-middle" responsive>

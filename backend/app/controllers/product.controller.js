@@ -41,7 +41,8 @@ exports.create = (req, res) => {
 
 exports.getList = async (req, res) => {
   try {
-    const data = await productService.getList();
+    const { search } = req.query;
+    const data = await productService.getList(search);
     res.json(data);
   } catch (error) {
     handleError(res, error);

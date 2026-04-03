@@ -1,3 +1,9 @@
+1. Lỗi giao diện Thành phần món ăn
+7. Thay đổi sản phẩm Sản phẩm liên quan
+8. Giao diện menu Danh mục trong Home
+9. XOá nút xoá bàn
+10. Dòng 599 trang Table
+
 17. lỗi trang menu?table khi load trang
 19. quản lý thông tin nv
 20. điều chỉnh menu staff : tc - đk - ql nhân viên - ql bàn - ql danh mục - ql món ăn - ql nguyên lieu - đơn hang - đặt bàn - doanh thu

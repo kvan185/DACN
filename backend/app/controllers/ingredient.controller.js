@@ -9,7 +9,8 @@ const handleError = (res, error) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const data = await ingredientService.getAll();
+    const { search } = req.query;
+    const data = await ingredientService.getAll(search);
     res.json(data);
   } catch (error) {
     handleError(res, error);

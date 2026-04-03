@@ -9,11 +9,23 @@
     .product-add {
         margin: 0 0 20px 12px;
 
-        a {
-            text-decoration: none;
-            font-weight: 400;
+        .btn-add-modal {
+            background-color: $green-color;
+            color: $white-color;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
             font-size: 14px;
-            line-height: 16px;
+            font-weight: 500;
+            box-shadow: 0px 4px 4px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+            cursor: pointer;
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0px 6px 6px rgba(0,0,0,0.2);
+                opacity: 0.9;
+            }
         }
     }
 
@@ -42,13 +54,14 @@
             font-size: 14px;
             background-color: #f6f9fc;
             text-align: center;
+            vertical-align: middle;
         }
 
         .product-status {
             font-size: 12px;
             font-weight: 600;
             color: $white-color;
-            padding: 4px 8px;
+            padding: 4px 10px;
             border-radius: 33px;
 
             &.active {
@@ -57,8 +70,15 @@
 
             &.inactive {
                 background: $red-color;
-                opacity: 0.7;
+                opacity: 0.8;
             }
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            padding: 5px;
+            margin: 0 3px;
         }
 
         .icon-update,
@@ -69,53 +89,204 @@
         .icon-delete {
             color: $red-color;
             cursor: pointer;
+            &:hover { opacity: 0.7; }
         }
 
         .icon-update {
             color: $green-color;
-            margin-right: 10px;
+            cursor: pointer;
+            &:hover { opacity: 0.7; }
         }
     }
+}
 
-    .product-form {
-        .btn-add {
-            background: $green-color;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            color: $white-color;
-            border: none;
-        }
+@keyframes fadeInOverlay {
+    from { background: rgba(0, 0, 0, 0); }
+    to { background: rgba(0, 0, 0, 0.6); }
+}
+
+@keyframes scaleInModal {
+    from { 
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.custom-global-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeInOverlay 0.2s ease-out forwards;
+}
+
+.custom-global-modal-content {
+    background: $white-color;
+    padding: 30px;
+    border-radius: 12px;
+    width: 550px;
+    max-width: 90%;
+    /* Max height applied conditionally based on grid layout */
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: scaleInModal 0.2s ease-out forwards;
+
+    /* Expand the Action Modal width to accommodate 2-column grid */
+    &.action-modal {
+        width: 750px; 
     }
 
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 999;
+    .modal-header-title {
+        color: $green-color;
+        font-weight: 700;
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        flex-shrink: 0;
     }
 
-    .modal-content {
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        width: 550px;
-        max-height: 85vh;
+    .modal-body-scroll {
         overflow-y: auto;
+        flex-grow: 1;
+        padding-right: 5px;
+
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #8898aa;
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    }
+
+    /* Use CSS Grid for the form to save vertical space */
+    .modal-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 20px;
+        row-gap: 15px;
+
+        .full-width {
+            grid-column: span 2;
+        }
+    }
+
+    .modal-form {
+        .form-control, .form-select {
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+            &:focus {
+                border-color: $green-color;
+                box-shadow: 0 0 0 0.2rem rgba($green-color, 0.25);
+            }
+        }
+
+        .img-preview-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            img {
+                border-radius: 6px;
+                object-fit: cover;
+                background-color: #f8f9fa;
+                border: 1px solid #e9ecef;
+            }
+        }
+
+        .status-toggle {
+            height: 100%;
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
     }
 
     .modal-table {
         border-radius: 8px;
         overflow: hidden;
+        margin-bottom: 0;
+
+        th {
+            background-color: #f6f9fc;
+            color: #8898aa;
+            font-weight: 600;
+            padding: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .quantity-badge {
+            background-color: $green-color !important;
+            color: $white-color;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+        }
     }
 
     .modal-actions {
+        display: flex;
+        justify-content: center;
+        flex-shrink: 0;
         margin-top: 15px;
+
+        .btn-close-modal {
+            background: $green-color;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            color: $white-color;
+            border: none;
+            padding: 10px 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+
+            &:hover {
+                opacity: 0.8;
+                transform: translateY(-2px);
+                box-shadow: 0px 6px 6px rgba(0, 0, 0, 0.3);
+            }
+            
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none;
+            }
+        }
     }
 }
 

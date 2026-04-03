@@ -95,73 +95,73 @@ exports.create = async (req, res) => {
 
 
 exports.getList = async (req, res) => {
-    try {
-        const categories = await Category.find({});
-        res.status(200).json(categories);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "An error occurred while processing your request." });
-    }
+  try {
+    const categories = await Category.find({});
+    res.status(200).json(categories);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "An error occurred while processing your request." });
+  }
 };
 
 exports.getCategoryById = async (req, res) => {
-    try {
-        const category = await Category.findById(req.params.id);
-        if (!category) {
-            return res.status(404).send({ message: "Category not found." });
-        }
-        res.status(200).json(category);
-    } catch (error) {
-        console.error(error);
-        if (error.kind === "ObjectId") {
-            return res.status(404).send({ message: "Category not found." });
-        }
-        res.status(500).send({ message: "An error occurred while processing your request." });
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) {
+      return res.status(404).send({ message: "Category not found." });
     }
+    res.status(200).json(category);
+  } catch (error) {
+    console.error(error);
+    if (error.kind === "ObjectId") {
+      return res.status(404).send({ message: "Category not found." });
+    }
+    res.status(500).send({ message: "An error occurred while processing your request." });
+  }
 };
 
 exports.update = async (req, res) => {
-    const id = (req.params.id === 'null' ? undefined : req.params.id);
+  const id = (req.params.id === 'null' ? undefined : req.params.id);
 
-    try {
-        upload.single('image')(req, res, async (err) => {
-            if (err) {
-                console.error(err);
-                return res.status(400).send({ message: err.message });
-            }
+  try {
+    upload.single('image')(req, res, async (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(400).send({ message: err.message });
+      }
 
-            const category = await Category.findById(id);
-            if (!category) {
-                return res.status(404).send({ message: `Category with id ${id} not found` });
-            }
+      const category = await Category.findById(id);
+      if (!category) {
+        return res.status(404).send({ message: `Category with id ${id} not found` });
+      }
 
-            // Update fields
-            category.name = req.body.name || category.name;
-            category.image = req.file ? req.file.filename : category.image;
+      // Update fields
+      category.name = req.body.name || category.name;
+      category.image = req.file ? req.file.filename : category.image;
 
-            // Save changes
-            await category.save();
+      // Save changes
+      await category.save();
 
-            // Return updated category
-            res.send(category);
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "An error occurred while processing your request." });
-    }
+      // Return updated category
+      res.send(category);
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "An error occurred while processing your request." });
+  }
 };
 
 exports.delete = async (req, res) => {
-    const id = (req.params.id === 'null' ? undefined : req.params.id);
+  const id = (req.params.id === 'null' ? undefined : req.params.id);
 
-    try {
-        const deletedCategory = await Category.findByIdAndDelete(id);
-        if (!deletedCategory) {
-            return res.status(404).send({ message: "Category not found." });
-        }
-        res.status(200).send({ message: "Category deleted successfully." });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "An error occurred while processing your request." });
+  try {
+    const deletedCategory = await Category.findByIdAndDelete(id);
+    if (!deletedCategory) {
+      return res.status(404).send({ message: "Category not found." });
     }
+    res.status(200).send({ message: "Category deleted successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "An error occurred while processing your request." });
+  }
 };

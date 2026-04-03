@@ -21,15 +21,33 @@ function Order(props) {
     const accessToken = sessionStorage.getItem("accessToken");
     const user = JSON.parse(sessionStorage.getItem("user"));
 
-    const fetchOrderList = async (accessToken) => {
-        const response = await fetch('/api/order', {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+    const debounceTimeoutRef = useRef(null);
+
+    const fetchOrderList = async (accessToken, searchQuery = '') => {
+        setIsSearching(true);
+        try {
+            const url = searchQuery ? `/api/order?search=${encodeURIComponent(searchQuery)}` : '/api/order';
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                }
+            });
+            const data = await response.json();
+            if (response.ok && Array.isArray(data)) {
+                setOrderList(data);
+            } else {
+                console.error('Lỗi khi lấy đơn hàng:', data);
+                setOrderList([]);
             }
-        });
-        const data = await response.json();
-        if (data) setOrderList(data);
+            if (searchQuery) setCurrentPage(1);
+        } catch (error) {
+            console.error('Fetch orders error:', error);
+        } finally {
+            setIsSearching(false);
+        }
     }
 
     useEffect(() => {
@@ -42,6 +60,22 @@ function Order(props) {
         });
     }, []);
 
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = setTimeout(() => {
+            if (accessToken) fetchOrderList(accessToken, value);
+        }, 500);
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        if (accessToken) fetchOrderList(accessToken, '');
+    };
+
     useEffect(() => {
         if (currentPage > totalPages) {
             setCurrentPage(totalPages || 1);
@@ -53,6 +87,31 @@ function Order(props) {
             <h3 className="title-admin">Danh sách đơn hàng</h3>
 
             <div className="order-container background-radius">
+                <div className="d-flex justify-content-end mb-4 mt-3">
+                    <div className="search-container" style={{ width: '380px' }}>
+                        <div className="input-group">
+                            <span className="input-group-text bg-white border-end-0">
+                                <i className="fa fa-search text-muted"></i>
+                            </span>
+                            <input
+                                type="text"
+                                placeholder="Tìm theo Mã đơn, Khách hàng, SĐT..."
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                className="form-control border-start-0 border-end-0 shadow-none"
+                            />
+                            {searchTerm && (
+                                <span 
+                                    className="input-group-text bg-white border-start-0" 
+                                    onClick={handleClearSearch}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <i className="fa fa-times text-secondary"></i>
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
                 <Table className='order-table'>
                     <thead>
                         <tr>

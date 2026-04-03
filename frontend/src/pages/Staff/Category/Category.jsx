@@ -1,56 +1,202 @@
-import React, { useEffect, useState } from 'react';
-import { Table } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { FaRegEdit } from 'react-icons/fa';
+import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { Table, InputGroup, Form } from 'react-bootstrap';
+import { FaRegEdit, FaSearch } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
+import { IoMdClose } from "react-icons/io";
+import { toast } from 'react-toastify';
 
 import './category.scss';
 
 function Category(props) {
     const [categoryList, setCategoryList] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
+    
+    // Search properties
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+    const debounceTimeoutRef = useRef(null);
+
     const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 10;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentCategories = categoryList.slice(indexOfFirstItem, indexOfLastItem);
 
+    // Modal States
+    const [showModal, setShowModal] = useState(false);
+    const [actionType, setActionType] = useState('ADD'); // 'ADD' | 'UPDATE'
+    const [actionLoading, setActionLoading] = useState(false);
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    const [currentImage, setCurrentImage] = useState('');
+    const modalRef = useRef(null);
+
+    const [formData, setFormData] = useState({
+        name: '',
+        image: null
+    });
+
+    useEffect(() => {
+        if (showModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => { document.body.style.overflow = 'auto'; };
+    }, [showModal]);
+
+    const handleBackdropClick = (e, closeModalFunc) => {
+        if (e.target === e.currentTarget) closeModalFunc();
+    };
+
     const totalPages = Math.ceil(categoryList.length / itemsPerPage);
 
-    const fetchListCate = async () => {
-        const response = await fetch('/api/category');
-        const data = await response.json();
-
-        if (data && data.length > 0) setCategoryList(data);
+    const fetchListCate = async (searchQuery = '') => {
+        setIsSearching(true);
+        try {
+            const url = searchQuery ? `/api/category?search=${encodeURIComponent(searchQuery)}` : '/api/category';
+            const response = await fetch(url);
+            const data = await response.json();
+            setCategoryList(data || []);
+            if (searchQuery) setCurrentPage(1);
+        } catch (error) {
+            console.error('Fetch categories error:', error);
+        } finally {
+            setIsSearching(false);
+        }
     }
 
     useEffect(() => {
         fetchListCate();
     }, []);
 
-    const handleDeleteCateItem = async (cateId) => {
-        const result = confirm('Bạn có muốn xóa');
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
 
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = setTimeout(() => fetchListCate(value), 500);
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        fetchListCate('');
+    };
+
+    const handleDeleteCateItem = async (cateId) => {
+        const result = window.confirm('Bạn có muốn xóa danh mục này?');
         if (result && cateId) {
-            await fetchDelete(cateId);
-            await fetchListCate();
+            try {
+                const response = await fetch(`/api/category/${cateId}`, { method: 'delete' });
+                if (response.ok) {
+                    toast.success('Xóa danh mục thành công');
+                    await fetchListCate(searchTerm);
+                } else {
+                    toast.error('Lỗi khi xóa danh mục');
+                }
+            } catch (error) {
+                toast.error('Lỗi kết nối máy chủ');
+            }
         }
     }
 
-    const fetchDelete = async (cateId) => {
-        const response = await fetch(`/api/category/${cateId}`, {
-            method: 'delete',
-        });
-        const data = await response.json();
-        return data;
-    }
+    const openAddModal = () => {
+        setActionType('ADD');
+        setFormData({ name: '', image: null });
+        setCurrentImage('');
+        setSelectedCategoryId(null);
+        setShowModal(true);
+    };
+
+    const openUpdateModal = (category) => {
+        setActionType('UPDATE');
+        setFormData({ name: category.name, image: null });
+        setCurrentImage(category.image);
+        setSelectedCategoryId(category.id || category._id);
+        setShowModal(true);
+    };
+
+    const closeModal = () => setShowModal(false);
+
+    const handleInputChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setFormData({ ...formData, image: e.target.files[0] });
+        }
+    };
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (actionType === 'ADD' && !formData.image) {
+            toast.warn('Vui lòng chọn hình ảnh đại diện danh mục');
+            return;
+        }
+        if (!formData.name.trim()) {
+            toast.warn('Vui lòng nhập tên danh mục');
+            return;
+        }
+
+        const formDataObj = new FormData();
+        formDataObj.append('name', formData.name);
+        if (formData.image) formDataObj.append('image', formData.image);
+
+        const url = actionType === 'ADD' ? '/api/category' : `/api/category/${selectedCategoryId}`;
+        const method = actionType === 'ADD' ? 'POST' : 'PUT';
+
+        setActionLoading(true);
+        try {
+            const res = await fetch(url, { method, body: formDataObj });
+            if (res.ok) {
+                toast.success(actionType === 'ADD' ? 'Thêm danh mục thành công' : 'Cập nhật danh mục thành công');
+                closeModal();
+                fetchListCate(searchTerm);
+            } else {
+                const data = await res.json();
+                toast.error(data.message || 'Lỗi khi lưu danh mục');
+            }
+        } catch (error) {
+            toast.error('Lỗi kết nối máy chủ');
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
     return (
         <section className="block-category">
             <h3 className="title-admin">Danh sách danh mục</h3>
 
             <div className="category-container background-radius">
-                <div className="category-add">
-                    <Link to='/staff/category/add'>Thêm mới</Link>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="category-add mb-0">
+                        <button className="btn btn-add-modal border-0 px-3 py-2 text-white bg-success rounded-3 shadow-sm" onClick={openAddModal}> + Thêm mới</button>
+                    </div>
+
+                    <div className="search-container" style={{ width: '380px' }}>
+                        <InputGroup>
+                            <InputGroup.Text className="bg-white border-end-0">
+                                <FaSearch className="text-muted" />
+                            </InputGroup.Text>
+                            <Form.Control
+                                type="text"
+                                placeholder="Tìm kiếm danh mục..."
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                className="border-start-0 border-end-0 shadow-none"
+                            />
+                            {searchTerm && (
+                                <InputGroup.Text 
+                                    className="bg-white border-start-0 cursor-pointer" 
+                                    onClick={handleClearSearch}
+                                >
+                                    <IoMdClose className="text-secondary" />
+                                </InputGroup.Text>
+                            )}
+                        </InputGroup>
+                    </div>
                 </div>
 
                 <Table className='category-table'>
@@ -58,68 +204,87 @@ function Category(props) {
                         <tr>
                             <th>STT</th>
                             <th>Tên danh mục</th>
-                            {/* <th>Hình ảnh</th> */}
                             <th>Trạng thái</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {currentCategories.length > 0 && (
+                        {isSearching ? (
+                            <tr><td colSpan="4" className="text-center py-4">Đang tìm kiếm...</td></tr>
+                        ) : currentCategories.length > 0 ? (
                             currentCategories.map((cateItem, index) => {
-                                const { id, name, is_active } = cateItem;
+                                const { id, _id, name, is_active } = cateItem;
+                                const cateId = id || _id;
 
                                 return (
-                                    <tr key={id}>
+                                    <tr key={cateId}>
                                         <td>{indexOfFirstItem + index + 1}</td>
-
                                         <td>{name}</td>
-
                                         <td>
                                             <span className={`category-status ${is_active ? 'active' : 'inactive'}`}>
-                                                {is_active ? 'active' : 'inactive'}
+                                                {is_active ? 'Đang hoạt động' : 'Tạm khóa'}
                                             </span>
                                         </td>
-
                                         <td>
-                                            <Link to={`/staff/category/update/${id}`}>
-                                                <FaRegEdit className='icon-update' />
-                                            </Link>
-
-                                            <MdDelete
-                                                onClick={() => handleDeleteCateItem(id)}
-                                                className='icon-delete'
-                                            />
+                                            <button className="btn btn-sm btn-link" onClick={() => openUpdateModal(cateItem)}>
+                                                <FaRegEdit className='icon-update fs-5' />
+                                            </button>
+                                            <button className="btn btn-sm btn-link" onClick={() => handleDeleteCateItem(cateId)}>
+                                                <MdDelete className='icon-delete fs-5 text-danger' />
+                                            </button>
                                         </td>
                                     </tr>
                                 );
                             })
+                        ) : (
+                            <tr><td colSpan="4" className="text-center py-4 text-muted">Không tìm thấy danh mục</td></tr>
                         )}
                     </tbody>
                 </Table>
-                <div className="pagination">
-                    <button
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(currentPage - 1)}
-                    >
-                        Prev
-                    </button>
 
-                    {[...Array(totalPages)].map((_, i) => (
-                        <button
-                            key={i}
-                            className={currentPage === i + 1 ? 'active' : ''}
-                            onClick={() => setCurrentPage(i + 1)}
-                        >
-                            {i + 1}
-                        </button>
+                {showModal && createPortal(
+                    <div className="custom-global-modal-overlay" onMouseDown={(e) => handleBackdropClick(e, closeModal)}>
+                        <div className="custom-global-modal-content border-0" ref={modalRef} style={{ width: '450px' }}>
+                            <h4 className="modal-header-title">
+                                {actionType === 'ADD' ? 'Thêm mới danh mục' : 'Cập nhật danh mục'}
+                            </h4>
+
+                            <form onSubmit={handleFormSubmit} className="modal-form d-flex flex-column">
+                                <div className="form-group mb-3">
+                                    <label className="fw-medium mb-1">Tên danh mục <span className="text-danger">*</span></label>
+                                    <input required type="text" className="form-control" name="name" value={formData.name} onChange={handleInputChange} placeholder="Nhập tên danh mục..." />
+                                </div>
+                                
+                                <div className="form-group mb-4">
+                                    <label className="fw-medium mb-1">Hình ảnh đại diện {actionType === 'ADD' && <span className="text-danger">*</span>}</label>
+                                    <input type="file" accept="image/*" className="form-control" onChange={handleFileChange} />
+                                    {currentImage && actionType === 'UPDATE' && !formData.image && (
+                                        <div className="mt-2 img-preview-container">
+                                            <img src={`${import.meta.env.VITE_API_URL}/static/images/${currentImage}`} alt="Preview" height="60" />
+                                            <span className="text-muted fs-6">Ảnh hiện tại</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="modal-actions pt-3 border-top mt-auto">
+                                    <button type="button" className="btn btn-secondary px-4 me-3 rounded-3" onClick={closeModal} disabled={actionLoading}>Hủy</button>
+                                    <button type="submit" className="btn btn-close-modal px-4 bg-success text-white border-0 rounded-3 shadow-sm" disabled={actionLoading}>
+                                        {actionLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : null}
+                                        {actionType === 'ADD' ? 'Thêm mới' : 'Cập nhật'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>,
+                    document.body
+                )}
+
+                <div className="pagination d-flex justify-content-center mt-3 gap-2">
+                    <button className="btn btn-secondary" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>Prev</button>
+                    {totalPages > 0 && [...Array(totalPages)].map((_, i) => (
+                        <button key={i} className={`btn ${currentPage === i + 1 ? 'btn-primary' : 'btn-outline-primary'}`} onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
                     ))}
-
-                    <button
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                    >
-                        Next
-                    </button>
+                    <button className="btn btn-secondary" disabled={currentPage >= totalPages || totalPages === 0} onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
                 </div>
             </div>
         </section>

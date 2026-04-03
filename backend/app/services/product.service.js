@@ -56,8 +56,20 @@ const create = async (data, file) => {
     return await product.save();
 };
 
-const getList = async () => {
-    return await Product.find();
+const getList = async (searchQuery) => {
+    let query = {};
+    if (searchQuery) {
+        query = {
+             $or: [
+                 { name: { $regex: searchQuery, $options: "i" } }
+             ]
+        };
+        // Check if searchQuery is valid ObjectId
+        if (searchQuery.match(/^[0-9a-fA-F]{24}$/)) {
+            query.$or.push({ _id: searchQuery });
+        }
+    }
+    return await Product.find(query).sort({ createdAt: -1 });
 };
 
 const getListByCategory = async (categoryId) => {
