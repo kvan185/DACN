@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import { FaUser } from "react-icons/fa";
@@ -13,13 +13,53 @@ function Profile() {
 
     const [userUpdate, setUserUpdate] = useState(user);
     const [selectedImage, setSelectedImage] = useState(null);
+    const fileInputRef = useRef(null);
 
-    const API_URL = import.meta.env.VITE_API_URL;
+    const API_URL = import.meta.env.VITE_API_URL || "";
 
-    const handleImageChange = (event) => {
+    const handleAvatarClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleImageChange = async (event) => {
         const file = event.target.files[0];
         if (file) {
+            // Hiển thị preview ngay lập tức
             setSelectedImage(file);
+
+            // Tự động Upload lên API
+            const formData = new FormData();
+            formData.append("avatar", file);
+
+            try {
+                const response = await fetch("/api/admin/update-avatar", {
+                    method: "PUT",
+                    body: formData,
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    toast.success("Cập nhật ảnh đại diện thành công");
+                    // Cập nhật lại state và sessionStorage
+                    const updatedUser = { ...userUpdate, avatar: data.avatar };
+                    setUserUpdate(updatedUser);
+                    sessionStorage.setItem("user", JSON.stringify(updatedUser));
+                } else {
+                    toast.error(data.message || "Lỗi cập nhật ảnh đại diện");
+                    // Rollback nếu lỗi
+                    setSelectedImage(null);
+                }
+
+            } catch (error) {
+                toast.error("Lỗi kết nối khi cập nhật ảnh");
+                setSelectedImage(null);
+            }
         }
     };
 
@@ -28,19 +68,17 @@ function Profile() {
 
         const formData = new FormData();
 
-        formData.append("firstName", userUpdate.firstName);
-        formData.append("lastName", userUpdate.lastName);
-        formData.append("phone", userUpdate.phone);
-        formData.append("age", userUpdate.age);
-        formData.append("gender", userUpdate.gender);
+        formData.append("first_name", userUpdate?.first_name || "");
+        formData.append("last_name", userUpdate?.last_name || "");
+        formData.append("phone", userUpdate?.phone || "");
+        formData.append("age", userUpdate?.age || "");
+        formData.append("gender", userUpdate?.gender || "");
 
-        if (selectedImage) {
-            formData.append("avatar", selectedImage);
-        }
+        // Form submit thông thường không cần gửi avatar nữa vì đã tự update khi click
 
         try {
-            const response = await fetch("/api/staff", {
-                method: "POST",
+            const response = await fetch("/api/admin/profile", {
+                method: "PUT",
                 body: formData,
                 headers: {
                     Authorization: `Bearer ${accessToken}`
@@ -49,10 +87,14 @@ function Profile() {
 
             const data = await response.json();
 
-            if (data) {
-                setUserUpdate(data);
-                sessionStorage.setItem("user", JSON.stringify(data));
+            if (response.ok && data) {
+                // Ensure we don't lose avatar that might have been updated earlier
+                const finalData = { ...data, avatar: userUpdate.avatar };
+                setUserUpdate(finalData);
+                sessionStorage.setItem("user", JSON.stringify(finalData));
                 toast.success("Cập nhật thông tin thành công");
+            } else {
+                toast.error(data.message || "Lỗi cập nhật thông tin");
             }
 
         } catch (error) {
@@ -75,7 +117,11 @@ function Profile() {
 
                             <div className="profile-avatar">
 
-                                <div className="avatar-box">
+                                <div 
+                                    className="avatar-box" 
+                                    onClick={handleAvatarClick} 
+                                    style={{ cursor: "pointer" }}
+                                >
 
                                     {selectedImage || userUpdate?.avatar ? (
 
@@ -86,6 +132,7 @@ function Profile() {
                                                     : `${API_URL}${userUpdate.avatar}`
                                             }
                                             alt="avatar"
+                                            style={{ objectFit: "cover", width: "100%", height: "100%", borderRadius: "50%" }}
                                         />
 
                                     ) : (
@@ -98,13 +145,15 @@ function Profile() {
 
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept="image/jpeg, image/png, image/jpg"
                                         onChange={handleImageChange}
+                                        ref={fileInputRef}
+                                        style={{ display: "none" }}
                                     />
 
                                 </div>
 
-                                <p className="upload-text">
+                                <p className="upload-text" onClick={handleAvatarClick} style={{ cursor: "pointer" }}>
                                     Nhấn vào ảnh để thay đổi
                                 </p>
 
@@ -125,24 +174,24 @@ function Profile() {
 
                                         <input
                                             type="text"
-                                            placeholder="First Name"
-                                            value={userUpdate?.firstName || ""}
+                                            placeholder="Họ"
+                                            value={userUpdate?.first_name || ""}
                                             onChange={(e) =>
                                                 setUserUpdate({
                                                     ...userUpdate,
-                                                    firstName: e.target.value
+                                                    first_name: e.target.value
                                                 })
                                             }
                                         />
 
                                         <input
                                             type="text"
-                                            placeholder="Last Name"
-                                            value={userUpdate?.lastName || ""}
+                                            placeholder="Tên"
+                                            value={userUpdate?.last_name || ""}
                                             onChange={(e) =>
                                                 setUserUpdate({
                                                     ...userUpdate,
-                                                    lastName: e.target.value
+                                                    last_name: e.target.value
                                                 })
                                             }
                                         />

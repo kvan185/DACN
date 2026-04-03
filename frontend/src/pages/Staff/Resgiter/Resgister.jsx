@@ -1,7 +1,7 @@
-import React ,{ useState } from 'react';
+import React, { useState } from 'react';
 import { Form } from "react-bootstrap";
 import { FaEyeSlash, FaEye } from 'react-icons/fa';
-import { useNavigate  } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 
 import './resgister.scss';
@@ -20,7 +20,7 @@ function Resgister(props) {
     const [showPassword, setShowPassword] = useState([]);
     const navigate = useNavigate();
 
-    const handleTogglePassword = (index) =>{
+    const handleTogglePassword = (index) => {
         setShowPassword((prevPasswords) => {
             const updatedPasswords = [...prevPasswords];
             updatedPasswords[index] = !updatedPasswords[index];
@@ -28,10 +28,10 @@ function Resgister(props) {
         });
     }
 
-    const handleSubmitResgister = async(event)=>{
+    const handleSubmitResgister = async (event) => {
         event.preventDefault();
 
-        if(formData.password.length >= 6 && formData.confirm_password.length >= 6){
+        if (formData.password.length >= 6 && formData.confirm_password.length >= 6) {
             const response = await fetch('/api/auth/admin/register', {
                 method: 'post',
                 headers: {
@@ -39,10 +39,10 @@ function Resgister(props) {
                 },
                 body: JSON.stringify(formData),
             });
-    
+
             if (response.ok) {
                 navigate('/staff/login');
-            }else{
+            } else {
                 toast.error('Đăng ký thất bại. Vui lòng kiểm tra lại thông tin');
             }
         } else {
@@ -52,59 +52,59 @@ function Resgister(props) {
 
     return (
         <>
-            <ToastContainer 
+            <ToastContainer
                 position="top-right"
                 autoClose={1000}
-            /> 
+            />
 
             <div className='resgister__staff'>
-                <h3 className="title-admin">Đăng ký tài khoản nhân viên</h3>
+                <h3 className="title-admin">Tạo tài khoản nhân viên</h3>
 
                 <div className="resgister__staff-container background-radius">
                     <Form className="resgister__staff-form" action="post" onSubmit={handleSubmitResgister}>
                         <div className='form-group'>
                             <div className='register-form-input'>
-                                <Form.Control required type="text" name='first_name' value={formData.first_name} 
-                                onChange={(event)=>setFormData({...formData, first_name: event.target.value})} 
-                                placeholder='Nhập tên nhân viên' />
+                                <Form.Control required type="text" name='first_name' value={formData.first_name}
+                                    onChange={(event) => setFormData({ ...formData, first_name: event.target.value })}
+                                    placeholder='Nhập tên nhân viên' />
                             </div>
 
                             <div className='register-form-input'>
-                                <Form.Control required type="text" name='last_name' value={formData.last_name} 
-                                onChange={(event)=>setFormData({...formData, last_name: event.target.value})}
-                                placeholder='Nhập họ nhân viên'/>
+                                <Form.Control required type="text" name='last_name' value={formData.last_name}
+                                    onChange={(event) => setFormData({ ...formData, last_name: event.target.value })}
+                                    placeholder='Nhập họ nhân viên' />
                             </div>
                         </div>
 
                         <div className='register-form-input'>
-                            <Form.Control required type="text" name='email' value={formData.email} 
-                            onChange={(event)=>setFormData({...formData, email: event.target.value})} 
-                            placeholder='Nhập email'/>
+                            <Form.Control required type="text" name='email' value={formData.email}
+                                onChange={(event) => setFormData({ ...formData, email: event.target.value })}
+                                placeholder='Nhập email' />
                         </div>
 
                         <div className='register-form-input'>
-                            <Form.Control required type={ showPassword[0] ? 'text' : 'password' } name='password' value={formData.password} 
-                            onChange={(event)=>setFormData({...formData, password: event.target.value})} 
-                            placeholder='Nhập mật khẩu'/>
-                            { showPassword[0] ? <FaEyeSlash onClick={()=>handleTogglePassword(0)} /> : <FaEye onClick={()=>handleTogglePassword(0)} /> }
+                            <Form.Control required type={showPassword[0] ? 'text' : 'password'} name='password' value={formData.password}
+                                onChange={(event) => setFormData({ ...formData, password: event.target.value })}
+                                placeholder='Nhập mật khẩu' />
+                            {showPassword[0] ? <FaEyeSlash onClick={() => handleTogglePassword(0)} /> : <FaEye onClick={() => handleTogglePassword(0)} />}
                         </div>
 
                         <div className='register-form-input'>
-                            <Form.Control required type={ showPassword[1] ? 'text' : 'password' } name='confirm_password' value={formData.confirm_password} 
-                            onChange={(event)=>setFormData({...formData, confirm_password: event.target.value})} 
-                            placeholder='Nhập lại mật khẩu'/>
-                            { showPassword[1] ? <FaEyeSlash onClick={()=>handleTogglePassword(1)} /> : <FaEye onClick={()=>handleTogglePassword(1)} /> }
+                            <Form.Control required type={showPassword[1] ? 'text' : 'password'} name='confirm_password' value={formData.confirm_password}
+                                onChange={(event) => setFormData({ ...formData, confirm_password: event.target.value })}
+                                placeholder='Nhập lại mật khẩu' />
+                            {showPassword[1] ? <FaEyeSlash onClick={() => handleTogglePassword(1)} /> : <FaEye onClick={() => handleTogglePassword(1)} />}
                         </div>
 
                         <div className='form-group'>
                             <div className='register-form-input'>
-                                <Form.Control type="text" name='phone' value={formData.phone} 
-                                onChange={(event)=>setFormData({...formData, phone: event.target.value})} 
-                                placeholder='Nhập số điện thoại'/>
+                                <Form.Control type="text" name='phone' value={formData.phone}
+                                    onChange={(event) => setFormData({ ...formData, phone: event.target.value })}
+                                    placeholder='Nhập số điện thoại' />
                             </div>
 
-                            <Form.Select name="gender" id="gender" value={formData.gender} 
-                            onChange={(event)=>setFormData({...formData, gender: event.target.value})}>
+                            <Form.Select name="gender" id="gender" value={formData.gender}
+                                onChange={(event) => setFormData({ ...formData, gender: event.target.value })}>
                                 <option>Giới tính</option>
                                 <option value="male">Nam</option>
                                 <option value="female">Nữ</option>

@@ -27,9 +27,9 @@ const sliders = [
         name: 'Khách hàng',
     },
     {
-        url: '/staff/register',
+        url: '/staff/manage',
         icon: <FaUserPlus />,
-        name: 'Đăng ký',
+        name: 'Nhân viên',
         role: 'ADMIN'
     },
     {
@@ -78,7 +78,7 @@ function Menus() {
                         >
                             <Link
                                 to={url}
-                                className="slider__menu-link"
+                                className={`slider__menu-link ${role && role !== roleUser ? 'disable' : ''}`}
                             >
                                 {icon}
                                 <span className="slider__menu-name">{name}</span>

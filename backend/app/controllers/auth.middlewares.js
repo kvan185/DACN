@@ -5,7 +5,11 @@ const authMethod = require('../middlewares/auth.method');
 
 exports.isAuth = async (req, res, next) => {
 	try {
-		// Get access token from header
+		// Get access token from header safely
+		if (!req.headers || !req.headers.authorization) {
+			return res.status(401).send({ error: 'Access token not found.' });
+		}
+		
 		const accessTokenFromHeader = req.headers.authorization.split(' ');
 		if (!accessTokenFromHeader[1]) {
 			return res.status(401).send({ error: 'Access token not found.' });
@@ -38,7 +42,11 @@ async function findCustomerByEmail(email) {
 }
 
 exports.checkAuth = async(req) => {
-	// Get access token from header
+	// Safely check authorization header
+	if (!req.headers || !req.headers.authorization) {
+		return null;
+	}
+
 	const accessTokenFromHeader = req.headers.authorization.split(' ');
 	if (!accessTokenFromHeader[1]) {
 		return null;

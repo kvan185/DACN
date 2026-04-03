@@ -31,7 +31,10 @@ module.exports = mongoose => {
             type: String,
             null: true,
         },
-
+        status: {
+            type: String,
+            default: 'active',
+        },
       },
       { timestamps: true }
     );

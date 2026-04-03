@@ -51,4 +51,4 @@ module.exports = app => {
 
     app.use("/api/admin/customer", router);
     console.log("Admin customer routes registered successfully");
-};
+}

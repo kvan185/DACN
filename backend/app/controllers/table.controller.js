@@ -90,7 +90,17 @@ exports.deleteTable = async (req, res) => {
 };
 
 exports.getTablesListInternal = async () => {
-  const tables = await Table.find().sort({ tableNumber: 1 });
+  const tables = await Table.aggregate([
+    {
+      $lookup: {
+        from: 'reservations',
+        localField: '_id',
+        foreignField: 'tableId',
+        as: 'reservationList'
+      }
+    },
+    { $sort: { tableNumber: 1 } }
+  ]);
 
   // Tìm các lịch đặt bàn của ngày hôm nay
   const tzoffset = (new Date()).getTimezoneOffset() * 60000;
@@ -118,7 +128,8 @@ exports.getTablesListInternal = async () => {
   const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
 
   return tables.map(table => {
-    const t = table.toObject();
+    // Trong hàm aggregate, document trả về đã là plain JS object
+    const t = { ...table };
     t.note = ""; // Khởi tạo ghi chú trống
     t.nextReservationTime = null;
 
@@ -126,16 +137,18 @@ exports.getTablesListInternal = async () => {
     const res = todayReservations.find(r => r.tableId.toString() === t._id.toString());
 
     if (res) {
+      t.confirmationCode = res.confirmationCode;
+      t.customerName = res.customerName; // optionally add customerName 
       const resTime = new Date(res.reservationTime);
       const diffMs = resTime - now;
       const diffMinutes = Math.floor(diffMs / 60000);
 
       if (resTime <= oneHourFromNow) {
-        t.nextReservationTime = res.reservationTime; 
-        t.holdExpiryTime = new Date(resTime.getTime() + 2 * 60 * 60 * 1000); 
+        t.nextReservationTime = res.reservationTime;
+        t.holdExpiryTime = new Date(resTime.getTime() + 2 * 60 * 60 * 1000);
 
         if (t.status === 'Đang sử dụng') {
-          t.note = "Sắp đến giờ đặt bàn của khách, mau chóng xử lý!"; 
+          t.note = "Sắp đến giờ đặt bàn của khách, mau chóng xử lý!";
         } else {
           t.status = 'Đã đặt';
           t.isAvailable = false;

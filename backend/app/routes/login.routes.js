@@ -16,9 +16,6 @@ module.exports = app => {
     // Refresh token
     router.post("/refresh-token", login.refreshToken);
 
-    // Register Admin
-    router.post("/admin/register", login.createAdmin);
-
     app.use("/api/auth", router);
   };
   

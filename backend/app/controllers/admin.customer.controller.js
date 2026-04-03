@@ -246,4 +246,4 @@ module.exports = {
     deleteCustomer,
     createCustomer,
     toggleCustomerStatus
-};
+}

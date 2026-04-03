@@ -13,6 +13,7 @@ app.use(
   "/static",
   express.static(path.join(__dirname, "static"))
 );
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -50,6 +51,8 @@ require("./app/routes/reservation.routes")(app);
 require("./app/routes/ingredient.routes")(app);
 require("./app/routes/dashboard.routes")(app);
 require("./app/routes/chatbot.routes")(app);
+require("./app/routes/admin.routes")(app);
+require("./app/routes/staff.routes")(app);
 require("./app/routes/admin.customer.routes")(app);
 
 const http = require("http");

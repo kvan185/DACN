@@ -35,6 +35,7 @@ import Order from './pages/Staff/Order/Order';
 import OrderDetail from './pages/Staff/Order/OrderDetail';
 import Table from './pages/Staff/Table/Table';
 import ProfileAdmin from './pages/Staff/Profile/Profile';
+import StaffList from './pages/Staff/StaffList';
 import { ToastContainer } from 'react-toastify';
 import Ingredient from './pages/Staff/Ingredient/Ingredient';
 import 'react-toastify/dist/ReactToastify.css';
@@ -84,15 +85,15 @@ function App() {
               <Route path='/staff/order' element={<Order />} />
               <Route path='/staff/order/detail/:orderId' element={<OrderDetail />} />
               <Route path='/staff/revenue' element={<Charts />} />
-              <Route path='/staff/register' element={<RegisterStaff />} />
+              <Route path='/staff/manage' element={<StaffList />} />
               <Route path='/staff/table' element={<Table />} />
               <Route path='/staff/profile' element={<ProfileAdmin />} />
               <Route path='/staff/customer' element={<Customer />} />
               <Route path='/staff/customer/add' element={<CustomerAdd />} />
               <Route path="/staff/customer/update/:id" element={<CustomerUpdate />} />
-            </Routes>
-          </div>
-        </div>
+            </Routes >
+          </div >
+        </div >
       </>
     )
   }
