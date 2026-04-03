@@ -31,9 +31,9 @@ module.exports = mongoose => {
             type: String,
             null: true,
         },
-        status: {
-            type: String,
-            default: 'active',
+        is_active: {
+            type: Boolean,
+            default: true,
         },
       },
       { timestamps: true }

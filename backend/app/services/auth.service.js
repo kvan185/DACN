@@ -25,6 +25,10 @@ const login = async ({ email, password, page }) => {
         };
     }
 
+    if (page === "user" && data.is_active === false) {
+        throw { status: 403, message: "Tài khoản của bạn đã bị khóa" };
+    }
+
     const isPasswordValid = bcrypt.compareSync(password, data.hash_password);
     if (!isPasswordValid) {
         throw { status: 401, message: "Mật khẩu không chính xác." };

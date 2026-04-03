@@ -43,7 +43,7 @@ module.exports = app => {
     }
 
     if (adminCustomer.toggleCustomerStatus) {
-        router.put("/toggle-status/:id", adminCustomer.toggleCustomerStatus);
+        router.patch("/toggle-status/:id", adminCustomer.toggleCustomerStatus);
         console.log("Toggle status route registered");
     } else {
         console.error("toggleCustomerStatus function is missing!");

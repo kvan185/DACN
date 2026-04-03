@@ -48,7 +48,7 @@ const updateCustomer = async (req, res) => {
         console.log('Updating customer ID:', id);
         console.log('Update data:', req.body);
 
-        const { first_name, last_name, email, phone, gender, status } = req.body;
+        const { first_name, last_name, email, phone, gender, is_active } = req.body;
 
         // Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -62,7 +62,7 @@ const updateCustomer = async (req, res) => {
         if (email !== undefined) updateData.email = email;
         if (phone !== undefined) updateData.phone = phone;
         if (gender !== undefined) updateData.gender = gender;
-        if (status !== undefined) updateData.status = status;
+        if (is_active !== undefined) updateData.is_active = is_active;
 
         updateData.updatedAt = Date.now();
 
@@ -179,54 +179,50 @@ const createCustomer = async (req, res) => {
     }
 };
 
-// 🔹 Khóa/Mở khóa tài khoản khách hàng
+// 🔹 Khóa/Mở khóa tài khoản khách hàng (Toggle is_active)
 const toggleCustomerStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const { status } = req.body;
 
-        console.log('Toggle status request:', { id, status }); // Debug
+        console.log('Toggle status request for ID:', id);
 
         // Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: 'ID khách hàng không hợp lệ' });
         }
 
-        // Kiểm tra status hợp lệ
-        if (!['active', 'banned', 'inactive'].includes(status)) {
-            return res.status(400).json({
-                message: 'Trạng thái không hợp lệ. Chấp nhận: active, banned, inactive'
-            });
-        }
-
-        // Tìm và cập nhật
-        const customer = await Customer.findByIdAndUpdate(
-            id,
-            {
-                status: status,
-                updatedAt: Date.now()
-            },
-            { new: true } // Trả về document đã cập nhật
-        );
-
-        if (!customer) {
+        // Lấy thông tin khách hàng hiện tại
+        const existingCustomer = await Customer.findById(id);
+        if (!existingCustomer) {
             return res.status(404).json({ message: 'Không tìm thấy khách hàng' });
         }
 
-        console.log('Customer status updated:', {
+        const newStatus = !existingCustomer.is_active;
+
+        // Cập nhật trạng thái mới
+        const customer = await Customer.findByIdAndUpdate(
+            id,
+            {
+                is_active: newStatus,
+                updatedAt: Date.now()
+            },
+            { new: true }
+        );
+
+        console.log('Customer status toggled:', {
             id: customer._id,
-            oldStatus: customer.status, // Lưu ý: status này đã được cập nhật
-            newStatus: status
+            oldStatus: existingCustomer.is_active,
+            newStatus: customer.is_active
         });
 
-        const action = status === 'banned' ? 'khóa' : 'mở khóa';
+        const action = newStatus === false ? 'khóa' : 'mở khóa';
 
         res.status(200).json({
             message: `${action} tài khoản thành công`,
             customer: {
                 _id: customer._id,
                 email: customer.email,
-                status: customer.status // Trả về status mới
+                is_active: customer.is_active
             }
         });
     } catch (error) {
