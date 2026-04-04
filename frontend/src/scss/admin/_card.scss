@@ -1,0 +1,31 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.admin-card {
+  @include admin-card;
+  margin-bottom: $space-lg;
+
+  &__header {
+    @include flex-between;
+    margin-bottom: $space-md;
+    padding-bottom: $space-md;
+    border-bottom: 2px solid $gray-100;
+    
+    h1, h2, h3 {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-semibold;
+      color: $text-primary;
+      margin: 0;
+    }
+
+    .admin-card__actions {
+      display: flex;
+      gap: $space-sm;
+      align-items: center;
+    }
+  }
+
+  &__body {
+    padding: $space-md 0;
+  }
+}

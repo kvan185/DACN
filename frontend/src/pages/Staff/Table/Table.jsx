@@ -4,7 +4,7 @@ import { Container, Row, Col, Button, Table, Modal, Form } from 'react-bootstrap
 import { QRCodeSVG } from 'qrcode.react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import socketIOClient from 'socket.io-client';
+import { socket } from '../../../socket.js';
 import './table.scss';
 import { completeReservation } from '../../../actions/table.js';
 import { Table as AntTable, Tag } from 'antd';
@@ -86,7 +86,7 @@ const TableManagement = () => {
     const [reservationInfo, setReservationInfo] = useState(null);
     const [allReservations, setAllReservations] = useState([]);
     const [socketTables, setSocketTables] = useState([]);
-    const socketRef = useRef();
+    const socketRef = useRef(socket);
     const user = JSON.parse(sessionStorage.getItem("user"));
     const [now, setNow] = useState(new Date());
     const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -98,15 +98,18 @@ const TableManagement = () => {
     }, []);
 
     useEffect(() => {
-        socketRef.current = socketIOClient.connect(SOCKET_SERVER_URL);
-        socketRef.current.emit('adminConnect', user.id);
+        if (user && user.id) {
+            socketRef.current.emit('adminConnect', user.id);
+        }
 
-        socketRef.current.on('tableUpdated', (updatedTables) => {
+        const handleTableUpdated = (updatedTables) => {
             setSocketTables(updatedTables);
-        });
+        };
+
+        socketRef.current.on('tableUpdated', handleTableUpdated);
 
         return () => {
-            socketRef.current.disconnect();
+            socketRef.current.off('tableUpdated', handleTableUpdated);
         };
     }, []);
 

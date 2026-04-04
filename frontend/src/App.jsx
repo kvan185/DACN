@@ -32,7 +32,7 @@ import Order from './pages/Staff/Order/Order';
 import OrderDetail from './pages/Staff/Order/OrderDetail';
 import Table from './pages/Staff/Table/Table';
 import ProfileAdmin from './pages/Staff/Profile/Profile';
-import StaffList from './pages/Staff/StaffList';
+import StaffList from './pages/Staff/Staff/StaffList';
 import { ToastContainer } from 'react-toastify';
 import Ingredient from './pages/Staff/Ingredient/Ingredient';
 import 'react-toastify/dist/ReactToastify.css';

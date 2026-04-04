@@ -1,0 +1,122 @@
+@use 'variables' as *;
+
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: $bg-component;
+  border-radius: $radius-md;
+  overflow: hidden;
+  border: 1px solid $border-color;
+  font-family: $font-family;
+
+  thead {
+    tr {
+      th {
+        background-color: $gray-50;
+        color: $gray-600;
+        font-weight: $font-weight-semibold;
+        font-size: $font-size-base;
+        padding: 14px $space-md;
+        text-align: left;
+        border-bottom: 1px solid $border-color;
+        white-space: nowrap;
+
+        &:first-child {
+          padding-left: $space-lg;
+        }
+
+        &:last-child {
+          padding-right: $space-lg;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      transition: $transition-base;
+
+      &:hover {
+        background-color: $bg-hover;
+      }
+
+      td {
+        padding: 16px $space-md;
+        font-size: $font-size-base;
+        color: $text-primary;
+        border-bottom: 1px solid $gray-100;
+        vertical-align: middle;
+
+        &:first-child {
+          padding-left: $space-lg;
+        }
+
+        &:last-child {
+          padding-right: $space-lg;
+        }
+
+        // Action column
+        .admin-table__actions {
+          display: flex;
+          gap: $space-xs;
+          justify-content: flex-start;
+          align-items: center;
+        }
+      }
+
+      &:last-child td {
+        border-bottom: none;
+      }
+    }
+  }
+
+  // Tags/Badges trong table (ví dụ: Trạng thái Đang xử lý)
+  .admin-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+
+    &--success {
+      background-color: $green-50;
+      color: $green-600;
+      border: 1px solid $green-200;
+    }
+    
+    &--warning {
+      background-color: $orange-50;
+      color: $orange-600;
+      border: 1px solid $orange-200;
+    }
+
+    &--danger {
+      background-color: $red-50;
+      color: $red-600;
+      border: 1px solid $red-200;
+    }
+
+    &--info {
+      background-color: $blue-50;
+      color: $blue-600;
+      border: 1px solid $blue-200;
+    }
+
+    &--default {
+      background-color: $gray-100;
+      color: $gray-600;
+      border: 1px solid $gray-200;
+    }
+  }
+}
+
+// Wrapper chống tràn ngang
+.admin-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
+}

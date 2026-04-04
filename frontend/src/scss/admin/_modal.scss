@@ -1,0 +1,71 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Reset bootstrap modal mặc định nếu component dùng Modal.Dialog
+.modal-content.admin-modal {
+  border-radius: $radius-lg;
+  border: none;
+  box-shadow: $shadow-lg;
+  background-color: $white;
+  // Animation scale up nhẹ nhàng như Ant Design
+  animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+
+  .modal-header {
+    padding: $space-lg;
+    border-bottom: 1px solid $gray-200;
+    
+    .modal-title {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $gray-800;
+      margin: 0;
+    }
+
+    .btn-close {
+      &:focus {
+        box-shadow: none;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: $space-lg;
+    color: $text-primary;
+    // Tự động scroll nếu quá dài
+    max-height: 70vh;
+    overflow-y: auto;
+    @include custom-scrollbar;
+  }
+
+  .modal-footer {
+    padding: $space-md $space-lg;
+    border-top: 1px solid $gray-200;
+    background-color: $gray-50;
+    display: flex;
+    justify-content: flex-end;
+    gap: $space-sm;
+
+    // Reset button bootstrap
+    .btn {
+      margin: 0;
+    }
+  }
+}
+
+// Keyframes cho Modal Popup
+@keyframes modalFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Backdrop (Màn đen)
+.modal-backdrop.show {
+  opacity: 0.6;
+}

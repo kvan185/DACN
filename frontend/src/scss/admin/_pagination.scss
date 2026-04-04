@@ -1,0 +1,52 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.admin-pagination {
+  @include flex-center;
+  gap: $space-xs;
+  margin-top: $space-lg;
+  padding: $space-md 0;
+
+  button {
+    @include flex-center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 4px;
+    border-radius: $radius-sm;
+    border: 1px solid $border-color;
+    background-color: $white;
+    color: $text-primary;
+    font-size: $font-size-base;
+    cursor: pointer;
+    transition: $transition-base;
+    font-family: $font-family;
+
+    &:hover:not(:disabled):not(.active) {
+      border-color: $primary;
+      color: $primary;
+    }
+
+    &.active {
+      background-color: $primary;
+      border-color: $primary;
+      color: $white;
+      font-weight: $font-weight-semibold;
+    }
+
+    &:disabled {
+      background-color: $gray-100;
+      color: $text-disabled;
+      cursor: not-allowed;
+      border-color: $border-color;
+    }
+  }
+
+  span.dots {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    color: $text-secondary;
+    padding: 0 4px;
+    letter-spacing: 2px;
+  }
+}

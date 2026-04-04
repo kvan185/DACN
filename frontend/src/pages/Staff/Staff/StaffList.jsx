@@ -8,11 +8,11 @@ import './stafflist.scss';
 const StaffList = () => {
     const [staffs, setStaffs] = useState([]);
     const [loading, setLoading] = useState(false);
-    
+
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [selectedRole, setSelectedRole] = useState('All'); // Added role filter
-    
+
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -35,7 +35,7 @@ const StaffList = () => {
         gender: '',
         role: 'STAFF' // Default when creating
     });
-    
+
     const [selectedImage, setSelectedImage] = useState(null);
     const [currentAvatarUrl, setCurrentAvatarUrl] = useState('');
     const [showPassword, setShowPassword] = useState([false, false]);
@@ -82,7 +82,7 @@ const StaffList = () => {
             setStaffs(data.staffs);
             setTotalPages(data.totalPages);
             if (data.currentPage !== currentPage) {
-                setCurrentPage(data.currentPage); 
+                setCurrentPage(data.currentPage);
             }
         } catch (error) {
             toast.error(error.message);
@@ -237,8 +237,8 @@ const StaffList = () => {
                 <h2>Quản lý tài khoản Admin / Nhân viên</h2>
                 <div className="d-flex align-items-center gap-2">
                     {/* Role Filter Combobox */}
-                    <Form.Select 
-                        value={selectedRole} 
+                    <Form.Select
+                        value={selectedRole}
                         onChange={(e) => {
                             setSelectedRole(e.target.value);
                             setCurrentPage(1); // Reset page on filter
@@ -249,7 +249,7 @@ const StaffList = () => {
                         <option value="ADMIN">Quản lý (ADMIN)</option>
                         <option value="STAFF">Nhân viên (STAFF)</option>
                     </Form.Select>
-                    
+
                     <Form.Control
                         type="text"
                         placeholder="Tìm theo tên, email..."
@@ -290,9 +290,9 @@ const StaffList = () => {
                                 <tr key={staff.id || staff._id}>
                                     <td>
                                         {getAvatarSrc(staff) ? (
-                                            <img src={getAvatarSrc(staff)} alt="avatar" style={{width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover'}} />
+                                            <img src={getAvatarSrc(staff)} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
                                         ) : (
-                                            <div style={{width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto'}}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
                                                 <FaUser color="#6c757d" />
                                             </div>
                                         )}
@@ -314,7 +314,7 @@ const StaffList = () => {
                             ))}
                         </tbody>
                     </Table>
-                    
+
                     {totalPages > 1 && (
                         <div className="pagination d-flex justify-content-center mt-3 gap-2">
                             <button
@@ -352,9 +352,9 @@ const StaffList = () => {
                 <Modal.Body>
                     <Form onSubmit={handleSubmit} className="staff-form">
                         <div className="avatar-section text-center mb-4">
-                            <div 
-                                className="avatar-preview-box" 
-                                onClick={handleAvatarClick} 
+                            <div
+                                className="avatar-preview-box"
+                                onClick={handleAvatarClick}
                                 style={{
                                     cursor: 'pointer', margin: '0 auto', width: '120px', height: '120px',
                                     borderRadius: '50%', backgroundColor: '#f8f9fa',
@@ -378,7 +378,7 @@ const StaffList = () => {
                                 ref={fileInputRef}
                                 style={{ display: "none" }}
                             />
-                            <p className="mt-2 text-muted" style={{fontSize: '14px', cursor: 'pointer'}} onClick={handleAvatarClick}>
+                            <p className="mt-2 text-muted" style={{ fontSize: '14px', cursor: 'pointer' }} onClick={handleAvatarClick}>
                                 Nhấn để tải ảnh lên
                             </p>
                         </div>
@@ -415,7 +415,7 @@ const StaffList = () => {
                             <Form.Control required={!isEditMode} type={showPassword[0] ? 'text' : 'password'} value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 placeholder={isEditMode ? 'Nhập mật khẩu mới (Bỏ trống nếu không đổi)' : 'Nhập mật khẩu'} />
-                            <div className="pwd-icon" onClick={() => handleTogglePassword(0)} style={{position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer'}}>
+                            <div className="pwd-icon" onClick={() => handleTogglePassword(0)} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
                                 {showPassword[0] ? <FaEyeSlash /> : <FaEye />}
                             </div>
                         </div>
@@ -424,7 +424,7 @@ const StaffList = () => {
                             <Form.Control required={!isEditMode && formData.password.length > 0} type={showPassword[1] ? 'text' : 'password'} value={formData.confirm_password}
                                 onChange={(e) => setFormData({ ...formData, confirm_password: e.target.value })}
                                 placeholder={isEditMode ? 'Nhập lại mật khẩu mới' : 'Nhập lại mật khẩu'} />
-                            <div className="pwd-icon" onClick={() => handleTogglePassword(1)} style={{position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer'}}>
+                            <div className="pwd-icon" onClick={() => handleTogglePassword(1)} style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }}>
                                 {showPassword[1] ? <FaEyeSlash /> : <FaEye />}
                             </div>
                         </div>

@@ -1,0 +1,67 @@
+@use 'variables' as *;
+
+.admin-form {
+  
+  &__group {
+    margin-bottom: $space-md;
+
+    label {
+      display: block;
+      font-size: $font-size-base;
+      font-weight: $font-weight-medium;
+      color: $text-primary;
+      margin-bottom: $space-sm;
+    }
+  }
+
+  &__control,
+  &__select {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: $font-size-base;
+    color: $text-primary;
+    background-color: $white;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    transition: $transition-base;
+    font-family: $font-family;
+
+    &::placeholder {
+      color: $text-disabled;
+    }
+
+    &:hover {
+      border-color: $primary-hover;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 2px rgba($primary, 0.2);
+    }
+
+    &:disabled {
+      background-color: $gray-100;
+      color: $text-disabled;
+      cursor: not-allowed;
+      &:hover {
+        border-color: $border-color;
+      }
+    }
+  }
+
+  // Lỗi validation
+  &__control.is-invalid {
+    border-color: $danger;
+    &:focus {
+      box-shadow: 0 0 0 2px rgba($danger, 0.2);
+    }
+  }
+
+  &__error-text {
+    font-size: $font-size-sm;
+    color: $danger;
+    margin-top: 4px;
+    display: block;
+  }
+}

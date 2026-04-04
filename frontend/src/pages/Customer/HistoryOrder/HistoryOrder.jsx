@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Col, Container, Row } from 'react-bootstrap';
 import moment from 'moment';
-import socketIOClient from "socket.io-client";
+import { socket } from '../../../socket.js';
 const host = "http://localhost:3000";
 import { toast } from "react-toastify";
 import './history-order.scss';
@@ -12,18 +12,26 @@ import Cart from '../../../components/Customer/Cart/Cart';
 function HistoryOrder(props) {
     const [orderList, setOrderList] = useState(null);
     const [orderSocket, setOrderSocket] = useState([]);
-    const socketRef = useRef();
+    const socketRef = useRef(socket);
     const accessToken = sessionStorage.getItem("accessToken");
     const user = JSON.parse(sessionStorage.getItem("user"));
     const API_URL = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
-        socketRef.current = socketIOClient.connect(host);
-        socketRef.current.emit('userConnect', user.id);
-        socketRef.current.on('sendStatusOrder', dataOrder => {
+        if (user && user.id) {
+            socketRef.current.emit('userConnect', user.id);
+        }
+        
+        const handleSendStatusOrder = dataOrder => {
             console.log(dataOrder);
             setOrderSocket(dataOrder);
-        });
+        };
+        
+        socketRef.current.on('sendStatusOrder', handleSendStatusOrder);
+        
+        return () => {
+            socketRef.current.off('sendStatusOrder', handleSendStatusOrder);
+        };
     }, []);
 
     const fetchOrderUser = async (accessToken) => {

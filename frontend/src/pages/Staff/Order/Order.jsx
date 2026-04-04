@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import socketIOClient from "socket.io-client";
-import { Table } from 'react-bootstrap';
+import { socket } from '../../../socket.js';
 import { Link } from 'react-router-dom';
 const host = import.meta.env.VITE_API_URL;
 
 import './order.scss';
+import '../../../scss/admin/admin-theme.scss';
+
 import { statusOrder } from "../../../config/statusOrder.js";
 
 function Order(props) {
@@ -17,7 +18,7 @@ function Order(props) {
 
     const totalPages = Math.ceil(orderList.length / itemsPerPage);
     const [orderSocket, setOrderSocket] = useState([]);
-    const socketRef = useRef();
+    const socketRef = useRef(socket);
     const accessToken = sessionStorage.getItem("accessToken");
     const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -52,12 +53,20 @@ function Order(props) {
 
     useEffect(() => {
         if (accessToken) fetchOrderList(accessToken);
-        socketRef.current = socketIOClient.connect(host);
-        socketRef.current.emit('adminConnect', user.id);
-        socketRef.current.on('sendListOrder', listOrder => {
+        if (user && user.id) {
+            socketRef.current.emit('adminConnect', user.id);
+        }
+        
+        const handleSendListOrder = listOrder => {
             console.log(listOrder);
             setOrderSocket(listOrder);
-        });
+        };
+        
+        socketRef.current.on('sendListOrder', handleSendListOrder);
+        
+        return () => {
+            socketRef.current.off('sendListOrder', handleSendListOrder);
+        };
     }, []);
 
     const handleSearchChange = (e) => {
@@ -83,49 +92,50 @@ function Order(props) {
     }, [orderList]);
 
     return (
-        <section className="block-order">
-            <h3 className="title-admin">Danh sách đơn hàng</h3>
-
-            <div className="order-container background-radius">
-                <div className="d-flex justify-content-end mb-4 mt-3">
+        <div className="admin-card mt-md">
+            <div className="admin-card__header">
+                <h3>Danh sách đơn hàng</h3>
+                <div className="admin-card__actions">
                     <div className="search-container" style={{ width: '380px' }}>
                         <div className="input-group">
                             <span className="input-group-text bg-white border-end-0">
                                 <i className="fa fa-search text-muted"></i>
                             </span>
-                            <input
-                                type="text"
-                                placeholder="Tìm theo Mã đơn, Khách hàng, SĐT..."
-                                value={searchTerm}
-                                onChange={handleSearchChange}
-                                className="form-control border-start-0 border-end-0 shadow-none"
-                            />
-                            {searchTerm && (
-                                <span 
-                                    className="input-group-text bg-white border-start-0" 
-                                    onClick={handleClearSearch}
-                                    style={{ cursor: 'pointer' }}
-                                >
+                                <input
+                                    type="text"
+                                    placeholder="Tìm theo Mã đơn, Khách hàng, SĐT..."
+                                    value={searchTerm}
+                                    onChange={handleSearchChange}
+                                    className="admin-form__control border-start-0 border-end-0 shadow-none"
+                                />
+                                {searchTerm && (
+                                    <span 
+                                        className="input-group-text bg-white border-start-0" 
+                                        onClick={handleClearSearch}
+                                        style={{ cursor: 'pointer' }}
+                                    >
                                     <i className="fa fa-times text-secondary"></i>
                                 </span>
                             )}
                         </div>
                     </div>
                 </div>
-                <Table className='order-table'>
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Mã đơn hàng</th>
-                            <th>Tên khách hàng</th>
-                            <th>Nguồn đặt hàng</th>
-                            <th>Số lượng sản phẩm</th>
-                            <th>Tổng tiền</th>
-                            <th>Trạng thái</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                
+                <div className="admin-table-wrapper">
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã đơn hàng</th>
+                                <th>Tên khách hàng</th>
+                                <th>Nguồn đặt hàng</th>
+                                <th>Số lượng sản phẩm</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th style={{textAlign: 'center'}}>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                         {orderList && orderList.length > 0 && (
                             currentOrders.map((orderData, index) => {
                                 const {
@@ -145,7 +155,7 @@ function Order(props) {
                                         <td>{id}</td>
                                         <td>{first_name + ' ' + last_name}</td>
                                         <td>
-                                            <span className={order_source === 'online' ? 'source-online' : 'source-table'}>
+                                            <span className={order_source === 'online' ? 'admin-badge admin-badge--info' : 'admin-badge admin-badge--warning'}>
                                                 {order_source === 'online' ? 'Đặt hàng online' : `Đặt tại bàn ${table_number}`}
                                             </span>
                                         </td>
@@ -156,10 +166,10 @@ function Order(props) {
                                             </span>
                                         </td>
                                         <td>
-                                            <span className={`status ${status === statusOrder.NEW ? 'status-new' :
-                                                status === statusOrder.CONFIRMED ? 'status-confirmed' :
-                                                    status === statusOrder.PROCESSING ? 'status-processing' :
-                                                        status === statusOrder.COMPLETED ? 'status-completed' : 'status-canceled'
+                                            <span className={`admin-badge ${status === statusOrder.NEW ? 'admin-badge--default' :
+                                                status === statusOrder.CONFIRMED ? 'admin-badge--info' :
+                                                    status === statusOrder.PROCESSING ? 'admin-badge--warning' :
+                                                        status === statusOrder.COMPLETED ? 'admin-badge--success' : 'admin-badge--danger'
                                                 }`}>
                                                 {
                                                     status === statusOrder.NEW ? 'Đơn mới' :
@@ -169,17 +179,21 @@ function Order(props) {
                                                 }</span>
                                         </td>
                                         <td>
-                                            <Link to={`/staff/order/detail/${id}`}>
-                                                Chi tiết
-                                            </Link>
+                                            <div className="admin-table__actions" style={{justifyContent: 'center'}}>
+                                                <Link to={`/staff/order/detail/${id}`} className="admin-btn admin-btn--info admin-btn--sm">
+                                                    Chi tiết
+                                                </Link>
+                                            </div>
                                         </td>
                                     </tr>
                                 )
                             })
                         )}
                     </tbody>
-                </Table>
-                <div className="pagination">
+                </table>
+                </div>
+
+                <div className="admin-pagination">
                     <button
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(currentPage - 1)}
@@ -205,7 +219,7 @@ function Order(props) {
                     </button>
                 </div>
             </div>
-        </section>
+        </div>
     );
 }
 

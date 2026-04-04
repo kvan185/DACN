@@ -1,0 +1,103 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+  padding: 8px $space-md;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: $transition-base;
+  outline: none;
+  font-family: $font-family;
+
+  // Icon inside button
+  svg, i {
+    font-size: 16px;
+  }
+
+  // Khác biệt size (ví dụ: btn nhỏ trong table)
+  &--sm {
+    padding: 4px $space-sm;
+    font-size: $font-size-sm;
+    border-radius: $radius-sm;
+    svg, i {
+      font-size: 14px;
+    }
+  }
+
+  &--lg {
+    padding: 12px $space-lg;
+    font-size: $font-size-lg;
+    border-radius: $radius-lg;
+  }
+
+  // --- Nút Primary (Thêm mới, Lưu) ---
+  &--primary {
+    @include button-variant($primary, $white, $primary-hover, $primary-active);
+  }
+
+  // --- Nút Danger (Xóa, Hủy) ---
+  &--danger {
+    @include button-variant($danger, $white, $danger-hover, $red-700);
+  }
+
+  // --- Nút Details/Info ---
+  &--info {
+    @include button-variant($info, $white, $blue-400, $blue-600);
+  }
+
+  // --- Nút Secondary / Trạng thái ---
+  &--warning {
+    @include button-variant($warning, $white, $orange-400, $orange-600);
+  }
+
+  // --- Nút Outline / Default (Hủy form, Quay lại) ---
+  &--default {
+    background-color: transparent;
+    color: $text-primary;
+    border: 1px solid $gray-300;
+
+    &:hover {
+      border-color: $primary;
+      color: $primary;
+      background-color: var(--blue-50);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+    
+    &:disabled {
+      background-color: $gray-100;
+      color: $text-disabled;
+      border-color: $gray-200;
+      cursor: not-allowed;
+    }
+  }
+
+  // Loading state
+  &.is-loading {
+    pointer-events: none;
+    opacity: 0.8;
+    position: relative;
+    &::after {
+      content: "";
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: button-spin 0.8s linear infinite;
+      margin-left: 8px;
+    }
+  }
+}
+
+@keyframes button-spin {
+  to { transform: rotate(360deg); }
+}

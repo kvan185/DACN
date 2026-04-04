@@ -1,0 +1,39 @@
+@use 'variables' as *;
+
+// Khởi tạo các global class chung nếu không bọc trong component
+body {
+    font-family: $font-family;
+    color: $text-primary;
+    background-color: $bg-body;
+}
+
+// Import các sub-modules
+@import 'mixins';
+@import 'buttons';
+@import 'card';
+@import 'table';
+@import 'pagination';
+@import 'forms';
+@import 'modal';
+
+// ==========================================
+// UTILITY CLASSES (Dùng chung)
+// ==========================================
+
+// Margin & Padding ngắn gọn
+.mt-sm { margin-top: $space-sm; }
+.mt-md { margin-top: $space-md; }
+.mt-lg { margin-top: $space-lg; }
+
+.mb-sm { margin-bottom: $space-sm; }
+.mb-md { margin-bottom: $space-md; }
+.mb-lg { margin-bottom: $space-lg; }
+
+.text-danger { color: $danger; }
+.text-success { color: $success; }
+.text-warning { color: $warning; }
+.text-info { color: $info; }
+
+.fw-medium { font-weight: $font-weight-medium; }
+.fw-semibold { font-weight: $font-weight-semibold; }
+.fw-bold { font-weight: $font-weight-bold; }

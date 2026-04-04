@@ -3,7 +3,7 @@ import { Container, Row, Col } from "react-bootstrap";
 import moment from "moment";
 import "./HistoryReservation.scss";
 import Cart from "../../../components/Customer/Cart/Cart";
-import socketIOClient from 'socket.io-client';
+import { socket } from '../../../socket.js';
 
 function ReservationHistory() {
   const [reservations, setReservations] = useState([]);
@@ -37,14 +37,14 @@ function ReservationHistory() {
 
     if (accessToken) {
       fetchReservations();
-      const socket = socketIOClient('http://localhost:5000');
-
-      socket.on('tableUpdated', () => {
+      const handleTableUpdated = () => {
         fetchReservations();
-      });
+      };
+      
+      socket.on('tableUpdated', handleTableUpdated);
 
       return () => {
-        socket.disconnect();
+        socket.off('tableUpdated', handleTableUpdated);
       };
     }
   }, [accessToken]);
