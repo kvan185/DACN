@@ -11,12 +11,23 @@ exports.getStats = async () => {
     is_active: true
   });
 
-  // tổng khách hàng
+  const startOfMonth = new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    1
+  );
+
+  // khách hàng mới trong tháng
+  const newCustomersMonth = await Customer.countDocuments({
+    createdAt: { $gte: startOfMonth }
+  });
+
+  // tổng khách hàng (để hiển thị nếu cần)
   const totalCustomers = await Customer.countDocuments();
 
-  // đơn thành công
-  const successOrders = await Order.countDocuments({
-    status: "COMPLETED"
+  // đơn hoàn thành (đã thanh toán)
+  const paidOrdersCount = await Order.countDocuments({
+    is_payment: true
   });
 
   // tổng đơn (không tính hủy)
@@ -24,24 +35,17 @@ exports.getStats = async () => {
     status: { $ne: "CANCELED" }
   });
 
-  // doanh thu tháng
-  const startOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth(),
-    1
-  );
-
-  const revenue = await Order.aggregate([
+  // doanh thu tổng của các đơn đã thanh toán
+  const revenueTotal = await Order.aggregate([
     {
       $match: {
-        status: { $ne: "CANCELED" },
-        createdAt: { $gte: startOfMonth }
+        is_payment: true
       }
     },
     {
       $group: {
         _id: null,
-        revenueMonth: { $sum: "$total_price" }
+        totalRevenuePaid: { $sum: "$total_price" }
       }
     }
   ]);
@@ -49,8 +53,9 @@ exports.getStats = async () => {
   return {
     totalProducts,
     totalCustomers,
-    successOrders,
+    newCustomersMonth,
+    paidOrdersCount,
     totalOrders,
-    revenueMonth: revenue.length ? revenue[0].revenueMonth : 0
+    totalRevenuePaid: revenueTotal.length ? revenueTotal[0].totalRevenuePaid : 0
   };
 };

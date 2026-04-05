@@ -19,7 +19,7 @@ function Product(props) {
     const [isSearching, setIsSearching] = useState(false);
     const debounceTimeoutRef = useRef(null);
 
-    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 5;
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentProducts = productList.slice(indexOfFirstItem, indexOfLastItem);

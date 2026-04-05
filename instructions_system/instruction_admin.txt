@@ -1,0 +1,44 @@
+HƯỚNG DẪN SỬ DỤNG CHI TIẾT DÀNH CHO QUẢN TRỊ VIÊN (ADMIN)
+======================================================
+
+Quyền hạn: Admin là cấp bậc tài khoản cao nhất, có toàn quyền quản lý hệ thống, nhân sự, danh mục món ăn, kho nguyên liệu và theo dõi doanh thu.
+
+1. TỔNG QUAN HỆ THỐNG (DASHBOARD)
+---------------------------------
+- Truy cập: Mục "Trang chủ" trong thanh menu bên trái.
+- Chức năng: Xem báo cáo tổng quan về số lượng đơn hàng, doanh thu trong ngày/tháng.
+- Biểu đồ: Theo dõi xu hướng bán hàng qua các biểu đồ doanh thu và món ăn bán chạy (Top Dishes).
+
+2. QUẢN LÝ NHÂN SỰ (STAFF MANAGEMENT)
+-------------------------------------
+- Mục tiêu: Quản lý danh sách nhân viên vận hành hệ thống.
+- Các thao tác:
+  + Thêm nhân viên: Nhập thông tin (Tên, Email, SĐT, Mật khẩu) và phân quyền (ADMIN hoặc STAFF).
+  + Sửa: Cập nhật thông tin khi có thay đổi.
+  + Xóa: Loại bỏ tài khoản nhân viên đã nghỉ việc.
+- Lưu ý: Chỉ Admin mới có quyền truy cập vào chức năng này.
+
+3. QUẢN LÝ THỰC ĐƠN (MENU MANAGEMENT)
+-------------------------------------
+Admin chịu trách nhiệm cấu hình toàn bộ menu hiển thị cho khách hàng.
+- Danh mục (Category): Tạo các nhóm món ăn (Khai vị, Món chính, Đồ uống...). Bật/Tắt trạng thái hoạt động của danh mục.
+- Sản phẩm (Product):
+  + Thêm món mới: Tên, giá, hình ảnh, mô tả và liên kết với danh mục.
+  + Cập nhật giá: Admin là người duy nhất có quyền thay đổi giá bán trên hệ thống.
+  + Quản lý trạng thái: Tạm ẩn các món đã hết hàng hoặc ngừng kinh doanh.
+
+4. QUẢN LÝ NGUYÊN LIỆU (INGREDIENT & BOM)
+-----------------------------------------
+- Quản lý kho: Theo dõi danh sách nguyên liệu và số lượng tồn kho thực tế.
+- Định mức (BOM): Thiết lập định mức nguyên liệu cho từng món ăn để hệ thống tự động trừ kho khi có đơn hàng thành công.
+
+5. QUẢN LÝ KHÁCH HÀNG
+---------------------
+- Xem danh sách khách hàng đã đăng ký tài khoản trên hệ thống.
+- Theo dõi lịch sử giao dịch và thông tin liên hệ của khách để thực hiện các chương trình chăm sóc khách hàng.
+
+6. GIÁM SÁT VẬN HÀNH (TABLE & ORDER)
+------------------------------------
+Admin có quyền giám sát và can thiệp vào tất cả các bàn và đơn hàng:
+- Quản lý bàn: Tạo bàn mới, cấu hình vị trí, sức chứa và tạo mã QR Code cho từng bàn.
+- Đơn hàng: Xem danh sách toàn bộ đơn hàng trong hệ thống (bao gồm cả đơn đã hoàn thành và đơn hủy).

@@ -1,8 +1,8 @@
 const db = require("../models");
-const config = require('../config/default.json');
 const moment = require('moment');
 const crypto = require("crypto");
 const convertHelper = require("../helpers/convert.helper.js");
+const Order = db.order;
 
 
 exports.createPaymentUrl = async (req, res) => {
@@ -24,10 +24,10 @@ exports.createPaymentUrl = async (req, res) => {
             req.socket.remoteAddress ||
             req.connection.socket.remoteAddress;
 
-        let tmnCode = config.vnp_TmnCode;
-        let secretKey = config.vnp_HashSecret;
-        let vnpUrl = config.vnp_Url;
-        let returnUrl = config.vnp_ReturnUrl;
+        let tmnCode = process.env.VNP_TMNCODE;
+        let secretKey = process.env.VNP_HASHSECRET;
+        let vnpUrl = process.env.VNP_URL;
+        let returnUrl = process.env.VNP_RETURNURL;
         let orderId = oId;
         let amount = order.total_price;
 
@@ -57,9 +57,8 @@ exports.createPaymentUrl = async (req, res) => {
 
         let querystring = require('qs');
         let signData = querystring.stringify(vnp_Params, { encode: false });
-        let crypto = require("crypto");
         let hmac = crypto.createHmac("sha512", secretKey);
-        let signed = hmac.update(new Buffer(signData, 'utf-8')).digest("hex");
+        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
         vnp_Params['vnp_SecureHash'] = signed;
         vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
 
@@ -90,10 +89,10 @@ exports.createGuestPaymentUrl = async (req, res) => {
             req.socket.remoteAddress ||
             req.connection.socket.remoteAddress;
 
-        let tmnCode = config.vnp_TmnCode;
-        let secretKey = config.vnp_HashSecret;
-        let vnpUrl = config.vnp_Url;
-        let returnUrl = config.vnp_ReturnUrl;
+        let tmnCode = process.env.VNP_TMNCODE;
+        let secretKey = process.env.VNP_HASHSECRET;
+        let vnpUrl = process.env.VNP_URL;
+        let returnUrl = process.env.VNP_RETURNURL;
         let orderId = oId;
         let amount = order.total_price;
 
@@ -120,9 +119,8 @@ exports.createGuestPaymentUrl = async (req, res) => {
 
         let querystring = require('qs');
         let signData = querystring.stringify(vnp_Params, { encode: false });
-        let crypto = require("crypto");
         let hmac = crypto.createHmac("sha512", secretKey);
-        let signed = hmac.update(new Buffer(signData, 'utf-8')).digest("hex");
+        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
         vnp_Params['vnp_SecureHash'] = signed;
         vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
 
@@ -149,20 +147,66 @@ exports.vnpayReturn = async (req, res) => {
 
         let querystring = require('qs');
         let signData = querystring.stringify(vnp_Params, { encode: false });
-        let crypto = require("crypto");
         let hmac = crypto.createHmac("sha512", secretKey);
-        let signed = hmac.update(new Buffer(signData, 'utf-8')).digest("hex");
+        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
 
         if (secureHash === signed) {
-            //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
-
-            res.send('success', { code: vnp_Params['vnp_ResponseCode'] })
+            let orderId = vnp_Params['vnp_TxnRef'];
+            let responseCode = vnp_Params['vnp_ResponseCode'];
+            
+            if (responseCode === '00') {
+                // Thành công: Cập nhật is_payment: true
+                await Order.findByIdAndUpdate(orderId, { is_payment: true });
+                res.status(200).json({ code: '00', message: 'Success' });
+            } else {
+                res.status(200).json({ code: responseCode, message: 'Payment failed' });
+            }
         } else {
-            res.send('success', { code: '97' })
+            res.status(200).json({ code: '97', message: 'Invalid checksum' });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Failed to create payment URL' });
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.vnpayIPN = async (req, res) => {
+    try {
+        let vnp_Params = req.query;
+        let secureHash = vnp_Params['vnp_SecureHash'];
+
+        delete vnp_Params['vnp_SecureHash'];
+        delete vnp_Params['vnp_SecureHashType'];
+
+        vnp_Params = sortObject(vnp_Params);
+        let secretKey = config.vnp_HashSecret;
+        let querystring = require('qs');
+        let signData = querystring.stringify(vnp_Params, { encode: false });
+        let hmac = crypto.createHmac("sha512", secretKey);
+        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
+
+        if (secureHash === signed) {
+            let orderId = vnp_Params['vnp_TxnRef'];
+            let responseCode = vnp_Params['vnp_ResponseCode'];
+
+            const order = await Order.findById(orderId);
+            if (order) {
+                if (responseCode === '00') {
+                    order.is_payment = true;
+                    await order.save();
+                    res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
+                } else {
+                    res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
+                }
+            } else {
+                res.status(200).json({ RspCode: '01', Message: 'Order not found' });
+            }
+        } else {
+            res.status(200).json({ RspCode: '97', Message: 'Invalid Checksum' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(200).json({ RspCode: '99', Message: 'Unknow error' });
     }
 };
 

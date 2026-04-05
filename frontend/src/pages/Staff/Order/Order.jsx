@@ -14,7 +14,7 @@ import { statusOrder } from "../../../config/statusOrder.js";
 function Order(props) {
     const [orderList, setOrderList] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 5;
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentOrders = orderList.slice(indexOfFirstItem, indexOfLastItem);

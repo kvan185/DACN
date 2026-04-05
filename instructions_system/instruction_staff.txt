@@ -1,0 +1,42 @@
+HƯỚNG DẪN VẬN HÀNH DÀNH CHO NHÂN VIÊN (STAFF)
+============================================
+
+Quyền hạn: Nhân viên tập trung vào các công việc vận hành trực tiếp tại quán, xử lý đơn hàng và quản lý tình trạng bàn thực tế.
+
+1. QUẢN LÝ ĐƠN HÀNG (ORDER MANAGEMENT) - QUAN TRỌNG NHẤT
+--------------------------------------------------------
+Hệ thống sẽ cập nhật đơn hàng theo thời gian thực (Real-time). Staff cần theo dõi liên tục mục này.
+
+Quy trình xử lý một đơn hàng:
+Bước 1: Tiếp nhận đơn (Đơn mới)
+- Khi có thông báo đơn hàng mới (từ Online hoặc tại Bàn), nhấn vào "Chi tiết" (biểu tượng icon mắt).
+- Kiểm tra danh sách món ăn và ghi chú của khách.
+- Nhấn "Nhận đơn" (Confirm) để xác nhận hệ thống đã ghi nhận việc chuẩn bị.
+
+Bước 2: Chuẩn bị món (Đang chờ làm)
+- Sau khi bếp bắt đầu chế biến, nhấn "Đang làm" (Processing). Trạng thái này giúp quản lý biết món đang được thực hiện.
+
+Bước 3: Hoàn thành & Phục vụ (Hoàn thành)
+- Khi món đã sẵn sàng mang ra bàn hoặc giao cho khách lấy online, nhấn "Hoàn thành" (Complete).
+
+Bước 4: Xác nhận thanh toán
+- Đối với khách thanh toán tiền mặt tại quầy hoặc tại bàn, Staff nhấn nút "Đã thanh toán" để kết thúc đơn hàng. 
+- Lưu ý: Nút này sẽ tự ẩn nếu khách thanh toán qua VNPay thành công.
+
+2. QUẢN LÝ TÌNH TRẠNG BÀN (TABLE STATUS)
+----------------------------------------
+Mục đích là để quản lý không gian quán và hỗ trợ khách vãng lai.
+
+- Trạng thái Trống (Màu xanh): Bàn sẵn sàng đón khách.
+- Khách vãng lai đến: Staff chọn bàn và nhấn "Sử dụng". Bàn sẽ chuyển sang trạng thái "Đang sử dụng" (Màu đỏ).
+- Khách đặt trước đến: Staff kiểm tra mã xác nhận, nếu khớp thông tin khách đặt, nhấn chuyển trạng thái sang "Đang sử dụng".
+- Sau khi khách dùng xong và thanh toán: Nhấn "Hoàn thành" tại bàn đó để đưa trạng thái bàn quay về "Trống".
+
+3. QUẢN LÝ KHÁCH HÀNG & THÔNG TIN LIÊN HỆ
+-----------------------------------------
+- Staff có thể tra cứu thông tin khách hàng (SĐT, Email) để liên hệ trong các trường hợp cần xác nhận đơn online hoặc thông báo về bàn đặt trước.
+
+4. LƯU Ý CHUNG CHO STAFF
+------------------------
+- Không có quyền: Thay đổi giá món ăn, xóa nhân viên khác, hoặc xem các báo cáo doanh thu chuyên sâu.
+- Phối hợp: Luôn cập nhật trạng thái bàn và đơn hàng ngay khi thực hiện xong thao tác ngoài thực tế để hệ thống đồng bộ chính xác.

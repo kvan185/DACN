@@ -9,6 +9,7 @@ module.exports = app => {
 
     // return
     router.get("/vnpay_return", payment.vnpayReturn);
+    router.get("/vnpay_ipn", payment.vnpayIPN);
 
     app.use("/api/payment", router);
   };

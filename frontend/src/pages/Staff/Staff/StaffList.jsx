@@ -18,7 +18,7 @@ const StaffList = () => {
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const itemsPerPage = 5;
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
 
     // Modal state
     const [showModal, setShowModal] = useState(false);

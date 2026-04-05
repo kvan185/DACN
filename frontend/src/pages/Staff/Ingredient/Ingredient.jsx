@@ -13,7 +13,7 @@ function Ingredient() {
     const [ingredients, setIngredients] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 5;
+    const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = ingredients.slice(indexOfFirstItem, indexOfLastItem);

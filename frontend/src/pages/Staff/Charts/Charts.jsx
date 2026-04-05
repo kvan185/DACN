@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form } from 'react-bootstrap';
 
 import {
@@ -33,6 +33,17 @@ function Charts(props) {
     const [timer, setTimer] = useState([]);
     const [totalRevenue, setTotalRevenue] = useState([]);
     const [summary, setSummary] = useState(null);
+
+    useEffect(() => {
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) mainContent.classList.add('show-staff-scrollbar');
+        document.body.classList.add('show-staff-scrollbar');
+        
+        return () => {
+            if (mainContent) mainContent.classList.remove('show-staff-scrollbar');
+            document.body.classList.remove('show-staff-scrollbar');
+        };
+    }, []);
 
     const data = {
         labels: timer || [],

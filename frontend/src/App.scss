@@ -81,9 +81,35 @@ p {
     transition: all 0.4s ease;
     background-color: $color-background-light;
     flex: 1;
+
+    // Hide scrollbar by default for staff area
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    &::-webkit-scrollbar {
+        display: none !important;
+    }
     
     @media (max-width: 992px) {
         margin-left: 0;
+    }
+}
+
+// Exception class to show scrollbar
+.show-staff-scrollbar {
+    scrollbar-width: auto !important;
+    -ms-overflow-style: auto !important;
+    &::-webkit-scrollbar {
+        display: block !important;
+        width: 0.5rem;
+    }
+}
+
+// Exception class to hide scrollbar (for body or containers)
+.hide-scrollbar {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    &::-webkit-scrollbar {
+        display: none !important;
     }
 }
 

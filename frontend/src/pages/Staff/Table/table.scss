@@ -447,78 +447,81 @@ td .badge:hover {
         color: #475569;
     }
 
-    // Chỉ áp dụng cho modal chi tiết bàn
-    .custom-detail-modal {
-        overflow: hidden;
+}
 
-        .modal-body {
-            .row {
-                display: flex;
-                align-items: stretch; // Đây là chìa khóa để 2 cột bằng nhau
-            }
+// Chỉ áp dụng cho modal chi tiết bàn
+.custom-detail-modal {
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
 
-            .info-section {
+    .modal-body {
+        .row {
+            display: flex;
+            align-items: stretch; // Đây là chìa khóa để 2 cột bằng nhau
+        }
+
+        .info-section {
+            display: flex;
+            flex-direction: column;
+
+            .bg-light {
                 display: flex;
                 flex-direction: column;
-                height: 100%;
+            }
+        }
+    }
 
-                .bg-light {
-                    flex-grow: 1; // Để phần màu xám tự giãn ra lấp đầy chiều cao cột
-                    display: flex;
-                    flex-direction: column;
-                }
+    .modal-actions {
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); // Hiệu ứng mượt hơn
+            cursor: pointer;
+            outline: none;
+        }
+
+        .btn.btn-close-modal {
+            transition: all 0.3s ease;
+            border-width: 2px !important;
+            background-color: transparent !important;
+            border: 2px solid #e2e8f0 !important; // Sửa 'order' thành 'border'
+            color: #4a5568 !important;
+
+            &:hover {
+                background-color: #f8fafc !important;
+                border-color: #cbd5e0 !important;
+                color: #2d3748 !important;
+                transform: translateY(-1px);
+            }
+
+            &:active {
+                transform: translateY(0);
+                background-color: #edf2f7 !important;
+            }
+
+            &:focus {
+                box-shadow: 0 0 0 3px rgba(203, 213, 224, 0.5) !important;
             }
         }
 
-        .modal-actions {
-            .btn {
-                padding: 10px 24px;
-                border-radius: 8px;
-                font-weight: 600;
-                font-size: 14px;
-                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); // Hiệu ứng mượt hơn
-                cursor: pointer;
-                outline: none;
+        .btn.btn-delete-modal {
+            background-color: #e53e3e !important;
+            border: none !important;
+            color: white !important;
+
+            &:hover {
+                background-color: #c53030 !important;
+                box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3) !important;
+                transform: translateY(-1px);
             }
 
-            .btn.btn-close-modal {
-                transition: all 0.3s ease;
-                border-width: 2px !important;
-                background-color: transparent;
-                order: 2px solid #e2e8f0; // Màu xám nhạt trung tính
-                color: #1c6491;
-
-                &:hover {
-                    background-color: #4287b5 !important;
-                    border-color: #cbd5e0;
-                    color: #fafafb !important;
-                    transform: translateY(-1px);
-                }
-
-                &:active {
-                    transform: translateY(0);
-                    background-color: #b0b6bbf5;
-                }
-
-                &:focus {
-                    box-shadow: 0 0 0 3px rgba(203, 213, 224, 0.5) !important;
-                }
-
-                &:hover {
-                    background-color: #2d69b1e4 !important;
-                    color: #fff !important;
-                }
-            }
-
-            .btn.btn-delete-modal {
-                background-color: #e53e3e !important;
-                border: none !important;
-                color: rgb(247, 245, 245) !important;
-
-                &:hover {
-                    background-color: #c53030 !important;
-                    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3) !important;
-                }
+            &:active {
+                transform: translateY(0);
             }
         }
     }

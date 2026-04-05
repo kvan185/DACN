@@ -49,6 +49,12 @@ function HomeStaff() {
   useEffect(() => {
     loadStats();
     loadCharts();
+
+    // Hide global scrollbar for the dashboard
+    document.body.classList.add('hide-scrollbar');
+    return () => {
+      document.body.classList.remove('hide-scrollbar');
+    };
   }, []);
 
   if (!stats) {
@@ -63,12 +69,13 @@ function HomeStaff() {
 
     <Container fluid className="staff-dashboard">
 
-      <Row>
+      <Row className="g-3">
         <Col md={3}>
           <Card className="stat-card">
             <Card.Body>
-              <h6>Tổng món ăn</h6>
+              <h5>Tổng món ăn</h5>
               <h2>{stats.totalProducts}</h2>
+              <div className="text-muted small mt-1">Sản phẩm hiện có</div>
             </Card.Body>
           </Card>
         </Col>
@@ -76,8 +83,9 @@ function HomeStaff() {
         <Col md={3}>
           <Card className="stat-card">
             <Card.Body>
-              <h6>Khách hàng mới</h6>
-              <h2>x/{stats.totalCustomers}</h2>
+              <h5>Khách hàng mới</h5>
+              <h2>{stats.newCustomersMonth}</h2>
+              <div className="text-muted small mt-1">Trong tháng này</div>
             </Card.Body>
           </Card>
         </Col>
@@ -85,33 +93,33 @@ function HomeStaff() {
         <Col md={3}>
           <Card className="stat-card">
             <Card.Body>
-              <h6>Đơn hoàn thành</h6>
+              <h5>Đơn hoàn thành</h5>
+              <h2>{stats.paidOrdersCount}</h2>
+              <div className="text-muted small mt-1">Tổng đơn đã thanh toán</div>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col md={3}>
+          <Card className="stat-card">
+            <Card.Body>
+              <h5>Doanh thu</h5>
               <h2>
-                {stats.successOrders} / {stats.totalOrders}
+                {stats.totalRevenuePaid?.toLocaleString()} đ
               </h2>
-            </Card.Body>
-          </Card>
-        </Col>
-
-        <Col md={3}>
-          <Card className="stat-card">
-            <Card.Body>
-              <h6>Doanh thu tháng</h6>
-              <h2>
-                {stats.revenueMonth?.toLocaleString()} đ
-              </h2>
+              <div className="text-muted small mt-1">Tổng doanh thu thực tế</div>
             </Card.Body>
           </Card>
         </Col>
 
       </Row>
 
-      <Row className="mt-4">
+      <Row className="mt-3 g-3">
         {/* TOP SẢN PHẨM */}
         <Col md={6}>
           <Card className="chart-card">
-            <Card.Body>
-              <h5>Top món bán chạy</h5>
+            <Card.Body className="p-3">
+              <h5 className="mt-0 mb-3">Top món bán chạy</h5>
               <div className="chart-wrapper">
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={topProducts} fill="#39a28fa1">
@@ -129,8 +137,8 @@ function HomeStaff() {
         {/* DANH MỤC BÁN CHẠY */}
         <Col md={6}>
           <Card className="chart-card">
-            <Card.Body>
-              <h5>Danh mục bán chạy</h5>
+            <Card.Body className="p-3">
+              <h5 className="mt-0 mb-3">Danh mục bán chạy</h5>
               <div className="chart-wrapper">
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={categorySales} fill="#ab9150a1">
@@ -144,25 +152,6 @@ function HomeStaff() {
             </Card.Body>
           </Card>
         </Col>
-
-        {/* DOANH THU THÁNG */}
-        {/* <Col md={4}>
-          <Card className="chart-card">
-            <Card.Body>
-              <h5>Doanh thu tháng</h5>
-              <div className="chart-wrapper">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={revenueTrend}>
-                    <XAxis dataKey="_id" />
-                    <YAxis width={80} />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="revenue" stroke="#f8be68" strokeWidth={3} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div> */}
-        {/* </Card.Body>
-          </Card>
-        </Col> */}
       </Row>
     </Container>
 

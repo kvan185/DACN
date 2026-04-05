@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col } from "react-bootstrap";
 import { useNavigate  } from "react-router-dom";
 import { FaEyeSlash, FaEye } from 'react-icons/fa';
@@ -8,6 +8,12 @@ import card from "../../../assets/img/illustration_login.png";
 import "./login.scss";
 
 function Login(props) {
+  useEffect(() => {
+    document.body.classList.add('hide-scrollbar');
+    return () => {
+      document.body.classList.remove('hide-scrollbar');
+    };
+  }, []);
   const [accessToken, setAccessToken] = useState(null);
   const [infoLogin, setInfoLogin] = useState({
     email: "",

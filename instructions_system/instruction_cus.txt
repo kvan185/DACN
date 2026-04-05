@@ -1,0 +1,82 @@
+HƯỚNG DẪN QUY TRÌNH HOẠT ĐỘNG DÀNH CHO KHÁCH HÀNG
+===============================================================================
+
+1. LUỒNG MUA HÀNG ONLINE - LẤY HÀNG TẠI QUÁN
+--------------------------------------------
+Dành cho khách hàng muốn đặt món trước từ xa và đến quán nhận hàng.
+
+Bước 1: Truy cập và Đăng nhập
+- Khách hàng truy cập website.
+- Thực hiện Đăng nhập tài khoản (Bắt buộc), nếu chưa có tài khoản thì tiến hành Đăng ký. Tài khoản giúp bạn theo dõi trạng thái đơn hàng.
+
+Bước 2: Chọn món ăn
+- Duyệt qua thực đơn, xem hình ảnh và mô tả chi tiết món ăn, có thể xem thành phần món ăn hoặc chat với nutribot (tang cơ/ giảm can/ bao nhiêu calo) để lựa chọn được món ăn phú hợp khẩu vị cũng như đáp ứng chế độ ăn cá nhân.
+- Nhấn "Thêm vào giỏ" để đưa món vào danh sách chờ thanh toán.
+
+Bước 3: Kiểm tra Giỏ hàng & Thanh toán
+- Truy cập Giỏ hàng, tích chọn các món cần mua.
+- Nhấn "Thanh toán". Hệ thống tự nhận diện hình thức "Đặt hàng online".
+- Chọn phương thức thanh toán:
+  + Tiền mặt: Thanh toán cho nhân viên khi nhận món tại quầy.
+  + Chuyển khoản (VNPay): Quét mã QR code hoặc dùng Internet Banking để thanh toán ngay.
+
+Bước 4: Nhận hàng
+- Sau khi đặt thành công, đơn hàng sẽ ở trạng thái chờ nhận đơn . 
+- Khách hàng đến quán, cung cấp thông tin "Lịch sử đơn hàng" để nhân viên bàn giao món.
+
+
+2. LUỒNG GỌI MÓN TẠI BÀN QUA MÃ QR (DÀNH CHO KHÁCH VÃNG LAI)
+-----------------------------------------------------------
+Quy trình tối giản giúp khách hàng gọi món nhanh chóng ngay tại bàn mà không cần sự trợ giúp trực tiếp của nhân viên hay các bước xác thực phức tạp.
+
+Bước 1: Quét mã QR tại bàn
+- Mỗi bàn trong nhà hàng đều có một mã QR riêng biệt. Khách hàng chỉ cần dùng điện thoại quét mã này.
+- Hệ thống sẽ đưa bạn thẳng đến trang Thực đơn (Menu) của đúng bàn đó mà KHÔNG cần đăng nhập hay xác nhận số bàn thủ công.
+
+Bước 2: Chọn món trực tiếp
+- Bạn có thể thoải mái chọn món và thêm vào giỏ hàng ngay lập tức.
+- Thông tin "Bàn số: X" sẽ được tự động liên kết và hiển thị trên giao diện của bạn.
+
+Bước 3: Gửi Order
+- Vào giỏ hàng, kiểm tra lại danh sách món và nhấn "Đặt món".
+- Hệ thống đã kết nối trực tiếp với Admin quản lý, đảm bảo đơn hàng của bạn được ghi nhận ngay lập tức cho đúng số bàn.
+- Khách hang có thể oder món nhiều lần trong bữa ăn, các phiếu đặt món sẽ được lưu lại trong mục "Món đã đặt" để khách hang dễ dàng kiểm tra trước khi thanh toán.
+
+Bước 4: Chờ phục vụ tận nơi
+- Các đơn hàng được gửi thẳng đến bộ phận Bếp/Bar. 
+- Nhân viên phục vụ sẽ mang món đến đúng vị trí bàn của bạn dựa trên thông tin mã QR đã quét.
+
+Bước 5: Thanh toán
+- Nhấn "Thanh toán". Hệ thống tự nhận diện hình thức "Đặt món tại quán".
+- Chọn phương thức thanh toán:
+  + Tiền mặt: Nhân viên sẽ thu tiền tại bàn.
+  + Chuyển khoản (VNPay): Thanh toán online để hoàn tất nhanh chóng.
+
+
+3. LUỒNG ĐẶT BÀN TRƯỚC (RESERVATION)
+-------------------------------------
+Dành cho khách hàng muốn giữ chỗ trước cho các buổi tiệc, gặp mặt hoặc dùng bữa gia đình.
+
+A. Điều kiện và Quy định đặt bàn:
+- Tài khoản: Khách hàng bắt buộc phải Đăng nhập để thực hiện đặt bàn.
+- Thời gian hoạt động: Nhà hàng nhận đặt bàn trong khung giờ từ 08:00 đến 20:00 hằng ngày.
+- Thời gian chuẩn bị: Nên đặt trước ít nhất 30 phút - 1 tiếng để nhà hàng sắp xếp tốt nhất.
+- Chính xác thông tin: Thông tin Họ tên, Số điện thoại và Email được lấy tự động từ hồ sơ cá nhân của bạn để đảm bảo liên lạc khi cần thiết.
+
+B. Các tính năng hỗ trợ:
+- Xem danh sách bàn: Hiển thị đầy đủ Số bàn, Sức chứa (số lượng người) và Vị trí (VD: Gần cửa sổ, Tầng 2, Ngoài trời).
+- Lịch khả dụng trực quan: Khi chọn một bàn, hệ thống hiển thị lịch trong 30 ngày tới:
+  + Màu Xanh: Bàn còn trống, bạn có thể đặt.
+  + Màu Đỏ: Bàn đã có khách đặt trước vào ngày đó, vui lòng chọn ngày khác.
+
+C. Quy trình chi tiết:
+1. Chọn bàn: Tìm bàn có sức chứa phù hợp với số lượng người tham gia và nhấn "Đặt bàn".
+2. Kiểm tra lịch: Xem lịch hiển thị để chọn ngày còn trống (màu xanh).
+3. Nhập thông tin:
+   - Ngày sử dụng: Chọn ngày bạn dự định đến.
+   - Giờ sử dụng: Nhập thời gian chính xác trong khung giờ quy định (08:00 - 20:00).
+   - Yêu cầu đặc biệt: Nhập các yêu cầu như (Gần máy lạnh, Trang trí sinh nhật, Ghế trẻ em, v.v.)
+4. Xác nhận: Nhấn "Xác nhận đặt bàn". Hệ thống sẽ xử lý và thông báo kết quả ngay lập tức.
+5. Kiểm tra lại: Bạn có thể vào mục "Lịch sử đặt bàn" để xem lại thông tin bàn đã đặt.
+
+Lưu ý: Nếu bạn đến muộn quá 2 tiếng so với giờ đã đặt mà không thông báo, nhà hàng có quyền hủy đơn đặt bàn để phục vụ khách khác.
