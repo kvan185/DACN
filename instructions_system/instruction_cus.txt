@@ -60,7 +60,7 @@ Dành cho khách hàng muốn giữ chỗ trước cho các buổi tiệc, gặp
 A. Điều kiện và Quy định đặt bàn:
 - Tài khoản: Khách hàng bắt buộc phải Đăng nhập để thực hiện đặt bàn.
 - Thời gian hoạt động: Nhà hàng nhận đặt bàn trong khung giờ từ 08:00 đến 20:00 hằng ngày.
-- Thời gian chuẩn bị: Nên đặt trước ít nhất 30 phút - 1 tiếng để nhà hàng sắp xếp tốt nhất.
+- Thời gian chuẩn bị: Bắt buộc phải đặt trước ít nhất 1 tiếng để nhà hàng sắp xếp tốt nhất.
 - Chính xác thông tin: Thông tin Họ tên, Số điện thoại và Email được lấy tự động từ hồ sơ cá nhân của bạn để đảm bảo liên lạc khi cần thiết.
 
 B. Các tính năng hỗ trợ:

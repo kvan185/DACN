@@ -92,6 +92,14 @@ const handleSubmit = async (e) => {
       const reservationTime = new Date(
         `${formData.use_date}T${formData.use_time}`
       );
+      const now = new Date();
+      const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+
+      if (reservationTime < oneHourFromNow) {
+        toast.error("Quý khách phải đặt bàn trước ít nhất 1 tiếng để nhà hàng sắp xếp tốt nhất.");
+        setIsLoading(false);
+        return;
+      }
 
       const payload = {
         tableId: selectedTable._id,

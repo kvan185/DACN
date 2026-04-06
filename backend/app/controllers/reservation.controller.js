@@ -102,10 +102,11 @@ exports.createReservation = async (req, res) => {
  
     const reservationTime = new Date(`${use_date}T${use_time}`);
     const now = new Date();
+    const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
 
-    if (reservationTime < now) {
+    if (reservationTime < oneHourFromNow) {
       return res.status(400).json({
-        message: "Thời gian đặt bàn không được ở trong quá khứ"
+        message: "Quý khách phải đặt bàn trước ít nhất 1 tiếng để nhà hàng sắp xếp tốt nhất."
       });
     }
 
