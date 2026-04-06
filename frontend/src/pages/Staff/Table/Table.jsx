@@ -806,87 +806,119 @@ const TableManagement = () => {
 
                                 {/* Cột phải: Lịch đặt bàn */}
                                 <Col md={7} lg={8} className="pr-0">
-                                    <div className="reservation-schedule h-100">
-                                        <h6 className="fw-bold mb-3 d-flex align-items-center text-primary">
-                                            <FaSearch className="me-2" /> Lịch đặt bàn sắp tới
-                                        </h6>
-                                        <div className="table-responsive">
-                                            <AntTable
-                                                columns={[
-                                                    {
-                                                        title: 'Mã đặt',
-                                                        dataIndex: 'confirmationCode',
-                                                        key: 'confirmationCode',
-                                                        align: 'center',
-                                                        render: (text) => <span className="fw-bold text-primary">{text}</span>
-                                                    },
-                                                    {
-                                                        title: 'Khách hàng',
-                                                        dataIndex: 'customerName',
-                                                        key: 'customerName',
-                                                        align: 'center',
-                                                        render: (text) => <span className="fw-bold">{text || 'Khách vãng lai'}</span>
-                                                    },
-                                                    {
-                                                        title: 'Thời gian',
-                                                        key: 'time',
-                                                        render: (_, record) => (
-                                                            <div className="small">
-                                                                <div className="fw-bold">{new Date(record.use_date).toLocaleDateString('vi-VN')}</div>
-                                                                <div className="text-muted">{new Date(record.reservationTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
-                                                            </div>
-                                                        )
-                                                    },
-                                                    {
-                                                        title: 'Trạng thái',
-                                                        dataIndex: 'status',
-                                                        key: 'status',
-                                                        align: 'center',
-                                                        render: (status) => {
-                                                            let color = 'default';
-                                                            if (status === 'Đã đặt') color = 'warning';
-                                                            if (status === 'Đang sử dụng') color = 'error';
-                                                            if (status === 'Trống') color = 'success';
-                                                            if (status === 'Đã hủy') color = 'default';
-                                                            return <Tag color={color} style={{ borderRadius: '10px' }}>{status}</Tag>;
-                                                        }
-                                                    },
-                                                    {
-                                                        title: 'Hủy bàn',
-                                                        key: 'actions',
-                                                        align: 'center',
-                                                        render: (_, record) => (
-                                                            record.status === 'Đã đặt' && (
-                                                                <button
-                                                                    className="btn btn-sm btn-link p-0 text-danger"
-                                                                    title="Hủy đặt bàn này"
-                                                                    onClick={() => handleCancelReservation(record._id)}
-                                                                >
-                                                                    <MdCancel className="fs-5" />
-                                                                </button>
+                                    <div className="reservation-schedule d-flex flex-column h-100">
+                                        <div className="flex-grow-0">
+                                            <h6 className="fw-bold mb-3 d-flex align-items-center text-primary">
+                                                <FaSearch className="me-2" /> Lịch đặt bàn sắp tới
+                                            </h6>
+                                            <div className="table-responsive">
+                                                <AntTable
+                                                    columns={[
+                                                        {
+                                                            title: 'Mã đặt',
+                                                            dataIndex: 'confirmationCode',
+                                                            key: 'confirmationCode',
+                                                            align: 'center',
+                                                            render: (text) => <span className="fw-bold text-primary">{text}</span>
+                                                        },
+                                                        {
+                                                            title: 'Khách hàng',
+                                                            dataIndex: 'customerName',
+                                                            key: 'customerName',
+                                                            align: 'center',
+                                                            render: (text) => <span className="fw-bold">{text || 'Khách vãng lai'}</span>
+                                                        },
+                                                        {
+                                                            title: 'Thời gian',
+                                                            key: 'time',
+                                                            render: (_, record) => (
+                                                                <div className="small">
+                                                                    <div className="fw-bold">{new Date(record.use_date).toLocaleDateString('vi-VN')}</div>
+                                                                    <div className="text-muted">{new Date(record.reservationTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                                                                </div>
                                                             )
-                                                        )
-                                                    }
-                                                ]}
-                                                dataSource={(viewTable.reservationList || []).filter(r => {
-                                                    const resDate = new Date(r.use_date);
-                                                    const today = new Date();
-                                                    today.setHours(0, 0, 0, 0);
-                                                    return r.status === 'Đã đặt' && resDate >= today;
-                                                })}
-                                                rowKey="_id"
-                                                pagination={{ pageSize: 5, size: 'small' }}
-                                                size="small"
-                                                bordered
-                                                locale={{ emptyText: 'Chưa có lịch đặt sắp tới' }}
-                                            />
+                                                        },
+                                                        {
+                                                            title: 'Trạng thái',
+                                                            dataIndex: 'status',
+                                                            key: 'status',
+                                                            align: 'center',
+                                                            render: (status) => {
+                                                                let color = 'default';
+                                                                if (status === 'Đã đặt') color = 'warning';
+                                                                if (status === 'Đang sử dụng') color = 'error';
+                                                                if (status === 'Trống') color = 'success';
+                                                                if (status === 'Đã hủy') color = 'default';
+                                                                return <Tag color={color} style={{ borderRadius: '10px' }}>{status}</Tag>;
+                                                            }
+                                                        },
+                                                        {
+                                                            title: 'Hủy đặt',
+                                                            key: 'actions',
+                                                            align: 'center',
+                                                            render: (_, record) => (
+                                                                record.status === 'Đã đặt' && (
+                                                                    <Button
+                                                                        variant="outline-danger"
+                                                                        size="sm"
+                                                                        className="p-1 px-2 border-0"
+                                                                        title="Hủy đặt bàn này"
+                                                                        onClick={() => handleCancelReservation(record._id)}
+                                                                        style={{ borderRadius: '5px', backgroundColor: '#fff5f5' }}
+                                                                    >
+                                                                        <MdCancel className="fs-5" />
+                                                                    </Button>
+                                                                )
+                                                            )
+                                                        }
+                                                    ]}
+                                                    dataSource={(viewTable.reservationList || []).filter(r => {
+                                                        const resDate = new Date(r.use_date);
+                                                        const today = new Date();
+                                                        today.setHours(0, 0, 0, 0);
+                                                        return r.status === 'Đã đặt' && resDate >= today;
+                                                    })}
+                                                    rowKey="_id"
+                                                    pagination={{ pageSize: 3, size: 'small' }}
+                                                    size="small"
+                                                    bordered
+                                                    locale={{ emptyText: 'Chưa có lịch đặt sắp tới' }}
+                                                />
+                                            </div>
                                         </div>
 
-                                        <div className="modal-actions d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+                                        <div className="customer-info-today mt-4">
+                                            <h6 className="fw-bold mb-3 d-flex align-items-center text-success">
+                                                <FaRegEdit className="me-2" /> Thông tin khách đặt hôm nay
+                                            </h6>
+                                            {reservationInfo ? (
+                                                <div className="bg-light p-3 rounded border shadow-sm">
+                                                    <Row className="g-3">
+                                                        <Col sm={6}>
+                                                            <div className="mb-2"><strong>Tên khách:</strong> {reservationInfo.customerName}</div>
+                                                            <div className="mb-2"><strong>Điện thoại:</strong> {reservationInfo.phoneNumber}</div>
+                                                            <div className="mb-0"><strong>Email:</strong> {reservationInfo.email}</div>
+                                                        </Col>
+                                                        <Col sm={6}>
+                                                            <div className="mb-2"><strong>Giờ đến:</strong> <span className="text-primary fw-bold">{reservationInfo.use_time}</span></div>
+                                                            <div className="mb-2"><strong>Mã xác nhận:</strong> <span className="text-danger fw-bold">{reservationInfo.confirmationCode}</span></div>
+                                                            <div className="mb-0 text-truncate"><strong>Yêu cầu:</strong> {reservationInfo.specialRequests || 'Không có'}</div>
+                                                        </Col>
+                                                    </Row>
+                                                </div>
+                                            ) : (
+                                                <div className="bg-light p-3 rounded text-center text-muted border">
+                                                    Hiện chưa có khách đặt chỗ trực tuyến trong ngày
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="modal-actions d-flex justify-content-end gap-3 mt-auto pt-4 border-top">
                                             <Button
-                                                variant="outline-secondary"
+                                                variant="secondary"
                                                 onClick={handleCloseViewModal}
-                                                className="px-4 fw-bold btn-close-modal"
+                                                className="px-4 fw-bold text-white border-0"
+                                                style={{ borderRadius: '10px', backgroundColor: '#6c757d' }}
                                             >
                                                 Đóng
                                             </Button>
@@ -898,7 +930,8 @@ const TableManagement = () => {
                                                         handleCloseViewModal();
                                                     }
                                                 }}
-                                                className="px-4 fw-bold btn-delete-modal"
+                                                className="px-4 fw-bold border-0 shadow-sm"
+                                                style={{ borderRadius: '10px', backgroundColor: '#dc3545', color: 'white' }}
                                             >
                                                 Xóa bàn này
                                             </Button>

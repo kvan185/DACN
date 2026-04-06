@@ -1,9 +1,10 @@
-export const fetchOrder = async (cartId, orderSource, tableNumber, selectedItemIds) => {
+export const fetchOrder = async (cartId, orderSource, tableNumber, selectedItemIds, paymentMethod) => {
     const orderData = {
         cartId: cartId,
         orderSource: orderSource,
         tableNumber: tableNumber,
-        selectedItemIds: selectedItemIds
+        selectedItemIds: selectedItemIds,
+        typeOrder: paymentMethod // mapping paymentMethod to typeOrder for legacy support or explicit field
     };
     
     const response = await fetch('/api/order', {
@@ -54,22 +55,23 @@ export const fetchGetGuestOrdersByTable = async (tableNumber) => {
     return data;
 }
 
-export const fetchPayGuestOrdersByTable = async (tableNumber) => {
+export const fetchPayGuestOrdersByTable = async (tableNumber, paymentMethod) => {
     const response = await fetch(`/api/order/guest/table/${tableNumber}/payment`, {
         method: 'put',
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ paymentMethod })
     });
     const data = await response.json();
     return data;
 }
 
-export const fetchGuestOrder = async (items, tableNumber, orderSource) => {
+export const fetchGuestOrder = async (items, tableNumber, orderSource, paymentMethod) => {
     const orderData = {
         items: items,
         tableNumber: tableNumber,
-        typeOrder: "cash", 
+        typeOrder: paymentMethod || "cash", 
         orderSource: orderSource
     };
     
@@ -97,13 +99,25 @@ export const fetchGuestPayment = async (items, tableNumber, orderSource) => {
     return data;
 }
 
-export const fetchUpdateIsPayment = async (orderId, payment)=>{
+export const fetchTablePayment = async (tableNumber) => {
+    const response = await fetch('/api/payment/table', {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ tableNumber, bankCode: "" })
+    });
+    const data = await response.json();
+    return data;
+}
+
+export const fetchUpdateIsPayment = async (orderId, payment, paymentMethod = null)=>{
     const response = await fetch(`/api/order/status/payment`,{
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ orderId: orderId, isPayment: payment})
+        body: JSON.stringify({ orderId: orderId, isPayment: payment, paymentMethod: paymentMethod})
     });
     return response;
 }

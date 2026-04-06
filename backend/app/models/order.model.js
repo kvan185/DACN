@@ -58,6 +58,10 @@ module.exports = mongoose => {
             enum: ['online', 'table'],
             default: 'online',
         },
+        payment_method: {
+            type: String,
+            default: '',
+        },
       },
       { timestamps: true }
     );

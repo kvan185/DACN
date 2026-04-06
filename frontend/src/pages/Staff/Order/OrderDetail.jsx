@@ -135,6 +135,12 @@ function OrderDetail(props) {
                             Trạng thái thanh toán:
                             <span>{orderDetail && orderDetail.is_payment ? 'Đã thanh toán' : 'Chưa thanh toán'}</span>
                         </label>
+                        <label>
+                            Phương thức thanh toán:
+                            <span style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
+                                {orderDetail && (orderDetail.payment_method || "(Trống)")}
+                            </span>
+                        </label>
                     </div>
                     <div className="order__detail-group-btn">
                         <button disabled={(orderDetail && orderDetail.status !== statusOrder.NEW)} className="btn btn-confirm"

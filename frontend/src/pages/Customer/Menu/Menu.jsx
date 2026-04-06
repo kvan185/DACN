@@ -84,20 +84,6 @@ function Menu() {
         }
     }, [isToast]);
 
-    useEffect(() => {
-        if (location.state?.showPaymentSuccess) {
-            toast.success('Thanh toán thành công. Cảm ơn quý khách đã dùng bữa!', {
-                position: "top-center",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
-            // Clear the state safely via React Router
-            navigate(location.pathname + location.search, { replace: true, state: {} });
-        }
-    }, [location.state, navigate, location.pathname, location.search]);
 
     return (
         <>

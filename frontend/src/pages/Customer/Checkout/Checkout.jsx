@@ -8,7 +8,7 @@ import Cart from '../../../components/Customer/Cart/Cart';
 import PopupOrderSuccess from '../../../components/Customer/PopupOrderSuccess/PopupOrderSuccess';
 import { fetchGetCart } from '../../../actions/cart';
 import { setCartItems, setCartStore } from '../../../actions/user';
-import { fetchOrder, fetchPayment, fetchUpdateIsPayment, fetchGuestOrder, fetchGuestPayment, fetchPayGuestOrdersByTable } from '../../../actions/order';
+import { fetchOrder, fetchPayment, fetchUpdateIsPayment, fetchGuestOrder, fetchGuestPayment, fetchPayGuestOrdersByTable, fetchTablePayment } from '../../../actions/order';
 import './checkout.scss';
 
 function Checkout(props) {
@@ -110,65 +110,79 @@ function Checkout(props) {
         if (paymentMethod === 'cash') {
             let data;
             if (isFullTablePayment) {
-                data = await fetchPayGuestOrdersByTable(tableNumber);
+                // Đối với thanh toán tại bàn bằng tiền mặt, cập nhật phương thức nhưng chưa is_payment
+                data = await fetchPayGuestOrdersByTable(tableNumber, 'tiền mặt');
             } else if (accessToken) {
-                data = await fetchOrder(cartId, orderSource, tableNumber, selectedItemIds);
+                data = await fetchOrder(cartId, orderSource, tableNumber, selectedItemIds, 'tiền mặt');
             } else {
                 const guestItemsToOrder = allCartItems.filter(item => selectedItemIds.includes(item.id));
-                data = await fetchGuestOrder(guestItemsToOrder, tableNumber, orderSource);
+                data = await fetchGuestOrder(guestItemsToOrder, tableNumber, orderSource, 'tiền mặt');
             }
 
             if (data && data.success) {
                 if (orderSource === 'table') {
-                    // Xóa cart và flag nhưng giữ tableNumber trong state để popup sử dụng
                     localStorage.removeItem('guestCart');
-                    localStorage.removeItem('tableNumber');
-                    localStorage.removeItem('orderSource');
                     localStorage.removeItem('guestHasOrdered');
+                    // Không xóa tableNumber để nếu khách muốn order tiếp
                 }
                 return setShowPopup(true);
+            } else {
+                toast.error(data?.message || 'Có lỗi xảy ra khi xử lý đơn hàng');
             }
         } else {
+            // Transfer
             let data;
-            if (accessToken) {
+            if (isFullTablePayment) {
+                data = await fetchTablePayment(tableNumber);
+            } else if (accessToken) {
                 data = await fetchPayment(cartId, selectedItemIds);
             } else {
-                const guestItemsToOrder = isFullTablePayment ? guestItemsFromState : allCartItems.filter(item => selectedItemIds.includes(item.id));
+                const guestItemsToOrder = allCartItems.filter(item => selectedItemIds.includes(item.id));
                 data = await fetchGuestPayment(guestItemsToOrder, tableNumber, orderSource);
             }
 
-            if (data && data.paymentUrl !== '') {
+            if (data && data.paymentUrl) {
                 window.location.href = `${data.paymentUrl}`;
+            } else {
+                toast.error(data?.message || 'Không thể khởi tạo thanh toán');
             }
         }
     }
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
-
         const myParam = urlParams.get('vnp_TransactionStatus');
         const orderInfo = urlParams.get('vnp_OrderInfo');
-        var arrOId = '';
-        if (orderInfo) {
-            arrOId = orderInfo.split(':');
+        
+        if (myParam === '00' && orderInfo) {
+            const arrOId = orderInfo.split(':');
+            const oId = arrOId[1];
+            
+            const finalizePayment = async () => {
+                // Cập nhật trạng thái thanh toán (Backend cũng đã xử lý qua IPN/Return)
+                await fetchUpdateIsPayment(oId, true, 'chuyển khoản');
+
+                const savedOrderSource = localStorage.getItem('orderSource');
+                const savedTableNumber = localStorage.getItem('tableNumber');
+
+                if (savedOrderSource === 'table') {
+                    localStorage.removeItem('guestCart');
+                    localStorage.removeItem('guestHasOrdered');
+                    
+                    // Chuyển hướng thẳng về trang thực đơn ban đầu
+                    navigate(`/menu?table=${savedTableNumber}`, { 
+                        replace: true
+                    });
+                } else {
+                    setShowPopup(true);
+                }
+            };
+
+            finalizePayment();
+        } else if (myParam && myParam !== '00') {
+            toast.error('Thanh toán không thành công');
         }
-
-        if (myParam === '00') {
-            fetchUpdateIsPayment(arrOId[1], true);
-
-            const savedOrderSource = localStorage.getItem('orderSource');
-            const savedTableNumber = localStorage.getItem('tableNumber');
-
-            if (savedOrderSource === 'table') {
-                localStorage.removeItem('guestCart');
-                localStorage.removeItem('tableNumber');
-                localStorage.removeItem('orderSource');
-                localStorage.removeItem('guestHasOrdered');
-            }
-
-            return setShowPopup(true);
-        }
-    }, []);
+    }, [navigate]);
 
     const currentOrderSource = passedOrderSource || localStorage.getItem('orderSource') || orderSource;
     if (!accessToken && currentOrderSource !== 'table' && !isFullTablePayment) {

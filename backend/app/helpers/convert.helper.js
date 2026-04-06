@@ -38,6 +38,7 @@ exports.convertCartToOrder = async (cartId, typeOrder, selectedItemIds = null) =
         total_price: total_price,
         status: "NEW",
         type_order: typeOrder,
+        payment_method: typeOrder === "cash" ? "tiền mặt" : (typeOrder === "transfer" ? "chuyển khoản" : ""),
         is_payment: false,
         is_active: true,
     });
@@ -146,6 +147,7 @@ exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber) => {
         type_order: typeOrder,
         order_source: "table",
         table_number: tableNumber,
+        payment_method: typeOrder === "cash" ? "tiền mặt" : (typeOrder === "transfer" ? "chuyển khoản" : ""),
         is_payment: false,
         is_active: true,
     });

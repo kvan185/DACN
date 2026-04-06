@@ -226,13 +226,24 @@ exports.getGuestOrdersByTable = async (req, res) => {
 exports.payGuestOrdersByTable = async (req, res) => {
     try {
         const { tableNumber } = req.params;
+        const { paymentMethod } = req.body;
         if (!tableNumber) {
             return res.status(400).send({ success: false, message: "No table number provided." });
         }
 
+        const updateData = { 
+            payment_method: paymentMethod || "tiền mặt" 
+        };
+
+        // Nếu là chuyển khoản, ta có thể đánh dấu là đã thanh toán luôn 
+        // (thường gọi sau khi VNPAY thành công hoặc nhân viên xác nhận)
+        if (paymentMethod === "chuyển khoản") {
+            updateData.is_payment = true;
+        }
+
         const result = await Order.updateMany(
             { table_number: tableNumber, order_source: 'table', is_payment: false },
-            { $set: { is_payment: true } }
+            { $set: updateData }
         );
 
         if (result.matchedCount === 0 && result.modifiedCount === 0) {
@@ -247,20 +258,52 @@ exports.payGuestOrdersByTable = async (req, res) => {
             }
         }
 
-        res.status(200).send({ success: true, message: "Guest orders marked as paid." });
+        res.status(200).send({ success: true, message: "Guest orders updated with payment method." });
     } catch (error) {
         console.error(error);
-        res.status(500).send({ success: false, message: "An error occurred while paying orders." });
+        res.status(500).send({ success: false, message: "An error occurred while updating orders." });
     }
 };
 
 exports.updateIsPayment = async (req, res) => {
     try {
-        const isPayment = req.body.isPayment;
-        const orderId = req.body.orderId;
+        const { isPayment, orderId, paymentMethod } = req.body;
         const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
         order.is_payment = isPayment;
+        
+        // Cập nhật phương thức thanh toán nếu có hoặc mặc định là tiền mặt
+        if (isPayment) {
+            if (paymentMethod) {
+                order.payment_method = paymentMethod;
+            } else if (!order.payment_method) {
+                order.payment_method = 'tiền mặt';
+            }
+        }
+
         await order.save();
+
+        // Nếu là đơn tại bàn, cập nhật tất cả các đơn chưa thanh toán khác của bàn này
+        if (order.order_source === 'table' && isPayment) {
+            await Order.updateMany(
+                { table_number: order.table_number, order_source: 'table', is_payment: false },
+                { $set: { is_payment: true, payment_method: order.payment_method || 'tiền mặt' } }
+            );
+        }
+
+        // Gửi socket update list cho admin
+        const listOrder = await Order.find({});
+        const admin = await Admin.find({});
+        for (const ad of admin) {
+            if (ad.socket_id) {
+                listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
+            }
+        }
+
         res.status(200).json({ order });
     } catch (error) {
         console.error(error);
