@@ -102,11 +102,11 @@ exports.createReservation = async (req, res) => {
  
     const reservationTime = new Date(`${use_date}T${use_time}`);
     const now = new Date();
-    const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+    const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60 * 1000);
 
-    if (reservationTime < oneHourFromNow) {
+    if (reservationTime < thirtyMinutesFromNow) {
       return res.status(400).json({
-        message: "Quý khách phải đặt bàn trước ít nhất 1 tiếng để nhà hàng sắp xếp tốt nhất."
+        message: "Quý khách phải đặt bàn trước ít nhất 30 phút để nhà hàng sắp xếp tốt nhất."
       });
     }
 
@@ -270,6 +270,22 @@ exports.checkinReservation = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Không tìm thấy thông tin đặt bàn hoặc mã xác nhận không đúng"
+      });
+    }
+
+    // Kiểm tra thời gian check-in: chỉ cho phép check-in trong vòng 30 phút sau giờ đặt
+    const now = new Date();
+    const gracePeriod = 30 * 60 * 1000; // 30 phút
+    if (now > new Date(reservation.reservationTime.getTime() + gracePeriod)) {
+      reservation.status = "Đã hủy";
+      await reservation.save();
+      await Table.findByIdAndUpdate(tableId, {
+        isAvailable: true,
+        status: "Trống"
+      });
+      return res.status(400).json({
+        success: false,
+        message: "Đặt bàn đã quá thời gian check-in (30 phút sau giờ đặt). Đặt bàn đã bị hủy."
       });
     }
 

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Table, InputGroup, Form } from 'react-bootstrap';
-import { FaRegEdit, FaSearch } from 'react-icons/fa';
+import { FaRegEdit, FaSearch, FaSortAmountDownAlt, FaSortAmountUp } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
 import { IoMdClose } from "react-icons/io";
 import { toast } from 'react-toastify';
-// import { fetchIngredients } from '../../../actions/ingredient';
+import { socket } from '../../../socket';
 
 import './ingredient.scss';
 
@@ -13,10 +13,19 @@ function Ingredient() {
     const [ingredients, setIngredients] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortOrder, setSortOrder] = useState('none'); // 'none' | 'asc' | 'desc'
     const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
+
+    // Logic sorting và phân trang
+    const sortedIngredients = [...ingredients].sort((a, b) => {
+        if (sortOrder === 'asc') return a.qty - b.qty;
+        if (sortOrder === 'desc') return b.qty - a.qty;
+        return 0;
+    });
+
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = ingredients.slice(indexOfFirstItem, indexOfLastItem);
+    const currentItems = sortedIngredients.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(ingredients.length / itemsPerPage);
 
     // Search properties
@@ -94,6 +103,16 @@ function Ingredient() {
     useEffect(() => {
         getData();
     }, []);
+
+    useEffect(() => {
+        socket.on('stock_changed', () => {
+            getData(searchTerm);
+        });
+
+        return () => {
+            socket.off('stock_changed');
+        };
+    }, [searchTerm]);
 
     const handleDeleteItem = async (id) => {
         const result = window.confirm('Bạn có chắc chắn muốn xóa nguyên liệu này?');
@@ -217,6 +236,21 @@ function Ingredient() {
                             )}
                         </InputGroup>
                     </div>
+                    <button
+                        className="btn btn-outline-secondary d-flex align-items-center gap-2"
+                        onClick={() => {
+                            if (sortOrder === 'none') setSortOrder('asc');
+                            else if (sortOrder === 'asc') setSortOrder('desc');
+                            else setSortOrder('none');
+                        }}
+                        style={{ padding: '8px 10px', borderRadius: '8px', marginLeft: '20px' }}
+                        title="Sắp xếp theo số lượng"
+                    >
+                        {sortOrder === 'none' && <FaSortAmountDownAlt />}
+                        {sortOrder === 'asc' && <FaSortAmountUp className="text-success" />}
+                        {sortOrder === 'desc' && <FaSortAmountDownAlt className="text-success" />}
+                        Số lượng
+                    </button>
                     <button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={openAddModal} style={{ padding: '10px 22px', borderRadius: '8px', fontWeight: '500' }}> + Thêm nguyên liệu</button>
                 </div>
             </div>

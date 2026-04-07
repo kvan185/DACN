@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { getAllTables, createReservation, getReservationByTableId } from '../../../actions/table';
 import PopupReserveSuccess from '../../../components/Customer/PopupReserveSuccess/PopupReserveSuccess';
 
-  const TableReservation = () => {
+const TableReservation = () => {
   const navigate = useNavigate();
   const accessToken = sessionStorage.getItem("accessToken");
   const user = JSON.parse(sessionStorage.getItem("user"));
@@ -69,8 +69,8 @@ import PopupReserveSuccess from '../../../components/Customer/PopupReserveSucces
       [name]: value
     }));
   };
-  
-const handleSubmit = async (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const selectedDateStr = formData.use_date;
@@ -93,10 +93,10 @@ const handleSubmit = async (e) => {
         `${formData.use_date}T${formData.use_time}`
       );
       const now = new Date();
-      const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+      const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60 * 1000);
 
-      if (reservationTime < oneHourFromNow) {
-        toast.error("Quý khách phải đặt bàn trước ít nhất 1 tiếng để nhà hàng sắp xếp tốt nhất.");
+      if (reservationTime < thirtyMinutesFromNow) {
+        toast.error("Quý khách phải đặt bàn trước ít nhất 30 phút để nhà hàng sắp xếp tốt nhất.");
         setIsLoading(false);
         return;
       }
@@ -135,7 +135,6 @@ const handleSubmit = async (e) => {
 
       // 🔎 log lỗi chi tiết
       console.error("Reservation error:", error);
-
       toast.error(error.message || "Có lỗi khi đặt bàn");
 
     } finally {
@@ -177,10 +176,10 @@ const handleSubmit = async (e) => {
       </BootstrapTable>
 
       {/* Modal đặt bàn */}
-      <Modal 
-        show={showModal} 
-        onHide={() => !isLoading && setShowModal(false)} 
-        size="lg" 
+      <Modal
+        show={showModal}
+        onHide={() => !isLoading && setShowModal(false)}
+        size="lg"
         centered
         contentClassName="reservation-modal-content"
       >
@@ -195,10 +194,10 @@ const handleSubmit = async (e) => {
               <Col md={5}>
                 <div className="mb-3">
                   <Form.Label className="fw-bold" style={{ fontSize: '13px' }}>(Đỏ = Đã đặt, Xanh = Trống)</Form.Label>
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(7, 1fr)', 
-                    gap: '4px', 
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(7, 1fr)',
+                    gap: '4px',
                     marginBottom: '10px',
                     padding: '8px',
                     backgroundColor: '#f8f9fa',

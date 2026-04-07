@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const ProductBOM = require("../models/productBom.model");
 const db = require("../models");
 const Ingredient = db.ingredient;
@@ -30,7 +31,8 @@ const buildImageUrl = (product) => {
     }
 
     return {
-        ...product.toObject(),
+        ...product.toObject({ virtuals: true }),
+        id: product._id.toString(), // Bảo đảm luôn có id dạng chuỗi
         image_url,
     };
 };
@@ -58,18 +60,19 @@ const create = async (data, file) => {
 
 const getList = async (searchQuery) => {
     let query = {};
-    if (searchQuery) {
+    if (searchQuery && typeof searchQuery === "string") {
         query = {
-             $or: [
-                 { name: { $regex: searchQuery, $options: "i" } }
-             ]
+            $or: [
+                { name: { $regex: searchQuery, $options: "i" } }
+            ]
         };
         // Check if searchQuery is valid ObjectId
         if (searchQuery.match(/^[0-9a-fA-F]{24}$/)) {
             query.$or.push({ _id: searchQuery });
         }
     }
-    return await Product.find(query).sort({ createdAt: -1 });
+    const products = await Product.find(query).sort({ createdAt: -1 });
+    return products.map(buildImageUrl);
 };
 
 const getListByCategory = async (categoryId) => {
@@ -157,29 +160,46 @@ const recommender = async (auth) => {
 };
 
 const checkProductAvailability = async (productId) => {
-    const boms = await ProductBOM.find({ product_id: productId });
-
-    let isActive = true;
-
-    for (const bom of boms) {
-        const ingredient = await Ingredient.findById(bom.ingredient_id);
-
-        if (!ingredient || ingredient.qty < bom.quantity) {
-            isActive = false;
-            break;
+    try {
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return false;
         }
+        const pid = new mongoose.Types.ObjectId(productId);
+        const boms = await ProductBOM.find({ product_id: pid });
+
+        let isActive = true;
+
+        for (const bom of boms) {
+            const ingredient = await Ingredient.findById(bom.ingredient_id);
+
+            // Nếu nguyên liệu không tồn tại hoặc số lượng còn lại ít hơn định lượng cần thiết
+            if (!ingredient || ingredient.qty < bom.quantity) {
+                isActive = false;
+                break;
+            }
+        }
+
+        const product = await Product.findById(pid);
+        if (product) {
+            product.is_active = isActive;
+            await product.save();
+        }
+
+        return isActive;
+    } catch (error) {
+        console.error(`Error checking availability for product ${productId}:`, error);
+        return false;
     }
-
-    await Product.findByIdAndUpdate(productId, {
-        is_active: isActive,
-    });
-
-    return isActive;
 };
 
-const checkManyProducts = async (productIds) => {
-    for (const id of productIds) {
-        await checkProductAvailability(id);
+const checkAllProductsAvailability = async () => {
+    const products = await Product.find({});
+    for (const product of products) {
+        await checkProductAvailability(product._id);
+    }
+    // Phát tín hiệu một lần duy nhất sau khi đã cập nhật xong toàn bộ
+    if (global._io) {
+        global._io.emit("stock_changed");
     }
 };
 
@@ -193,5 +213,5 @@ module.exports = {
     search,
     recommender,
     checkProductAvailability,
-    checkManyProducts,
+    checkAllProductsAvailability,
 };

@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const middlewares = require("./auth.middlewares");
 const db = require("../models");
 const Cart = db.cart;
@@ -11,7 +12,70 @@ const Admin = db.admin;
 const ProductBOM = require("../models/productBom.model");
 const Ingredient = db.ingredient;
 const Product = db.product;
-const { checkManyProducts } = require("../services/product.service");
+const { checkAllProductsAvailability } = require("../services/product.service");
+
+/**
+ * Helper function to check if ingredients are sufficient
+ */
+async function canDeductIngredients(orderItems) {
+    for (const item of orderItems) {
+        const productId = item.product_id || item.id;
+        const pid = new mongoose.Types.ObjectId(productId);
+        const boms = await ProductBOM.find({ product_id: pid });
+        for (const bom of boms) {
+            const ingredient = await Ingredient.findById(bom.ingredient_id);
+            if (!ingredient || ingredient.qty < (bom.quantity * item.qty)) {
+                return { success: false, message: `Nguyên liệu cho món ${item.product_name || item.name} không đủ.` };
+            }
+        }
+    }
+    return { success: true };
+}
+
+async function deductIngredients(orderId) {
+    const orderItems = await OrderItem.find({ order_id: orderId });
+
+    for (const item of orderItems) {
+        const pid = new mongoose.Types.ObjectId(item.product_id);
+        const boms = await ProductBOM.find({ product_id: pid });
+        for (const bom of boms) {
+            const ingredient = await Ingredient.findById(bom.ingredient_id);
+            if (ingredient) {
+                ingredient.qty -= (bom.quantity * item.qty);
+                await ingredient.save();
+            }
+        }
+    }
+
+    // Quét và cập nhật trạng thái cho TOÀN BỘ sản phẩm trong hệ thống để đảm bảo đồng bộ 100%
+    await checkAllProductsAvailability();
+}
+
+/**
+ * Helper function to restore ingredients when order is canceled
+ */
+async function restoreIngredients(orderId) {
+    const orderItems = await OrderItem.find({ order_id: orderId });
+
+    for (const item of orderItems) {
+        const pid = new mongoose.Types.ObjectId(item.product_id);
+        const boms = await ProductBOM.find({ product_id: pid });
+        for (const bom of boms) {
+            const ingredient = await Ingredient.findById(bom.ingredient_id);
+            if (ingredient) {
+                ingredient.qty += (bom.quantity * item.qty);
+                await ingredient.save();
+            }
+        }
+    }
+
+    // Quét và cập nhật trạng thái cho TOÀN BỘ sản phẩm trong hệ thống để đảm bảo đồng bộ 100%
+    await checkAllProductsAvailability();
+}
+
+exports.deductIngredients = deductIngredients;
+exports.restoreIngredients = restoreIngredients;
+exports.canDeductIngredients = canDeductIngredients;
 
 exports.createCashOrder = async (req, res) => {
     try {
@@ -19,6 +83,18 @@ exports.createCashOrder = async (req, res) => {
         if (!cartId) {
             return res.status(400).send({ success: false, message: "No cart ID provided." });
         }
+
+        // Kiểm tra tồn kho trước khi tạo đơn
+        const cartItems = await CartItem.find({ cart_id: cartId });
+        const itemsToCheck = selectedItemIds && selectedItemIds.length > 0
+            ? cartItems.filter(i => selectedItemIds.includes(i.id))
+            : cartItems;
+
+        const check = await canDeductIngredients(itemsToCheck);
+        if (!check.success) {
+            return res.status(400).send({ success: false, message: check.message });
+        }
+
         const order = await convertHelper.convertCartToOrder(cartId, "cash", selectedItemIds);
 
         if (tableNumber) {
@@ -26,6 +102,7 @@ exports.createCashOrder = async (req, res) => {
             order.order_source = "table";
         }
         await order.save();
+        await deductIngredients(order.id);
         res.status(200).send({ success: true, message: "Order created successfully.", order });
     } catch (error) {
         console.error(error);
@@ -39,11 +116,20 @@ exports.createGuestOrder = async (req, res) => {
         if (!items || items.length === 0) {
             return res.status(400).send({ success: false, message: "No items provided." });
         }
+
+        // Kiểm tra tồn kho trước khi tạo đơn
+        const check = await canDeductIngredients(items);
+        if (!check.success) {
+            return res.status(400).send({ success: false, message: check.message });
+        }
+
         const order = await convertHelper.createOrderFromGuestItems(items, typeOrder, tableNumber);
 
         if (!order) {
             return res.status(500).send({ success: false, message: "Failed to create order." });
         }
+
+        await deductIngredients(order.id);
 
         res.status(200).send({ success: true, message: "Guest order created successfully.", order });
     } catch (error) {
@@ -140,33 +226,9 @@ exports.updateStatusOrder = async (req, res) => {
             return res.status(400).send({ message: "Can't cancel." });
         }
 
-        if (req.body.status === "COMPLETED") {
-            const orderItems = await OrderItem.find({ order_id: req.body.orderId });
-
-            for (const item of orderItems) {
-                const productId = item.product_id;
-                const qtyOrder = item.qty;
-
-                const boms = await ProductBOM.find({ product_id: productId });
-
-                for (const bom of boms) {
-                    const ingredient = await Ingredient.findById(bom.ingredient_id);
-
-                    if (!ingredient) continue;
-
-                    const totalNeed = bom.quantity * qtyOrder;
-
-                    if (ingredient.qty < totalNeed) {
-                        await Product.findByIdAndUpdate(productId, {
-                            is_active: false
-                        });
-                        continue;
-                    }
-
-                    ingredient.qty -= totalNeed;
-                    await ingredient.save();
-                }
-            }
+        if (req.body.status === "canceled" && order.status === "NEW") {
+            // Hoàn lại nguyên liệu nếu đơn hàng bị hủy ở trạng thái mới (chưa xác nhận)
+            await restoreIngredients(order.id);
         }
 
         order.status = req.body.status;
@@ -182,7 +244,7 @@ exports.updateStatusOrder = async (req, res) => {
         }
         const listOrder = await Order.find({});
         const admin = await Admin.find({});
-        for (const ad of admin ) {
+        for (const ad of admin) {
             if (ad.socket_id) {
                 listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
             }
@@ -201,10 +263,10 @@ exports.getGuestOrdersByTable = async (req, res) => {
             return res.status(400).send({ success: false, message: "No table number provided." });
         }
 
-        const orders = await Order.find({ 
-            table_number: tableNumber, 
+        const orders = await Order.find({
+            table_number: tableNumber,
             order_source: 'table',
-            is_payment: false 
+            is_payment: false
         }).sort({ createdAt: -1 });
 
         const orderList = await Promise.all(
@@ -231,8 +293,8 @@ exports.payGuestOrdersByTable = async (req, res) => {
             return res.status(400).send({ success: false, message: "No table number provided." });
         }
 
-        const updateData = { 
-            payment_method: paymentMethod || "tiền mặt" 
+        const updateData = {
+            payment_method: paymentMethod || "tiền mặt"
         };
 
         // Nếu là chuyển khoản, ta có thể đánh dấu là đã thanh toán luôn 
@@ -275,7 +337,7 @@ exports.updateIsPayment = async (req, res) => {
         }
 
         order.is_payment = isPayment;
-        
+
         // Cập nhật phương thức thanh toán nếu có hoặc mặc định là tiền mặt
         if (isPayment) {
             if (paymentMethod) {
@@ -304,7 +366,6 @@ exports.updateIsPayment = async (req, res) => {
             }
         }
 
-        res.status(200).json({ order });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "An error occurred while processing your request." });

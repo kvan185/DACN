@@ -4,7 +4,10 @@ const crypto = require("crypto");
 const convertHelper = require("../helpers/convert.helper.js");
 const listSocket = require("../socket");
 const Order = db.order;
+const OrderItem = db.orderItem;
+const CartItem = db.cartItem;
 const Admin = db.admin;
+const { canDeductIngredients, deductIngredients } = require("./order.controller");
 
 
 exports.createPaymentUrl = async (req, res) => {
@@ -13,7 +16,20 @@ exports.createPaymentUrl = async (req, res) => {
             return res.status(400).send({ message: "Not cart id" });
         }
         const { cartId, bankCode, selectedItemIds } = req.body;
+
+        // Kiểm tra tồn kho trước khi tạo đơn và thanh toán
+        const cartItems = await CartItem.find({ cart_id: cartId });
+        const itemsToCheck = selectedItemIds && selectedItemIds.length > 0 
+            ? cartItems.filter(i => selectedItemIds.includes(i.id)) 
+            : cartItems;
+
+        const check = await canDeductIngredients(itemsToCheck);
+        if (!check.success) {
+            return res.status(400).send({ success: false, message: check.message });
+        }
+
         const order = await convertHelper.convertCartToOrder(cartId, "transfer", selectedItemIds);
+        await deductIngredients(order.id);
         const oId = order.id;
 
         process.env.TZ = 'Asia/Ho_Chi_Minh';
@@ -78,7 +94,14 @@ exports.createGuestPaymentUrl = async (req, res) => {
             return res.status(400).send({ message: "No items provided." });
         }
         
+        // Kiểm tra tồn kho trước khi tạo đơn và thanh toán
+        const check = await canDeductIngredients(items);
+        if (!check.success) {
+            return res.status(400).send({ message: check.message });
+        }
+
         const order = await convertHelper.createOrderFromGuestItems(items, "transfer", tableNumber);
+        await deductIngredients(order.id);
         const oId = order.id;
 
         process.env.TZ = 'Asia/Ho_Chi_Minh';

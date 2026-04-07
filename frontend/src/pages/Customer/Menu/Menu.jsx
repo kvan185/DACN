@@ -8,6 +8,8 @@ import ProductCard from '../../../components/Customer/Product-Card/ProductCard';
 import CategoryList from '../../../components/Customer/Category/Category';
 import Cart from '../../../components/Customer/Cart/Cart';
 import { setDisplayToast, getCategoryId } from '../../../actions/user';
+import Chatbot from '../../../components/Customer/Chatbot/Chatbot';
+import { socket } from '../../../socket';
 
 function Menu() {
     const [tableNumber, setTableNumber] = useState(null);
@@ -75,6 +77,15 @@ function Menu() {
                 setTableNumber(savedTableNumber);
             }
         }
+
+        // Lắng nghe tín hiệu kho thay đổi để tải lại dữ liệu mới nhất
+        socket.on('stock_changed', () => {
+            fetchProducts();
+        });
+
+        return () => {
+            socket.off('stock_changed');
+        };
     }, []);
 
     useEffect(() => {
@@ -92,13 +103,14 @@ function Menu() {
                 autoClose={1000}
             />
             <Cart accessToken={accessToken} />
+            <Chatbot />
             <Container className='block-menu'>
                 <div className="menu-products">
                     {/* <h2>Thực Đơn</h2> */}
                     <div className="order-info">
                         {orderSource === 'table' ? (
                             <div className="table-info">
-                                <span>Bàn số {tableNumber}</span>
+                                <span> THỰC ĐƠN </span>
                             </div>
                         ) : (
                             <div className="online-info">

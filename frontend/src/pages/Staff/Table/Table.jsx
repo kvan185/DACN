@@ -317,8 +317,8 @@ const TableManagement = () => {
             const resTime = new Date(table.nextReservationTime);
             const diffMs = resTime - now;
 
-            // <= 1 tiếng (3600000 ms) hoặc đã qua giờ
-            if (diffMs <= 3600000) {
+            // <= 45 phút (2700000 ms) hoặc đã qua giờ
+            if (diffMs <= 2700000) {
                 isReservationMatch = true;
                 const cusName = table.customerName || 'Khách';
                 confirmMessage = `"${cusName}" bắt đầu sử dụng bàn đúng không?`;

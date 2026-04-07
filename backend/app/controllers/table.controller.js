@@ -108,7 +108,7 @@ exports.getTablesListInternal = async () => {
   const todayDateQuery = new Date(localISO + "T00:00:00.000Z");
 
   const now = new Date();
-  const expiryLimit = new Date(now.getTime() - 2 * 60 * 60 * 1000); // Giữ bàn trong 2 tiếng
+  const expiryLimit = new Date(now.getTime() - 30 * 60 * 1000); // Giữ bàn trong 30 phút
 
   // Tự động hủy các đơn đặt bàn quá 2 tiếng
   await db.reservation.updateMany(
@@ -125,7 +125,7 @@ exports.getTablesListInternal = async () => {
     status: { $nin: ['Đã hủy', 'Hoàn thành'] }
   });
 
-  const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+  const fortyFiveMinutesFromNow = new Date(now.getTime() + 45 * 60 * 1000);
 
   return tables.map(table => {
     // Trong hàm aggregate, document trả về đã là plain JS object
@@ -149,9 +149,9 @@ exports.getTablesListInternal = async () => {
         t.status = 'Đang sử dụng';
         t.isAvailable = false;
       } else {
-        if (resTime <= oneHourFromNow) {
+        if (resTime <= fortyFiveMinutesFromNow) {
           t.nextReservationTime = res.reservationTime;
-          t.holdExpiryTime = new Date(resTime.getTime() + 2 * 60 * 60 * 1000);
+          t.holdExpiryTime = new Date(resTime.getTime() + 30 * 60 * 1000);
 
           if (t.status === 'Đang sử dụng') {
             t.note = "Sắp đến giờ đặt bàn của khách, mau chóng xử lý!";
@@ -161,7 +161,7 @@ exports.getTablesListInternal = async () => {
             t.note = "Bàn đang giữ chỗ";
           }
         } else {
-          // Ngoài khoảng 1 tiếng, nếu không đang sử dụng thì là Trống
+          // Ngoài khoảng 45 phút, nếu không đang sử dụng thì là Trống
           if (t.status !== 'Đang sử dụng') {
             t.status = 'Trống';
             t.isAvailable = true;
@@ -198,23 +198,23 @@ exports.startUsingTable = async (req, res) => {
     const localISO = new Date(Date.now() - tzoffset).toISOString().split('T')[0];
     const todayDateQuery = new Date(localISO + "T00:00:00.000Z");
     const now = new Date();
-    const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+    const fortyFiveMinutesFromNow = new Date(now.getTime() + 45 * 60 * 1000);
 
     const reservation = await db.reservation.findOne({
       tableId: id,
       use_date: todayDateQuery,
       status: 'Đã đặt',
-      reservationTime: { $lte: oneHourFromNow }
+      reservationTime: { $lte: fortyFiveMinutesFromNow }
     });
 
     if (reservation) {
       const now = new Date();
-      const expiryTime = new Date(reservation.reservationTime.getTime() + 2 * 60 * 60 * 1000);
+      const expiryTime = new Date(reservation.reservationTime.getTime() + 30 * 60 * 1000);
 
       if (now > expiryTime) {
         reservation.status = 'Đã hủy';
         await reservation.save();
-        return res.status(400).json({ message: 'Đã quá thời gian nhận bàn (quá 3 tiếng).' });
+        return res.status(400).json({ message: 'Đã quá thời gian nhận bàn (quá 30 phút).' });
       }
 
       reservation.status = 'Đang sử dụng';

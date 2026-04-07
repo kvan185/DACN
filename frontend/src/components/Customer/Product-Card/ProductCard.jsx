@@ -1,3 +1,4 @@
+
 import { Col } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -44,7 +45,7 @@ function ProductCard({ items, fullCol }) {
         } else {
           // Lấy tên ảnh từ đường dẫn
           const imageName = items.image_url || 'no-image.png';
-          
+
           guestCart.push({
             id: idProduct,
             product_id: idProduct,
@@ -59,9 +60,9 @@ function ProductCard({ items, fullCol }) {
         localStorage.setItem('guestCart', JSON.stringify(guestCart));
         dispatch(setCartItems(guestCart));
         dispatch(setCartStore({
-            id: 'guest',
-            total_item: guestCart.reduce((sum, i) => sum + i.qty, 0),
-            total_price: guestCart.reduce((sum, i) => sum + i.total_price, 0)
+          id: 'guest',
+          total_item: guestCart.reduce((sum, i) => sum + i.qty, 0),
+          total_price: guestCart.reduce((sum, i) => sum + i.total_price, 0)
         }));
         toast.success("Đã thêm vào giỏ hàng!");
         return;
@@ -103,13 +104,15 @@ function ProductCard({ items, fullCol }) {
   };
 
   const orderSource = localStorage.getItem('orderSource');
+  const isOutOfStock = items?.is_active === false;
 
   if (orderSource === 'table') {
     return (
       <Col xs={6} sm={6} md={4} lg={3}>
-        <div className="product-card">
+        <div className={`product-card ${isOutOfStock ? 'out-of-stock' : ''}`}>
           <div className="product-img">
             <img src={imageSrc} alt={name} />
+            {isOutOfStock && <div className="out-of-stock-label">Đã hết</div>}
           </div>
 
           <div className="product-info">
@@ -126,10 +129,11 @@ function ProductCard({ items, fullCol }) {
 
             <button
               className="btn btn-add-cart"
+              disabled={isOutOfStock}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                addProductInCart(id);
+                if (!isOutOfStock) addProductInCart(id);
               }}
             >
               <i className="fa-solid fa-cart-plus"></i>
@@ -142,9 +146,14 @@ function ProductCard({ items, fullCol }) {
 
   return (
     <Col xs={6} sm={6} md={4} lg={3}>
-      <Link to={`/detail/${id}`} className="product-card">
+      <Link 
+        to={isOutOfStock ? '#' : `/detail/${id}`} 
+        className={`product-card ${isOutOfStock ? 'out-of-stock' : ''}`}
+        onClick={(e) => isOutOfStock && e.preventDefault()}
+      >
         <div className="product-img">
           <img src={imageSrc} alt={name} />
+          {isOutOfStock && <div className="out-of-stock-label">Đã hết</div>}
         </div>
 
         <div className="product-info">
@@ -161,10 +170,11 @@ function ProductCard({ items, fullCol }) {
 
           <button
             className="btn btn-add-cart"
+            disabled={isOutOfStock}
             onClick={(e) => {
               e.preventDefault();     // không chuyển sang detail
               e.stopPropagation();    // chặn click lan ra Link
-              addProductInCart(id);
+              if (!isOutOfStock) addProductInCart(id);
             }}
           >
             <i className="fa-solid fa-cart-plus"></i>

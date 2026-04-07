@@ -121,6 +121,52 @@ const Chatbot = () => {
 
     const handleQuickAdd = async (productId) => {
         if (!productId) return;
+        
+        const orderSource = localStorage.getItem('orderSource');
+
+        // Logic cho đơn tại bàn (không cần login)
+        if (orderSource === 'table') {
+            let guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+            
+            // Tìm thông tin sản phẩm từ menu cache trong chatbot (nếu có) hoặc mặc định
+            // Để đơn giản và chính xác, ta chỉ cần productId, backend/logic sẽ xử lý tiếp.
+            // Nhưng guestCart ở ProductCard.jsx cần nhiều info hơn.
+            // Tôi sẽ fetch nhanh thông tin sản phẩm
+            try {
+                const res = await fetch(`/api/product/${productId}`);
+                const product = await res.json();
+                
+                const existingItemIndex = guestCart.findIndex(item => item.id === productId);
+                if (existingItemIndex > -1) {
+                    guestCart[existingItemIndex].qty += 1;
+                    guestCart[existingItemIndex].total_price = guestCart[existingItemIndex].qty * product.price;
+                } else {
+                    guestCart.push({
+                        id: productId,
+                        product_id: productId,
+                        product_name: product.name,
+                        product_image: product.image_url || 'no-image.png',
+                        price: product.price,
+                        qty: 1,
+                        total_price: product.price
+                    });
+                }
+                
+                localStorage.setItem('guestCart', JSON.stringify(guestCart));
+                dispatch(setCartItems(guestCart));
+                dispatch(setCartStore({
+                    id: 'guest',
+                    total_item: guestCart.reduce((sum, i) => sum + i.qty, 0),
+                    total_price: guestCart.reduce((sum, i) => sum + i.total_price, 0)
+                }));
+                dispatch(setDisplayToast(true));
+                return;
+            } catch (err) {
+                console.error("Lỗi thêm vào giỏ hàng guest:", err);
+            }
+        }
+
+        // Logic cho đơn Online (yêu cầu login)
         if (user && accessToken) {
             let itemProduct = [{ id: productId, qty: 1 }];
             await fetchAddProductToCart(accessToken, itemProduct);

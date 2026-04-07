@@ -123,7 +123,13 @@ function Checkout(props) {
                 if (orderSource === 'table') {
                     localStorage.removeItem('guestCart');
                     localStorage.removeItem('guestHasOrdered');
-                    // Không xóa tableNumber để nếu khách muốn order tiếp
+                    // Clear redux state cho khách tiếp theo
+                    dispatch(setCartItems([]));
+                    dispatch(setCartStore({
+                        id: 'guest',
+                        total_item: 0,
+                        total_price: 0
+                    }));
                 }
                 return setShowPopup(true);
             } else {
@@ -153,11 +159,11 @@ function Checkout(props) {
         const urlParams = new URLSearchParams(window.location.search);
         const myParam = urlParams.get('vnp_TransactionStatus');
         const orderInfo = urlParams.get('vnp_OrderInfo');
-        
+
         if (myParam === '00' && orderInfo) {
             const arrOId = orderInfo.split(':');
             const oId = arrOId[1];
-            
+
             const finalizePayment = async () => {
                 // Cập nhật trạng thái thanh toán (Backend cũng đã xử lý qua IPN/Return)
                 await fetchUpdateIsPayment(oId, true, 'chuyển khoản');
@@ -168,9 +174,17 @@ function Checkout(props) {
                 if (savedOrderSource === 'table') {
                     localStorage.removeItem('guestCart');
                     localStorage.removeItem('guestHasOrdered');
-                    
+
+                    // Clear redux state cho khách tiếp theo
+                    dispatch(setCartItems([]));
+                    dispatch(setCartStore({
+                        id: 'guest',
+                        total_item: 0,
+                        total_price: 0
+                    }));
+
                     // Chuyển hướng thẳng về trang thực đơn ban đầu
-                    navigate(`/menu?table=${savedTableNumber}`, { 
+                    navigate(`/menu?table=${savedTableNumber}`, {
                         replace: true
                     });
                 } else {

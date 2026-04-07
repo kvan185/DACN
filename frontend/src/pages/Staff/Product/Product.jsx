@@ -6,6 +6,7 @@ import { FaRegEdit, FaSearch, FaEye } from 'react-icons/fa';
 import { MdDelete } from 'react-icons/md';
 import { IoMdClose } from "react-icons/io";
 import { toast } from 'react-toastify';
+import { socket } from '../../../socket';
 
 import './product.scss';
 
@@ -108,6 +109,16 @@ function Product(props) {
         fetchListProduct();
         fetchCategories();
     }, []);
+
+    useEffect(() => {
+        socket.on('stock_changed', () => {
+            fetchListProduct(searchTerm);
+        });
+
+        return () => {
+            socket.off('stock_changed');
+        };
+    }, [searchTerm]);
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
@@ -358,9 +369,7 @@ function Product(props) {
                                                     <tr key={ing._id}>
                                                         <td className="align-middle fw-medium">{ing.ingredient_id?.name}</td>
                                                         <td className="text-center align-middle">
-                                                            <span className="badge quantity-badge">
-                                                                {ing.quantity} {ing.unit}
-                                                            </span>
+                                                                {ing.quantity} {ing.ingredient_id?.unit}
                                                         </td>
                                                     </tr>
                                                 ))}

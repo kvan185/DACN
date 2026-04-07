@@ -1,6 +1,6 @@
 const Ingredient = require("../models/ingredient.model");
 const ProductBOM = require("../models/productBom.model");
-const { checkManyProducts } = require("./product.service");
+const { checkAllProductsAvailability } = require("./product.service");
 
 const getAll = async (searchQuery) => {
     let query = {};
@@ -11,7 +11,9 @@ const getAll = async (searchQuery) => {
 };
 
 const create = async (data) => {
-    return await Ingredient.create(data);
+    const result = await Ingredient.create(data);
+    await checkAllProductsAvailability();
+    return result;
 };
 
 const update = async (id, data) => {
@@ -23,13 +25,8 @@ const update = async (id, data) => {
         throw { status: 404, message: "Ingredient not found" };
     }
 
-    const boms = await ProductBOM.find({
-        ingredient_id: updated._id,
-    });
-
-    const productIds = boms.map((b) => b.product_id);
-
-    await checkManyProducts(productIds);
+    // Luôn quét lại toàn bộ sản phẩm để đồng bộ trạng thái 'Đã hết'
+    await checkAllProductsAvailability();
 
     return updated;
 };

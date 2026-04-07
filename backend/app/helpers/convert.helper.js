@@ -46,7 +46,7 @@ exports.convertCartToOrder = async (cartId, typeOrder, selectedItemIds = null) =
 
     const listOrder = await Order.find({});
     const admin = await Admin.find({});
-    for (const ad of admin ) {
+    for (const ad of admin) {
         if (ad.socket_id && UpdateOrder) {
             UpdateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
         }
@@ -151,7 +151,7 @@ exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber) => {
         is_payment: false,
         is_active: true,
     });
-    
+
     const saveNewOrder = await newOrder.save();
 
     const listOrder = await Order.find({});

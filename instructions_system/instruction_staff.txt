@@ -23,14 +23,30 @@ Bước 4: Xác nhận thanh toán
 - Đối với khách thanh toán tiền mặt tại quầy hoặc tại bàn, Staff nhấn nút "Đã thanh toán" để kết thúc đơn hàng. 
 - Lưu ý: Nút này sẽ tự ẩn nếu khách thanh toán qua VNPay thành công.
 
-2. QUẢN LÝ TÌNH TRẠNG BÀN (TABLE STATUS)
-----------------------------------------
-Mục đích là để quản lý không gian quán và hỗ trợ khách vãng lai.
+2. QUẢN LÝ TÌNH TRẠNG BÀN (TABLE STATUS) - CHI TIẾT
+--------------------------------------------------
+Việc quản lý trạng thái bàn chính xác giúp hệ thống đồng bộ sơ đồ bàn trống cho khách hàng xem online.
 
-- Trạng thái Trống (Màu xanh): Bàn sẵn sàng đón khách.
-- Khách vãng lai đến: Staff chọn bàn và nhấn "Sử dụng". Bàn sẽ chuyển sang trạng thái "Đang sử dụng" (Màu đỏ).
-- Khách đặt trước đến: Staff kiểm tra mã xác nhận, nếu khớp thông tin khách đặt, nhấn chuyển trạng thái sang "Đang sử dụng".
-- Sau khi khách dùng xong và thanh toán: Nhấn "Hoàn thành" tại bàn đó để đưa trạng thái bàn quay về "Trống".
+Các trạng thái chính:
+- TRỐNG (Màu xanh): Bàn sẵn sàng đón khách mới.
+- ĐÃ ĐẶT (Màu vàng): Bàn có người đặt trước qua hệ thống. Nhân viên cần giữ chỗ.
+- ĐANG SỬ DỤNG (Màu đỏ): Có khách đang ngồi. Bàn này chưa thể đón khách khác.
+
+Hướng dẫn thao tác & Điều kiện sử dụng:
+a. Đối với Khách Vãng Lai (Không đặt trước):
+   - Điều kiện: Chỉ khi bàn đang TRỐNG và KHÔNG có lịch đặt sắp tới trong vòng 45 phút.
+   - Thao tác: Nhấn nút "Sử dụng" để chuyển sang ĐANG SỬ DỤNG.
+b. Đối với Khách Đã Đặt Trước:
+   - Điều kiện: Khách đến đúng giờ và cung cấp đúng Mã xác nhận.
+   - Thao tác: Kiểm tra mã khớp -> Nhấn nút "Sử dụng" để chuyển từ ĐÃ ĐẶT sang ĐANG SỬ DỤNG.
+c. Giải phóng bàn:
+   - Điều kiện: Khách dùng xong, đã thanh toán và bàn đã được dọn dẹp.
+   - Thao tác: Nhấn nút "Hoàn thành" để đưa trạng thái về TRỐNG.
+
+CÁC QUY TẮC BẮT BUỘC:
+- KHÔNG cho khách vãng lai ngồi vào bàn ĐÃ ĐẶT (Màu vàng).
+- KHÔNG cho sử dụng bàn TRỐNG nếu bàn đó có lịch đặt tiếp theo trong vòng 45 phút (Cần ưu tiên cho khách đã đặt trước).
+- Xử lý khách trễ: Nếu quá thời gian giữ chỗ (30 phút sau giờ đặt) mà khách không đến, hệ thống sẽ tự hủy hoặc Staff nhấn "Hủy đặt" để giải phóng bàn.
 
 3. QUẢN LÝ KHÁCH HÀNG & THÔNG TIN LIÊN HỆ
 -----------------------------------------
