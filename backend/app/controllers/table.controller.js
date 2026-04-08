@@ -140,6 +140,7 @@ exports.getTablesListInternal = async () => {
       t.activeReservationId = res._id;
       t.confirmationCode = res.confirmationCode;
       t.customerName = res.customerName;
+      t.reservationNote = res.specialRequests;
       const resTime = new Date(res.reservationTime);
       const diffMs = resTime - now;
       const diffMinutes = Math.floor(diffMs / 60000);

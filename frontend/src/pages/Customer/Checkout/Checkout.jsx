@@ -9,11 +9,14 @@ import PopupOrderSuccess from '../../../components/Customer/PopupOrderSuccess/Po
 import { fetchGetCart } from '../../../actions/cart';
 import { setCartItems, setCartStore } from '../../../actions/user';
 import { fetchOrder, fetchPayment, fetchUpdateIsPayment, fetchGuestOrder, fetchGuestPayment, fetchPayGuestOrdersByTable, fetchTablePayment } from '../../../actions/order';
+import SplitBillModal from '../../../components/SplitBillModal';
 import './checkout.scss';
 
 function Checkout(props) {
     const [paymentMethod, setPaymentMethod] = useState('');
     const [showPopup, setShowPopup] = useState(false);
+    const [showSplit, setShowSplit] = useState(false);
+    const [splitOrderPayload, setSplitOrderPayload] = useState(null);
     const [orderSource, setOrderSource] = useState('online');
     const [tableNumber, setTableNumber] = useState(null);
     const accessToken = sessionStorage.getItem("accessToken");
@@ -152,6 +155,44 @@ function Checkout(props) {
             } else {
                 toast.error(data?.message || 'Không thể khởi tạo thanh toán');
             }
+        }
+    }
+
+    const handleOpenSplit = async (e) => {
+        e.preventDefault();
+        
+        const cartId = cart ? cart.id : null;
+
+        if (cartItems.length === 0) {
+            toast.error('Không có sản phẩm nào được chọn để chia hóa đơn');
+            return;
+        }
+
+        let data;
+        // CREATE ORDER FIRST with dummy payment method 'chia bill' (handled as 'tiền mặt' internally for creation)
+        if (isFullTablePayment) {
+            setSplitOrderPayload({ id: 'TABLE_' + tableNumber, total_price: cartTotalPrice });
+            setShowSplit(true);
+            return;
+        } else if (accessToken) {
+            data = await fetchOrder(cartId, orderSource, tableNumber, selectedItemIds, 'chờ chia bill');
+        } else {
+            const guestItemsToOrder = allCartItems.filter(item => selectedItemIds.includes(item.id));
+            data = await fetchGuestOrder(guestItemsToOrder, tableNumber, orderSource, 'chờ chia bill');
+        }
+
+        if (data && data.success) {
+            if (orderSource === 'table') {
+                localStorage.removeItem('guestCart');
+                localStorage.removeItem('guestHasOrdered');
+                dispatch(setCartItems([]));
+                dispatch(setCartStore({ id: 'guest', total_item: 0, total_price: 0 }));
+            }
+            // Pass the newly created actual order ID to SplitBillModal
+            setSplitOrderPayload({ id: data.orderId || data.data?._id || data.order?.id, total_price: cartTotalPrice });
+            setShowSplit(true);
+        } else {
+            toast.error(data?.message || 'Có lỗi khi tạo hóa đơn để chia bill');
         }
     }
 
@@ -297,11 +338,30 @@ function Checkout(props) {
                                 <span className='price-order'>{cartTotalPrice.toLocaleString('vi', { style: 'currency', currency: 'VND' })}</span>
                             </div>
 
-                            <button onClick={handleOrder} className='btn-checkout'>{orderSource === 'table' ? 'Thanh toán' : 'Đặt hàng'}</button>
+                            <div className="d-flex w-100 gap-2">
+                                <button onClick={handleOrder} className='btn-checkout w-100'>{orderSource === 'table' ? 'Thanh toán' : 'Đặt hàng'}</button>
+                                <button 
+                                    onClick={handleOpenSplit} 
+                                    className='btn-checkout bg-warning text-white w-100'
+                                    style={{ border: 'none' }}
+                                >
+                                    Mở chia hóa đơn
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </Container>
+            
+            {splitOrderPayload && (
+                <SplitBillModal 
+                    show={showSplit} 
+                    onHide={() => setShowSplit(false)} 
+                    order={splitOrderPayload} 
+                    orderItems={cartItems}
+                    onSuccess={() => { toast.info('Chia bill thành công. Đơn hàng đang được chờ thanh toán!'); setShowSplit(false); if (orderSource !== 'table') navigate('/user/orders'); }}
+                />
+            )}
         </>
     );
 }

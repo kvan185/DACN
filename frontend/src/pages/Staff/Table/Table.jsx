@@ -590,6 +590,11 @@ const TableManagement = () => {
                                 <tr key={table._id}>
                                     <td>
                                         Bàn {highlight(table.tableNumber, true)}
+                                        {table.reservationNote && !table.merged_into && (
+                                            <div className="mt-1 text-muted" style={{ fontSize: '13px', fontStyle: 'italic' }}>
+                                                (Ghi chú: {table.reservationNote})
+                                            </div>
+                                        )}
                                         {table.merged_into && (
                                             <div className="mt-1">
                                                 <span className="badge bg-secondary p-1">
@@ -621,9 +626,7 @@ const TableManagement = () => {
                                             <button className="btn btn-sm btn-link p-1" title="Sửa thông tin" onClick={() => handleShowEditModal(table)}>
                                                 <FaRegEdit className='icon-update fs-5 text-success' />
                                             </button>
-                                            <button className="btn btn-sm btn-link p-1" title="Xóa bàn" onClick={() => handleDeleteTable(table._id)}>
-                                                <MdDelete className='icon-delete fs-5 text-danger' />
-                                            </button>
+
 
                                             {table.merged_into && (
                                                 <Button
@@ -660,7 +663,7 @@ const TableManagement = () => {
                                                     Sử dụng
                                                 </Button>
                                             )}
-                                            {table.status === 'Đang sử dụng' && (
+                                            {table.status === 'Đang sử dụng' && !table.merged_into && (
                                                 <Button
                                                     variant="success"
                                                     size="sm"
@@ -833,11 +836,7 @@ const TableManagement = () => {
                             <option value="">-- Chọn bàn đích --</option>
                             {tables.filter(t => 
                                 !t.merged_into && 
-                                t.tableNumber !== selectedTable?.tableNumber &&
-                                (
-                                    (t.status !== 'Đang sử dụng' && t.isAvailable === true) || 
-                                    (tables.filter(tx => String(tx.merged_into) === String(t.tableNumber)).length > 0)
-                                )
+                                t.tableNumber !== selectedTable?.tableNumber
                             ).map(t => (
                                 <option key={t._id} value={t.tableNumber}>
                                     Bàn {t.tableNumber} - {t.status} - {t.location}
@@ -1024,7 +1023,18 @@ const TableManagement = () => {
                                             )}
                                         </div>
 
-                                        <div className="modal-actions d-flex justify-content-end gap-3 mt-auto pt-4 border-top">
+                                        <div className="modal-actions d-flex justify-content-between mt-auto pt-4 border-top">
+                                            <Button
+                                                variant="danger"
+                                                onClick={() => {
+                                                    handleCloseViewModal();
+                                                    handleDeleteTable(viewTable._id);
+                                                }}
+                                                className="px-4 fw-bold text-white border-0"
+                                                style={{ borderRadius: '10px' }}
+                                            >
+                                                <MdDelete className="me-1" /> Xóa bàn
+                                            </Button>
                                             <Button
                                                 variant="secondary"
                                                 onClick={handleCloseViewModal}
@@ -1033,19 +1043,7 @@ const TableManagement = () => {
                                             >
                                                 Đóng
                                             </Button>
-                                            <Button
-                                                variant="danger"
-                                                onClick={() => {
-                                                    if (window.confirm(`Bạn có chắc chắn muốn xóa bàn ${viewTable.tableNumber}?`)) {
-                                                        handleDeleteTable(viewTable._id);
-                                                        handleCloseViewModal();
-                                                    }
-                                                }}
-                                                className="px-4 fw-bold border-0 shadow-sm"
-                                                style={{ borderRadius: '10px', backgroundColor: '#dc3545', color: 'white' }}
-                                            >
-                                                Xóa bàn này
-                                            </Button>
+
                                         </div>
                                     </div>
                                 </Col>

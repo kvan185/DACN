@@ -62,6 +62,25 @@ module.exports = mongoose => {
             type: String,
             default: '',
         },
+        split_bills: {
+            type: [{
+                split_id: String,
+                split_type: String,
+                user_name: String,
+                items: [{
+                    product_id: mongoose.Schema.Types.ObjectId,
+                    product_name: String,
+                    qty: Number,
+                    price: Number
+                }],
+                percent: Number,
+                amount: Number,
+                is_payment: { type: Boolean, default: false },
+                payment_method: String,
+                paid_at: Date
+            }],
+            default: []
+        }
       },
       { timestamps: true }
     );

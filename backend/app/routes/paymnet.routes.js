@@ -7,6 +7,8 @@ module.exports = app => {
     router.post("/", payment.createPaymentUrl);
     router.post("/guest", payment.createGuestPaymentUrl);
     router.post("/table", payment.createTablePaymentUrl);
+    router.post("/split", payment.splitBill);
+    router.post("/split/pay", payment.createSplitPaymentUrl);
 
     // return
     router.get("/vnpay_return", payment.vnpayReturn);
