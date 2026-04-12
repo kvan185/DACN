@@ -47,6 +47,7 @@ module.exports = (server) => {
   }, 60000);
 
   // attach io to the the export itself so it can be dynamically accessed by controllers later
+  module.exports.io = io;
   module.exports.updateOrder = require("./process.order.js")(io);
 
   return io;

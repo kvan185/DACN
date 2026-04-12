@@ -232,3 +232,91 @@
         }
     }
 }
+
+.vietqr-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 84, 163, 0.15);
+    border: 1px solid rgba(0, 84, 163, 0.1);
+    max-width: 400px;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+
+    .card-header-branding {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+
+        .vietqr-logo {
+            height: 35px;
+        }
+        .mb-logo-text {
+            height: 25px;
+        }
+    }
+
+    .qr-main-container {
+        background: #f8faff;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px dashed rgba(0, 84, 163, 0.2);
+        position: relative;
+        
+        &.zoomed {
+            padding: 40px;
+        }
+    }
+
+    .card-footer-info {
+        text-align: center;
+
+        .account-name {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .user-fullname {
+            font-size: 18px;
+            font-weight: 700;
+            color: #003E7E;
+            margin-bottom: 12px;
+        }
+
+        .amount-display {
+            background: linear-gradient(135deg, #0054A3 0%, #003061 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: inline-block;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+    }
+
+    .instruction-text {
+        margin-top: 15px;
+        font-size: 12px;
+        color: #888;
+        font-style: italic;
+    }
+}
+
+// Giả lập giao diện phóng to
+.modal-qr-zoomed {
+    .vietqr-card {
+        max-width: 100%;
+        box-shadow: none;
+        border: none;
+    }
+}

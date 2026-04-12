@@ -47,7 +47,7 @@ function Header(props) {
         <div className={`header ${orderSource === 'table' ? 'header--table-mode' : ''}`}>
             <Container>
                 <div className='header__logo-container'>
-                    { (location.pathname === '/menu' && orderSource === 'table' ) ? (
+                    {(location.pathname === '/menu' && orderSource === 'table') ? (
                         <div className='header__logo'>
                             <img src={logo} alt="TBayEAT Logo" />
                             <span className="header__brand-name">Healthy Food</span>

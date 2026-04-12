@@ -79,7 +79,7 @@ exports.canDeductIngredients = canDeductIngredients;
 
 exports.createCashOrder = async (req, res) => {
     try {
-        let { cartId, tableNumber, selectedItemIds } = req.body;
+        let { cartId, tableNumber, selectedItemIds, typeOrder } = req.body;
         if (!cartId) {
             return res.status(400).send({ success: false, message: "No cart ID provided." });
         }
@@ -103,7 +103,11 @@ exports.createCashOrder = async (req, res) => {
             return res.status(400).send({ success: false, message: check.message });
         }
 
-        const order = await convertHelper.convertCartToOrder(cartId, "cash", selectedItemIds);
+        const order = await convertHelper.convertCartToOrder(cartId, typeOrder || "cash", selectedItemIds);
+
+        if (!order) {
+            return res.status(500).send({ success: false, message: "Failed to convert cart to order." });
+        }
 
         if (tableNumber) {
             order.table_number = tableNumber;
@@ -124,7 +128,7 @@ exports.createGuestOrder = async (req, res) => {
         if (!items || items.length === 0) {
             return res.status(400).send({ success: false, message: "No items provided." });
         }
-        
+
         if (tableNumber) {
             const Table = db.table;
             const tableRecord = await Table.findOne({ tableNumber: tableNumber });
@@ -385,5 +389,29 @@ exports.updateIsPayment = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "An error occurred while processing your request." });
+    }
+};
+
+exports.callStaff = async (req, res) => {
+    try {
+        const { tableNumber, message, orderId } = req.body;
+        
+        // Gửi socket cho toàn bộ admin/staff
+        const admins = await Admin.find({});
+        for (const ad of admins) {
+            if (ad.socket_id) {
+                listSocket.updateOrder.to(ad.socket_id).emit('notification', {
+                    message: message || `Bàn số ${tableNumber} yêu cầu hỗ trợ!`,
+                    time: "Vừa xong",
+                    tableNumber,
+                    orderId
+                });
+            }
+        }
+
+        res.status(200).json({ success: true, message: "Đã gửi yêu cầu hỗ trợ tới nhân viên." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Lỗi gửi yêu cầu hỗ trợ." });
     }
 };

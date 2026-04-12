@@ -127,9 +127,12 @@
     body * {
         visibility: hidden;
     }
-    .print-section, .print-section * {
+
+    .print-section,
+    .print-section * {
         visibility: visible;
     }
+
     .print-section {
         position: absolute !important;
         left: 0 !important;
@@ -141,15 +144,20 @@
         border: none !important;
         background-color: white !important;
     }
-    .no-print, .no-print * {
+
+    .no-print,
+    .no-print * {
         display: none !important;
     }
+
     // Make text darker on print
     .print-section * {
         color: #000 !important;
     }
+
     // Keep table borders minimal
-    .table-borderless td, .table-borderless th {
+    .table-borderless td,
+    .table-borderless th {
         border-bottom: 1px solid #ddd !important;
     }
 }

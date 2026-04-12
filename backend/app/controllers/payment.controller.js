@@ -1,4 +1,5 @@
 const db = require("../models");
+const crypto = require('crypto');
 const convertHelper = require("../helpers/convert.helper.js");
 const listSocket = require("../socket");
 const Order = db.order;
@@ -27,7 +28,7 @@ exports.splitBill = async (req, res) => {
             const tableNum = orderId.split("_")[1];
             const orders = await Order.find({ table_number: tableNum, order_source: 'table', is_payment: false });
             if (!orders || orders.length === 0) return res.status(404).json({ success: false, message: "Không tìm thấy hóa đơn chưa thanh toán cho bàn này." });
-            
+
             order = orders[0];
             if (orders.length > 1) {
                 // Merge subsequent orders into the first order
@@ -71,7 +72,7 @@ exports.splitBill = async (req, res) => {
         order.split_bills = splits;
         await order.save();
 
-        res.status(200).json({ success: true, message: "Chia bill thành công", splits: order.split_bills });
+        res.status(200).json({ success: true, message: "Chia bill thành công", splits: order.split_bills, orderId: order._id });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Lỗi process chia bill" });
@@ -81,7 +82,15 @@ exports.splitBill = async (req, res) => {
 exports.createSplitPaymentUrl = async (req, res) => {
     try {
         const { orderId, splitId, bankCode, method } = req.body;
-        const order = await Order.findById(orderId);
+        
+        let order;
+        if (typeof orderId === 'string' && orderId.startsWith("TABLE_")) {
+            const tableNum = orderId.split("_")[1];
+            order = await Order.findOne({ table_number: tableNum, order_source: 'table', is_payment: false });
+        } else {
+            order = await Order.findById(orderId);
+        }
+
         if (!order) return res.status(404).json({ success: false, message: "Order not found" });
 
         const split = order.split_bills.find(s => s.split_id === splitId);
@@ -92,7 +101,7 @@ exports.createSplitPaymentUrl = async (req, res) => {
             split.is_payment = true;
             split.payment_method = method === 'cash' ? 'tiền mặt' : 'chuyển khoản';
             split.paid_at = new Date();
-            
+
             // Check if all are paid
             const allPaid = order.split_bills.every(s => s.is_payment);
             if (allPaid) {
@@ -125,7 +134,16 @@ exports.createSplitPaymentUrl = async (req, res) => {
         };
 
         const paymentLinkResponse = await payos.paymentRequests.create(body);
-        res.status(200).json({ paymentUrl: paymentLinkResponse.checkoutUrl });
+        split.payos_checkout_url = paymentLinkResponse.checkoutUrl;
+        split.payos_qr_code = paymentLinkResponse.qrCode;
+        await order.save();
+
+        res.status(200).json({ 
+            success: true, 
+            paymentUrl: paymentLinkResponse.checkoutUrl, 
+            qrCode: paymentLinkResponse.qrCode, 
+            orderCode: payosOrderCode 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Failed to create split payment URL' });
@@ -142,8 +160,8 @@ exports.createPaymentUrl = async (req, res) => {
 
         // Kiểm tra tồn kho trước khi tạo đơn và thanh toán
         const cartItems = await CartItem.find({ cart_id: cartId });
-        const itemsToCheck = selectedItemIds && selectedItemIds.length > 0 
-            ? cartItems.filter(i => selectedItemIds.includes(i.id)) 
+        const itemsToCheck = selectedItemIds && selectedItemIds.length > 0
+            ? cartItems.filter(i => selectedItemIds.includes(i.id))
             : cartItems;
 
         const check = await canDeductIngredients(itemsToCheck);
@@ -170,7 +188,11 @@ exports.createPaymentUrl = async (req, res) => {
         };
 
         const paymentLinkResponse = await payos.paymentRequests.create(body);
-        res.status(200).json({ paymentUrl: paymentLinkResponse.checkoutUrl });
+        res.status(200).json({ 
+            paymentUrl: paymentLinkResponse.checkoutUrl, 
+            qrCode: paymentLinkResponse.qrCode, 
+            orderCode: payosOrderCode 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to create payment URL' });
@@ -183,7 +205,7 @@ exports.createGuestPaymentUrl = async (req, res) => {
         if (!items || items.length === 0) {
             return res.status(400).send({ message: "No items provided." });
         }
-        
+
         // Kiểm tra tồn kho trước khi tạo đơn và thanh toán
         const check = await canDeductIngredients(items);
         if (!check.success) {
@@ -207,7 +229,11 @@ exports.createGuestPaymentUrl = async (req, res) => {
         };
 
         const paymentLinkResponse = await payos.paymentRequests.create(body);
-        res.status(200).json({ paymentUrl: paymentLinkResponse.checkoutUrl });
+        res.status(200).json({ 
+            paymentUrl: paymentLinkResponse.checkoutUrl, 
+            qrCode: paymentLinkResponse.qrCode, 
+            orderCode: payosOrderCode 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to create guest payment URL' });
@@ -221,10 +247,10 @@ exports.createTablePaymentUrl = async (req, res) => {
             return res.status(400).send({ message: "No table number provided." });
         }
 
-        const orders = await Order.find({ 
-            table_number: tableNumber, 
+        const orders = await Order.find({
+            table_number: tableNumber,
             order_source: 'table',
-            is_payment: false 
+            is_payment: false
         });
 
         if (orders.length === 0) {
@@ -247,7 +273,11 @@ exports.createTablePaymentUrl = async (req, res) => {
         };
 
         const paymentLinkResponse = await payos.paymentRequests.create(body);
-        res.status(200).json({ paymentUrl: paymentLinkResponse.checkoutUrl });
+        res.status(200).json({ 
+            paymentUrl: paymentLinkResponse.checkoutUrl, 
+            qrCode: paymentLinkResponse.qrCode, 
+            orderCode: payosOrderCode 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to create table payment URL' });
@@ -261,10 +291,9 @@ exports.receiveWebhook = async (req, res) => {
         if (webhookData.code === '00') {
             const { orderCode } = webhookData;
 
-            // Tìm đơn hàng chính
+            // 1. Tìm và xử lý đơn hàng chính
             const order = await Order.findOne({ payos_order_code: orderCode });
             if (order) {
-                // Đóng dấu toàn bộ order
                 if (order.order_source === 'table') {
                     await Order.updateMany(
                         { table_number: order.table_number, order_source: 'table', is_payment: false },
@@ -275,18 +304,8 @@ exports.receiveWebhook = async (req, res) => {
                     order.payment_method = "chuyển khoản (PayOS)";
                     await order.save();
                 }
-
-                // Gửi socket update list
-                const listOrder = await Order.find({});
-                const admins = await Admin.find({});
-                for (const ad of admins) {
-                    if (ad.socket_id) {
-                        listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
-                    }
-                }
             } else {
-                // Trường hợp thanh toán Split Bill
-                // Xử lý các order mà có chứa split_bills với payos_order_code này
+                // 2. Nếu không thấy đơn chính, tìm đơn chia bill (split_bills)
                 const splitOrder = await Order.findOne({ "split_bills.payos_order_code": orderCode });
                 if (splitOrder) {
                     const split = splitOrder.split_bills.find(s => s.payos_order_code === orderCode);
@@ -301,14 +320,18 @@ exports.receiveWebhook = async (req, res) => {
                         splitOrder.payment_method = 'chia bill (PayOS)';
                     }
                     await splitOrder.save();
+                }
+            }
 
-                    // Gửi socket
-                    const listOrder = await Order.find({});
-                    const admins = await Admin.find({});
-                    for (const ad of admins) {
-                        if (ad.socket_id) {
-                            listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
-                        }
+            // Gửi sự kiện paymentSuccess và cập nhật cho Admin
+            if (listSocket.io) {
+                listSocket.io.emit('paymentSuccess', { orderCode });
+                
+                const listOrder = await Order.find({});
+                const admins = await Admin.find({});
+                for (const ad of admins) {
+                    if (ad.socket_id) {
+                        listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
                     }
                 }
             }

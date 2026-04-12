@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Form, Table } from 'react-bootstrap';
+import { Container, Form, Table, Modal, Button, Spinner } from 'react-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 
 import Cart from '../../../components/Customer/Cart/Cart';
 import PopupOrderSuccess from '../../../components/Customer/PopupOrderSuccess/PopupOrderSuccess';
 import { fetchGetCart } from '../../../actions/cart';
 import { setCartItems, setCartStore } from '../../../actions/user';
-import { fetchOrder, fetchPayment, fetchUpdateIsPayment, fetchGuestOrder, fetchGuestPayment, fetchPayGuestOrdersByTable, fetchTablePayment } from '../../../actions/order';
+import { 
+    fetchOrder, fetchPayment, fetchUpdateIsPayment, fetchGuestOrder, 
+    fetchGuestPayment, fetchPayGuestOrdersByTable, fetchTablePayment,
+    fetchCallStaff, fetchCreateSplitPayment 
+} from '../../../actions/order';
 import SplitBillModal from '../../../components/SplitBillModal';
+import { socket } from '../../../socket';
 import './checkout.scss';
 
 function Checkout(props) {
@@ -18,6 +24,10 @@ function Checkout(props) {
     const [showSplit, setShowSplit] = useState(false);
     const [splitOrderPayload, setSplitOrderPayload] = useState(null);
     const [splitSuccessData, setSplitSuccessData] = useState(null);
+    const [mainOrderQr, setMainOrderQr] = useState(null);
+    const [isZoomed, setIsZoomed] = useState(false);
+    const [splitPaymentLinks, setSplitPaymentLinks] = useState({});
+    const [isCallingStaff, setIsCallingStaff] = useState(false);
     const [orderSource, setOrderSource] = useState('online');
     const [tableNumber, setTableNumber] = useState(null);
     const accessToken = sessionStorage.getItem("accessToken");
@@ -159,7 +169,12 @@ function Checkout(props) {
             }
 
             if (data && data.paymentUrl) {
-                window.location.href = `${data.paymentUrl}`;
+                // Thay vì chuyển hướng, hiển thị QR trực tiếp
+                setMainOrderQr({
+                    qrCode: data.qrCode || data.paymentUrl,
+                    orderCode: data.orderCode,
+                    amount: cartTotalPrice
+                });
             } else {
                 toast.error(data?.message || 'Không thể khởi tạo thanh toán');
             }
@@ -243,6 +258,72 @@ function Checkout(props) {
         }
     }, [navigate]);
 
+    useEffect(() => {
+        if (splitSuccessData && splitSuccessData.length > 0) {
+            if (splitSuccessData.length > 3) {
+                // Tự động gọi nhân viên
+                handleCallStaff("Khách hàng chia bill > 3 phần, cần hỗ trợ xử lý thủ công.");
+            } else {
+                // Tự động lấy link PayOS cho tối đa 3 phần
+                const fetchLinks = async () => {
+                    const links = {};
+                    for (const sb of splitSuccessData) {
+                        try {
+                            const res = await fetchCreateSplitPayment(splitOrderPayload.id, sb.split_id, 'transfer');
+                            if (res.success && res.qrCode) {
+                                links[sb.split_id] = res.qrCode;
+                            }
+                        } catch (e) {
+                            console.error("Lỗi lấy link thanh toán cho split:", sb.split_id, e);
+                        }
+                    }
+                    setSplitPaymentLinks(links);
+                };
+                fetchLinks();
+            }
+        }
+    }, [splitSuccessData]);
+
+    useEffect(() => {
+        // Lắng nghe sự kiện thanh toán thành công từ Socket.io
+        socket.on('paymentSuccess', (data) => {
+            if (mainOrderQr && data.orderCode === mainOrderQr.orderCode) {
+                setMainOrderQr(null);
+                setShowPopup(true);
+                toast.success("Thanh toán thành công!");
+                
+                // Thu dọn giỏ hàng nếu cần
+                if (orderSource === 'table') {
+                    localStorage.removeItem('guestCart');
+                    localStorage.removeItem('guestHasOrdered');
+                    dispatch(setCartItems([]));
+                    dispatch(setCartStore({ id: 'guest', total_item: 0, total_price: 0 }));
+                }
+            }
+        });
+
+        return () => {
+            socket.off('paymentSuccess');
+        };
+    }, [mainOrderQr, orderSource]);
+
+    const handleCallStaff = async (customMessage = null) => {
+        setIsCallingStaff(true);
+        try {
+            const savedTableNumber = tableNumber || localStorage.getItem('tableNumber');
+            const res = await fetchCallStaff(savedTableNumber, customMessage, splitOrderPayload?.id);
+            if (res.success) {
+                toast.success("Đã gửi yêu cầu hỗ trợ tới nhân viên.");
+            } else {
+                toast.error("Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại!");
+            }
+        } catch (e) {
+            toast.error("Lỗi kết nối khi gọi nhân viên.");
+        } finally {
+            setIsCallingStaff(false);
+        }
+    };
+
     const currentOrderSource = passedOrderSource || localStorage.getItem('orderSource') || orderSource;
     if (!accessToken && currentOrderSource !== 'table' && !isFullTablePayment) {
         navigate(`/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`);
@@ -265,40 +346,89 @@ function Checkout(props) {
 
             {splitSuccessData ? (
                 <Container className="pt-4 pb-5">
-                    <div className="checkout text-center shadow p-4 border bg-white rounded mt-4 mx-auto" style={{ maxWidth: '600px' }}>
-                        <div className="mb-3">
-                            {/* <span className="text-success fs-1">✅</span> */}
-                        </div>
-                        <h2 className="text-success mb-3 fw-bold">Tách hóa đơn thành công!</h2>
-                        <h5 className="text-dark mb-4 px-3 fst-italic" style={{ lineHeight: '1.5' }}>
-                            Quý khách vui lòng gọi nhân viên hỗ trợ hoặc đến quầy thu ngân đọc Bàn số <strong className="text-danger fs-4">{tableNumber || localStorage.getItem('tableNumber')}</strong> để tiến hành thanh toán.
-                        </h5>
-
-                        <div className="order__detail-group mt-4 p-3 border rounded border-warning text-start shadow-sm bg-light">
-                            <h5 className="text-warning font-bold mb-3 text-center">Danh sách phần chia thanh toán</h5>
-                            <Table bordered size="sm" className="text-center align-middle mb-0 bg-white">
-                                <thead className="table-warning">
-                                    <tr>
-                                        <th>Khách hàng</th>
-                                        <th>Số tiền phải trả</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {splitSuccessData.map((sb, idx) => (
-                                        <tr key={idx}>
-                                            <td className="fw-bold fs-6">{sb.user_name} <br /><small className="text-muted">({sb.percent}%)</small></td>
-                                            <td className="text-danger fw-bold fs-6">{sb.amount.toLocaleString()} đ</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
+                    <div className="checkout shadow p-4 border bg-white rounded mt-4 mx-auto" style={{ maxWidth: splitSuccessData.length <= 3 ? '1200px' : '600px' }}>
+                        <div className="text-center mb-4">
+                            <h2 className="text-success fw-bold">Tách hóa đơn thành công!</h2>
+                            {splitSuccessData.length > 3 ? (
+                                <div className="alert alert-warning py-3 mt-3 shadow-sm border-warning">
+                                    <h4 className="alert-heading fw-bold">⚠️ Cần nhân viên hỗ trợ</h4>
+                                    <p className="mb-0 fs-5">
+                                        Vì hóa đơn được chia thành <strong>{splitSuccessData.length}</strong> phần (nhiều hơn 3), 
+                                        hệ thống đã tự động gửi yêu cầu hỗ trợ. Quý khách vui lòng đợi nhân viên đến hỗ trợ thanh toán trực tiếp.
+                                    </p>
+                                </div>
+                            ) : (
+                                <h5 className="text-muted fst-italic">
+                                    Quý khách có thể tự quét mã QR bên dưới để thanh toán nhanh hoặc gọi nhân viên hỗ trợ.
+                                </h5>
+                            )}
                         </div>
 
-                        <p className="mt-4 text-secondary fst-italic mb-0">Cảm ơn quý khách đã sử dụng dịch vụ của Healthy Food Restaurant!</p>
+                        {splitSuccessData.length <= 3 && (
+                            <div className="row mt-4 justify-content-center">
+                                {splitSuccessData.map((sb, idx) => (
+                                    <div key={idx} className="col-md-4 mb-4">
+                                        <div className="vietqr-card" style={{ padding: '16px' }}>
+                                            <div className="card-header-branding" style={{ marginBottom: '12px' }}>
+                                                <img src="/logos/vietqr_logo.png" alt="VietQR" style={{ height: '25px' }} />
+                                                <img src="/logos/mb_logo.png" alt="MB Bank" style={{ height: '18px' }} />
+                                            </div>
+                                            
+                                            <div className="text-center mb-2 fw-bold text-primary">{sb.user_name}</div>
 
-                        <button className="btn btn-outline-primary mt-4 px-4 py-2 fw-bold" onClick={() => navigate(`/menu?table=${tableNumber || localStorage.getItem('tableNumber')}`, { replace: true })}>
-                            Quay lại Menu
-                        </button>
+                                            <div className="qr-main-container" style={{ padding: '12px', marginBottom: '12px' }}>
+                                                {splitPaymentLinks[sb.split_id] ? (
+                                                    <QRCodeSVG 
+                                                        value={splitPaymentLinks[sb.split_id]} 
+                                                        size={140} 
+                                                        level="H"
+                                                        imageSettings={{
+                                                            src: "/logos/mb_logo.png",
+                                                            x: undefined,
+                                                            y: undefined,
+                                                            height: 28,
+                                                            width: 28,
+                                                            excavate: true,
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div className="d-flex align-items-center justify-content-center" style={{ width: 140, height: 140 }}>
+                                                        <div className="spinner-border text-primary" role="status"></div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="card-footer-info">
+                                                <div className="account-name" style={{fontSize: '10px'}}>Người nhận: VN</div>
+                                                <div className="user-fullname" style={{fontSize: '14px', marginBottom: '8px'}}>NGUYỄN KHÁNH VĂN</div>
+                                                <div className="amount-display" style={{fontSize: '16px', padding: '6px 12px'}}>
+                                                    {sb.amount.toLocaleString()} đ
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="text-center mt-4">
+                            <div className="d-flex justify-content-center gap-3">
+                                <button 
+                                    className="btn btn-warning text-white px-4 py-2 fw-bold shadow-sm"
+                                    onClick={() => handleCallStaff()}
+                                    disabled={isCallingStaff}
+                                >
+                                    {isCallingStaff ? "Đang gọi..." : "🔔 Gọi nhân viên hỗ trợ"}
+                                </button>
+                                <button 
+                                    className="btn btn-outline-primary px-4 py-2 fw-bold"
+                                    onClick={() => navigate(`/menu?table=${tableNumber || localStorage.getItem('tableNumber')}`, { replace: true })}
+                                >
+                                    Quay lại Menu
+                                </button>
+                            </div>
+                            <p className="mt-4 text-secondary small fst-italic">Healthy Food Restaurant - Hân hạnh phục vụ quý khách!</p>
+                        </div>
                     </div>
                 </Container>
             ) : (
@@ -383,8 +513,8 @@ function Checkout(props) {
                                 </div>
 
                                 <div className="d-flex w-100 gap-2">
-                                    <button onClick={handleOrder} className='btn-checkout w-100'>{orderSource === 'table' ? 'Thanh toán' : 'Đặt hàng'}</button>
-                                    <button
+                                    <button type="button" onClick={handleOrder} className='btn-checkout w-100'>{orderSource === 'table' ? 'Thanh toán' : 'Đặt hàng'}</button>
+                                    <button type="button"
                                         onClick={handleOpenSplit}
                                         className='btn-checkout bg-warning text-white w-100'
                                         style={{ border: 'none' }}
@@ -404,9 +534,12 @@ function Checkout(props) {
                     onHide={() => setShowSplit(false)}
                     order={splitOrderPayload}
                     orderItems={splitOrderPayload.items || cartItems}
-                    onSuccess={(splits) => {
+                    onSuccess={(splits, realOrderId) => {
                         setShowSplit(false);
                         setSplitSuccessData(splits);
+                        if (realOrderId) {
+                            setSplitOrderPayload(prev => ({ ...prev, id: realOrderId }));
+                        }
                         if (orderSource === 'table') {
                             localStorage.removeItem('guestCart');
                             localStorage.removeItem('guestHasOrdered');
@@ -416,6 +549,69 @@ function Checkout(props) {
                     }}
                 />
             )}
+
+            {/* Modal hiển thị mã QR Thanh toán trực tiếp */}
+            <Modal show={!!mainOrderQr} onHide={() => setMainOrderQr(null)} centered className={isZoomed ? "modal-qr-zoomed" : ""}>
+                <Modal.Body className="p-0 border-0 overflow-hidden" style={{ borderRadius: '20px' }}>
+                    <div className="vietqr-card">
+                        <div className="card-header-branding">
+                            <img src="/logos/vietqr_logo.png" alt="VietQR" className="vietqr-logo" />
+                            <img src="/logos/mb_logo.png" alt="MB Bank" className="mb-logo-text" />
+                        </div>
+
+                        <div 
+                            className={`qr-main-container ${isZoomed ? 'zoomed' : ''}`}
+                            onClick={() => setIsZoomed(!isZoomed)}
+                            style={{ cursor: 'zoom-in' }}
+                        >
+                            {mainOrderQr ? (
+                                <QRCodeSVG 
+                                    value={mainOrderQr.qrCode} 
+                                    size={isZoomed ? 400 : 250} 
+                                    level="H"
+                                    imageSettings={{
+                                        src: "/logos/mb_logo.png",
+                                        x: undefined,
+                                        y: undefined,
+                                        height: isZoomed ? 56 : 35,
+                                        width: isZoomed ? 56 : 35,
+                                        excavate: true,
+                                    }}
+                                />
+                            ) : (
+                                <Spinner animation="border" variant="primary" />
+                            )}
+                        </div>
+
+                        <div className="card-footer-info">
+                            <div className="account-name">Chủ tài khoản:</div>
+                            <div className="user-fullname">NGUYỄN KHÁNH VĂN</div>
+                            <div className="amount-display">
+                                {(mainOrderQr?.amount || 0).toLocaleString()} VNĐ
+                            </div>
+                        </div>
+
+                        <div className="text-center instruction-text">
+                            Quét mã bằng App ngân hàng hoặc Ví điện tử.<br/>
+                            <span className="text-primary fw-bold" style={{cursor:'pointer'}} onClick={() => setIsZoomed(!isZoomed)}>
+                                {isZoomed ? "Nhấn để thu nhỏ" : "Nhấn vào mã QR để phóng to"}
+                            </span>
+                        </div>
+                    </div>
+                    {/* Trạng thái chờ realtime */}
+                    <div className="px-3 pb-3">
+                        <div className="alert alert-info py-2 d-flex align-items-center justify-content-center gap-2 mb-0">
+                            <Spinner animation="grow" size="sm" variant="info" />
+                            <span className="mb-0">Đang chờ hệ thống xác nhận thanh toán...</span>
+                        </div>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setMainOrderQr(null)}>
+                        Đóng / Hủy
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </>
     );
 }

@@ -19,6 +19,9 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
     // Raw total of all items (unit_price * qty) without VAT/Discounts if they differ
     const [rawItemsTotal, setRawItemsTotal] = useState(0);
 
+    // State lưu giá trị đang nhập tạm thời để tránh nhảy số khi đang gõ
+    const [localEdits, setLocalEdits] = useState({});
+
     useEffect(() => {
         if (order && show) {
             setupInitialState();
@@ -36,10 +39,13 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
         let sumRaw = iState.reduce((acc, it) => acc + (it.price || 0), 0);
         setRawItemsTotal(sumRaw);
 
-        setUsers([
-            { id: 1, name: 'Khách 1', amount: 0, percent: 50, items: [] },
-            { id: 2, name: 'Khách 2', amount: 0, percent: 50, items: [] }
-        ]);
+        // Khởi tạo mặc định chia 2 người với số tiền được tính sẵn
+        const n = 2;
+        const baseAmt = Math.floor(order.total_price / n);
+        const u1 = { id: 1, name: 'Khách 1', amount: baseAmt, percent: ((baseAmt / order.total_price) * 100).toFixed(1), items: [] };
+        const u2 = { id: 2, name: 'Khách 2', amount: order.total_price - baseAmt, percent: (((order.total_price - baseAmt) / order.total_price) * 100).toFixed(1), items: [] };
+
+        setUsers([u1, u2]);
         setNumPeople(2);
     };
 
@@ -97,18 +103,53 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
     // --- Tab: Percent / Custom ---
     const handlePercentChange = (index, value) => {
         let pct = parseFloat(value) || 0;
+        if (pct < 0) pct = 0;
+        if (pct > 100) pct = 100;
+        let amt = Math.floor((pct / 100) * order.total_price);
+        
         let newUsers = [...users];
         newUsers[index].percent = pct;
-        newUsers[index].amount = Math.floor((pct / 100) * order.total_price);
+        newUsers[index].amount = amt;
+        
+        // Nếu người đang sửa là người cuối cùng, ta cần điều chỉnh người áp chót để bù trừ
+        // Nếu không, chỉ điều chỉnh người cuối cùng
+        redistributeToTarget(index, newUsers);
         setUsers(newUsers);
     };
 
     const handleAmountChange = (index, value) => {
         let amt = parseInt(value) || 0;
+        if (amt < 0) amt = 0;
+        if (amt > order.total_price) amt = order.total_price;
+        
         let newUsers = [...users];
         newUsers[index].amount = amt;
-        newUsers[index].percent = ((amt / order.total_price) * 100).toFixed(1);
+        newUsers[index].percent = parseFloat(((amt / order.total_price) * 100).toFixed(1));
+        
+        redistributeToTarget(index, newUsers);
         setUsers(newUsers);
+    };
+
+    const redistributeToTarget = (changedIndex, newUsers) => {
+        if (newUsers.length < 2) return;
+
+        // Xác định người sẽ nhận phần bù trừ (mặc định là người cuối cùng)
+        // Nếu đang sửa người cuối cùng, thì người bù trừ là người áp chót (hoặc người đầu tiên tùy logic, ở đây chọn cuối - 1)
+        let targetIndex = newUsers.length - 1;
+        if (changedIndex === newUsers.length - 1) {
+            targetIndex = 0; // Hoặc newUsers.length - 2
+        }
+
+        let sumOthers = 0;
+        for (let i = 0; i < newUsers.length; i++) {
+            if (i !== targetIndex) {
+                sumOthers += (parseInt(newUsers[i].amount) || 0);
+            }
+        }
+
+        let remaining = order.total_price - sumOthers;
+        newUsers[targetIndex].amount = remaining; // Có thể âm nếu tổng vượt quá, UI sẽ báo đỏ
+        newUsers[targetIndex].percent = parseFloat(((remaining / order.total_price) * 100).toFixed(1));
     };
 
     // --- Tab: Item ---
@@ -273,7 +314,7 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
             if (resData.success) {
                 toast.success('Xác nhận chia hóa đơn thành công!');
                 onHide();
-                if (onSuccess) onSuccess(resData.splits);
+                if (onSuccess) onSuccess(resData.splits, resData.orderId);
             } else {
                 toast.error(resData.message || 'Lỗi chia hóa đơn');
             }
@@ -484,19 +525,40 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
                                 {users.map((u, i) => (
                                     <tr key={u.id}>
                                         <td>
-                                            <Form.Control className="fw-bold fs-6" value={u.name} onChange={e => {
-                                                let nu = [...users]; nu[i].name = e.target.value; setUsers(nu);
-                                            }} />
+                                            <Form.Control className="fw-bold fs-6" value={localEdits[`${i}_name`] !== undefined ? localEdits[`${i}_name`] : u.name} 
+                                                onChange={e => setLocalEdits({...localEdits, [`${i}_name`]: e.target.value})}
+                                                onBlur={e => {
+                                                    let nu = [...users]; nu[i].name = e.target.value; setUsers(nu);
+                                                    setLocalEdits(prev => { const n = {...prev}; delete n[`${i}_name`]; return n; });
+                                                }}
+                                                onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                                            />
                                         </td>
                                         <td>
                                             <div className="input-group">
-                                                <Form.Control type="number" className="text-center fw-bold text-primary" step="0.1" value={u.percent} onChange={e => handlePercentChange(i, e.target.value)} />
+                                                <Form.Control type="number" className="text-center fw-bold text-primary" step="0.1" 
+                                                    value={localEdits[`${i}_percent`] !== undefined ? localEdits[`${i}_percent`] : u.percent} 
+                                                    onChange={e => setLocalEdits({...localEdits, [`${i}_percent`]: e.target.value})}
+                                                    onBlur={e => {
+                                                        handlePercentChange(i, e.target.value);
+                                                        setLocalEdits(prev => { const n = {...prev}; delete n[`${i}_percent`]; return n; });
+                                                    }}
+                                                    onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                                                />
                                                 <span className="input-group-text bg-primary text-white">%</span>
                                             </div>
                                         </td>
                                         <td>
                                             <div className="input-group">
-                                                <Form.Control type="number" className="text-end text-danger fw-bold fs-5" value={u.amount} onChange={e => handleAmountChange(i, e.target.value)} />
+                                                <Form.Control type="number" className="text-end text-danger fw-bold fs-5" 
+                                                    value={localEdits[`${i}_amount`] !== undefined ? localEdits[`${i}_amount`] : u.amount} 
+                                                    onChange={e => setLocalEdits({...localEdits, [`${i}_amount`]: e.target.value})}
+                                                    onBlur={e => {
+                                                        handleAmountChange(i, e.target.value);
+                                                        setLocalEdits(prev => { const n = {...prev}; delete n[`${i}_amount`]; return n; });
+                                                    }}
+                                                    onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                                                />
                                                 <span className="input-group-text bg-danger text-white fw-bold">VNĐ</span>
                                             </div>
                                         </td>

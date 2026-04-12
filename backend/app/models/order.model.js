@@ -81,7 +81,9 @@ module.exports = mongoose => {
                 amount: Number,
                 is_payment: { type: Boolean, default: false },
                 payment_method: String,
-                paid_at: Date
+                paid_at: Date,
+                payos_checkout_url: String,
+                payos_qr_code: String
             }],
             default: []
         }

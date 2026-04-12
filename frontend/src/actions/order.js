@@ -6,7 +6,7 @@ export const fetchOrder = async (cartId, orderSource, tableNumber, selectedItemI
         selectedItemIds: selectedItemIds,
         typeOrder: paymentMethod // mapping paymentMethod to typeOrder for legacy support or explicit field
     };
-    
+
     const response = await fetch('/api/order', {
         method: 'post',
         headers: {
@@ -19,7 +19,7 @@ export const fetchOrder = async (cartId, orderSource, tableNumber, selectedItemI
     return data;
 }
 
-export const fetchPayment = async (cartId, selectedItemIds) =>{
+export const fetchPayment = async (cartId, selectedItemIds) => {
     const response = await fetch('/api/payment', {
         method: 'post',
         headers: {
@@ -32,14 +32,14 @@ export const fetchPayment = async (cartId, selectedItemIds) =>{
     return data;
 }
 
-export const fetchUpdateStatusOrder = async (orderId, accessToken, status)=>{
-    const response = await fetch(`/api/order/status`,{
+export const fetchUpdateStatusOrder = async (orderId, accessToken, status) => {
+    const response = await fetch(`/api/order/status`, {
         method: 'post',
         headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ orderId: orderId, status: status})
+        body: JSON.stringify({ orderId: orderId, status: status })
     });
     return response;
 }
@@ -71,10 +71,10 @@ export const fetchGuestOrder = async (items, tableNumber, orderSource, paymentMe
     const orderData = {
         items: items,
         tableNumber: tableNumber,
-        typeOrder: paymentMethod || "cash", 
+        typeOrder: paymentMethod || "cash",
         orderSource: orderSource
     };
-    
+
     const response = await fetch('/api/order/guest', {
         method: 'post',
         headers: {
@@ -111,13 +111,35 @@ export const fetchTablePayment = async (tableNumber) => {
     return data;
 }
 
-export const fetchUpdateIsPayment = async (orderId, payment, paymentMethod = null)=>{
-    const response = await fetch(`/api/order/status/payment`,{
+export const fetchUpdateIsPayment = async (orderId, payment, paymentMethod = null) => {
+    const response = await fetch(`/api/order/status/payment`, {
         method: 'post',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ orderId: orderId, isPayment: payment, paymentMethod: paymentMethod})
+        body: JSON.stringify({ orderId: orderId, isPayment: payment, paymentMethod: paymentMethod })
     });
     return response;
+}
+
+export const fetchCallStaff = async (tableNumber, message, orderId = null) => {
+    const response = await fetch(`/api/order/call-staff`, {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ tableNumber, message, orderId })
+    });
+    return response.json();
+}
+
+export const fetchCreateSplitPayment = async (orderId, splitId, method = 'transfer') => {
+    const response = await fetch(`/api/payment/split/pay`, {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ orderId, splitId, method })
+    });
+    return response.json();
 }

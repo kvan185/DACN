@@ -3,10 +3,12 @@ import { useParams } from 'react-router-dom';
 import { Row, Col, Table, Form } from 'react-bootstrap';
 import moment from 'moment';
 import { QRCodeSVG } from 'qrcode.react';
+import { ToastContainer, toast } from 'react-toastify';
 
 import { fetchUpdateIsPayment, fetchUpdateStatusOrder } from '../../../actions/order';
 import { statusOrder } from '../../../config/statusOrder';
 import SplitBillModal from '../../../components/SplitBillModal';
+import { socket } from '../../../socket';
 import '../../../scss/admin/admin-theme.scss';
 import './order.scss';
 
@@ -19,14 +21,55 @@ function OrderDetail(props) {
     const [splitPaymentMethods, setSplitPaymentMethods] = useState({});
     const [printSplitBill, setPrintSplitBill] = useState(null);
     const [qrModalData, setQrModalData] = useState(null);
+    const [mainQrData, setMainQrData] = useState(null);
+    const [isZoomed, setIsZoomed] = useState(false);
     const { orderId } = useParams();
     const accessToken = sessionStorage.getItem("accessToken");
 
     useEffect(() => {
         if (orderId && accessToken) {
-            fetchOrderDetail(orderId, accessToken);
+            fetchOrderDetail(orderId, accessToken).then(res => {
+                if (res && res.status === 200) {
+                    setOrderDetail(res.data.order);
+                    setOrderStatus(res.data.order.status);
+                    setOrderPayment(res.data.order.is_payment);
+                    setOrderItems(res.data.orderItems || []);
+                }
+            });
         }
-    }, [orderId, accessToken, orderStatus, orderPayment]);
+    }, [orderId, accessToken]);
+
+    useEffect(() => {
+        // Lắng nghe sự kiện thanh toán thành công từ Socket.io
+        socket.on('paymentSuccess', (data) => {
+            if (!orderDetail) return;
+            
+            // Kiểm tra xem đơn hàng thành công có phải là đơn hàng đang xem hoặc split bill của đơn này không
+            const isMainOrder = data.orderCode === orderDetail.payos_order_code;
+            const isSplitOrder = orderDetail.split_bills && orderDetail.split_bills.some(sb => sb.payos_order_code === data.orderCode);
+
+            if (isMainOrder || isSplitOrder) {
+                toast.success(`Đơn hàng #${orderDetail.id} đã được thanh toán thành công!`);
+                setMainQrData(null);
+                setQrModalData(null);
+                setIsZoomed(false);
+                
+                // Refresh data
+                if (orderId && accessToken) {
+                    fetchOrderDetail(orderId, accessToken).then(res => {
+                        if (res && res.status === 200) {
+                            setOrderDetail(res.data.order);
+                            setOrderPayment(res.data.order.is_payment);
+                        }
+                    });
+                }
+            }
+        });
+
+        return () => {
+            socket.off('paymentSuccess');
+        };
+    }, [orderDetail, orderId, accessToken]);
 
     const fetchOrderDetail = async (orderId, accessToken) => {
         const response = await fetch(`/api/order/${orderId}`, {
@@ -36,13 +79,13 @@ function OrderDetail(props) {
             }
         });
         const data = await response.json();
-        console.log(data)
 
         if (data) {
             setOrderDetail(data.order);
             setOrderItems(data.orderItems);
-            return;
+            return { status: 200, data: data };
         }
+        return { status: 404 };
     }
 
     const handleConfirmOrder = async (orderId) => {
@@ -50,6 +93,7 @@ function OrderDetail(props) {
             var result = await fetchUpdateStatusOrder(orderId, accessToken, statusOrder.CONFIRMED);
             if (result.status === 200) {
                 setOrderStatus("CONFIRMED");
+                fetchOrderDetail(orderId, accessToken);
                 return;
             }
         }
@@ -60,6 +104,7 @@ function OrderDetail(props) {
             var result = await fetchUpdateStatusOrder(orderId, accessToken, statusOrder.PROCESSING);
             if (result.status === 200) {
                 setOrderStatus("PROCESSING");
+                fetchOrderDetail(orderId, accessToken);
                 return;
             }
         }
@@ -70,6 +115,7 @@ function OrderDetail(props) {
             var result = await fetchUpdateStatusOrder(orderId, accessToken, statusOrder.COMPLETED);
             if (result.status === 200) {
                 setOrderStatus("COMPLETED");
+                fetchOrderDetail(orderId, accessToken);
                 return;
             }
         }
@@ -80,6 +126,7 @@ function OrderDetail(props) {
             var result = await fetchUpdateIsPayment(orderId, true);
             if (result.status === 200) {
                 setOrderPayment(true);
+                fetchOrderDetail(orderId, accessToken);
             }
         }
     }
@@ -97,7 +144,7 @@ function OrderDetail(props) {
                 const data = await resp.json();
                 if (data.success && data.paymentUrl) {
                     const sb = orderDetail.split_bills.find(s => s.split_id === splitId);
-                    setQrModalData({ paymentUrl: data.paymentUrl, splitId, amount: sb.amount });
+                    setQrModalData({ paymentUrl: data.paymentUrl, qrCode: data.qrCode || data.paymentUrl, splitId, amount: sb.amount });
                 } else {
                     alert(data.message || "Lỗi tạo mã QR");
                 }
@@ -108,6 +155,41 @@ function OrderDetail(props) {
         }
 
         processSplitPayment(splitId, method);
+    };
+
+    const handleMainPaymentQR = async () => {
+        try {
+            let data;
+            const cartId = orderDetail.cart_id;
+            if (orderDetail.order_source === 'table') {
+                const resp = await fetch('/api/payment/table', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tableNumber: orderDetail.table_number })
+                });
+                data = await resp.json();
+            } else {
+                const resp = await fetch('/api/payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cartId: cartId })
+                });
+                data = await resp.json();
+            }
+
+            if (data && data.paymentUrl) {
+                setMainQrData({ 
+                    paymentUrl: data.paymentUrl, 
+                    qrCode: data.qrCode || data.paymentUrl,
+                    amount: orderDetail.total_price 
+                });
+            } else {
+                alert(data.message || "Không thể tạo mã QR thanh toán");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Lỗi kết nối khi tạo QR");
+        }
     };
 
     const processSplitPayment = async (splitId, method) => {
@@ -123,11 +205,8 @@ function OrderDetail(props) {
                 setQrModalData(null);
 
                 if (window.confirm("Thanh toán thành công. Bạn có muốn in hóa đơn cho khách này không?")) {
-                    // Mới fetch lên, orderDetail có thể chưa phản ánh kịp trên instance này,
-                    // Nên tìm trong data trả về nếu có, hoặc fetch lại
-                    // Để đơn giản, ta tìm trong state hiện tại (nó sẽ render lại sau)
                     setTimeout(() => {
-                        setPrintSplitBill(splitId); // Cần dựa trên orderDetail render sau update, truyền string ID để trigger effect
+                        setPrintSplitBill(splitId);
                     }, 300);
                 }
             } else {
@@ -149,7 +228,6 @@ function OrderDetail(props) {
         }
     }, [orderDetail, printSplitBill, targetPrintBill]);
 
-    // Callback when printing is done (or cancelled) to return to main view
     useEffect(() => {
         const handleAfterPrint = () => {
             if (printSplitBill) {
@@ -258,19 +336,104 @@ function OrderDetail(props) {
         <React.Fragment>
             {qrModalData && (
                 <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex justify-content-center align-items-center" style={{ zIndex: 1050 }}>
-                    <div className="bg-white p-4 rounded text-center shadow" style={{ minWidth: '350px' }}>
-                        <h4 className="mb-3 text-primary fw-bold">Quét Mã QR Trả Tiền</h4>
-                        <div className="d-flex justify-content-center mb-3 border p-2 rounded bg-light" style={{ width: 'fit-content', margin: '0 auto' }}>
-                            <QRCodeSVG value={qrModalData.paymentUrl} size={250} />
+                    <div className="vietqr-card">
+                        <div className="card-header-branding">
+                            <img src="/logos/vietqr_logo.png" alt="VietQR" className="vietqr-logo" />
+                            <img src="/logos/mb_logo.png" alt="MB Bank" className="mb-logo-text" />
                         </div>
-                        <h3 className="text-danger fw-bold mb-4">{qrModalData.amount.toLocaleString()} đ</h3>
-                        <div className="d-flex justify-content-center gap-3">
-                            <button className="btn btn-secondary" onClick={() => setQrModalData(null)}>Hủy</button>
-                            <button className="btn btn-success fw-bold" onClick={() => processSplitPayment(qrModalData.splitId, 'manual_transfer')}>Đã nhận được tiền</button>
+
+                        <div className="qr-main-container">
+                            <QRCodeSVG 
+                                value={qrModalData.qrCode || qrModalData.paymentUrl} 
+                                size={220} 
+                                level="H"
+                                imageSettings={{
+                                    src: "/logos/mb_logo.png",
+                                    x: undefined,
+                                    y: undefined,
+                                    height: 33,
+                                    width: 33,
+                                    excavate: true,
+                                }}
+                            />
+                        </div>
+
+                        <div className="card-footer-info">
+                            <div className="account-name">Chủ tài khoản:</div>
+                            <div className="user-fullname">NGUYỄN KHÁNH VĂN</div>
+                            <div className="amount-display">
+                                {qrModalData.amount.toLocaleString()} VNĐ
+                            </div>
+                            <div className="mt-3 text-secondary" style={{fontSize: '12px'}}>
+                                Ngân hàng Quân Đội (MB Bank)
+                            </div>
+                        </div>
+
+                        <div className="d-flex justify-content-center gap-2 mt-3">
+                            <button className="btn btn-sm btn-outline-secondary" onClick={() => setQrModalData(null)}>Hủy</button>
+                            <button className="btn btn-sm btn-success fw-bold" onClick={() => processSplitPayment(qrModalData.splitId, 'manual_transfer')}>Đã nhận tiền</button>
                         </div>
                     </div>
                 </div>
             )}
+
+            {mainQrData && (
+                <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex justify-content-center align-items-center" style={{ zIndex: 1100 }}>
+                    <div className={isZoomed ? "modal-qr-zoomed w-100" : ""}>
+                        <div className="vietqr-card shadow-lg" style={{ minWidth: isZoomed ? '500px' : '400px' }}>
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <img src="/logos/vietqr_logo.png" alt="VietQR" style={{ height: '30px' }} />
+                                <button className="btn-close" onClick={() => { setMainQrData(null); setIsZoomed(false); }}></button>
+                            </div>
+
+                            <div 
+                                className={`qr-main-container ${isZoomed ? 'zoomed' : ''}`}
+                                onClick={() => setIsZoomed(!isZoomed)}
+                                style={{ cursor: 'zoom-in' }}
+                            >
+                                <QRCodeSVG 
+                                    value={mainQrData.qrCode || mainQrData.paymentUrl} 
+                                    size={isZoomed ? 450 : 250} 
+                                    level="H"
+                                    imageSettings={{
+                                        src: "/logos/mb_logo.png",
+                                        x: undefined,
+                                        y: undefined,
+                                        height: isZoomed ? 64 : 35,
+                                        width: isZoomed ? 64 : 35,
+                                        excavate: true,
+                                    }}
+                                />
+                            </div>
+
+                            <div className="card-footer-info">
+                                <div className="account-name">Người thụ hưởng:</div>
+                                <div className="user-fullname">NGUYỄN KHÁNH VĂN</div>
+                                <div className="amount-display">
+                                    {mainQrData.amount.toLocaleString()} VNĐ
+                                </div>
+                                <div className="mt-3 text-secondary" style={{fontSize: '12px'}}>
+                                    Ngân hàng Quân Đội (MB Bank)
+                                </div>
+                            </div>
+                            
+                            <div className="d-flex justify-content-center gap-3 mt-3">
+                                <button className="btn btn-outline-secondary" onClick={() => { setMainQrData(null); setIsZoomed(false); }}>Đóng</button>
+                                <button className="btn btn-success fw-bold" onClick={() => { 
+                                    if (mainQrData.isSplit) {
+                                        processSplitPayment(mainQrData.splitId, 'manual_transfer');
+                                    } else {
+                                        handlePayment(orderDetail.id); 
+                                    }
+                                    setMainQrData(null); 
+                                    setIsZoomed(false);
+                                }}>Đã nhận chuyển khoản</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className='order__detail'>
                 <div className="d-flex justify-content-between align-items-center mb-4 no-print">
                     <h3 className="title-admin mb-0">
@@ -281,14 +444,12 @@ function OrderDetail(props) {
                             <span className="me-2 fs-5">🔗</span> Chia sẻ
                         </button>
                         <button className="btn btn-dark d-flex align-items-center shadow-sm" onClick={() => window.print()}>
-                            <span className="me-2 fs-5">🖨️</span> {orderDetail && orderDetail.is_payment ? "In Hóa Đơn" : "In Phiếu Mua Hàng"}
+                            <span className="me-2 fs-5">🖨️</span> {orderDetail && orderDetail.is_payment ? "In Hóa Đơn" : "In Phiêu Mua Hàng"}
                         </button>
                     </div>
                 </div>
 
                 <div className="order__detail-container background-radius shadow-sm bg-white print-section">
-
-                    {/* Print Header */}
                     <div className="text-center mb-4 border-bottom pb-3">
                         <h2 className="fw-bold text-uppercase mb-1" style={{ color: '#2c3e50' }}>Healthy Food Restaurant</h2>
                         <p className="text-muted mb-0">Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. HCM</p>
@@ -321,8 +482,8 @@ function OrderDetail(props) {
 
                     <div className="order__detail-group mt-3">
                         <Table striped hover className="text-end align-middle border-bottom table-borderless">
-                            <thead className="table-dark" style={{ color: '#fff' }}>
-                                <tr style={{ color: '#fff' }}>
+                            <thead className="table-dark">
+                                <tr>
                                     <th className="text-center column-stt" style={{ color: '#fff' }}>STT</th>
                                     <th className="text-start" style={{ color: '#fff' }}>Tên sản phẩm</th>
                                     <th className="text-center" style={{ color: '#fff' }}>Số lượng</th>
@@ -330,26 +491,23 @@ function OrderDetail(props) {
                                     <th style={{ color: '#fff' }}>Thành tiền</th>
                                 </tr>
                             </thead>
-                            <tbody className="border-top-0">
+                            <tbody>
                                 {orderItems && orderItems.length > 0 ? (
                                     orderItems.map((item, index) => {
                                         const { product_name, price, qty } = item;
                                         const subtotal = (price || 0) * (qty || 0);
-
                                         return (
                                             <tr key={index}>
                                                 <td className="text-center">{index + 1}</td>
                                                 <td className="text-start fw-bold text-dark">{product_name}</td>
                                                 <td className="text-center fw-bold text-primary">{qty}</td>
-                                                <td className="text-muted">{price ? price.toLocaleString('vi', { style: 'currency', currency: 'VND' }) : 'N/A'}</td>
-                                                <td className="fw-bold text-dark">{subtotal ? subtotal.toLocaleString('vi', { style: 'currency', currency: 'VND' }) : 'N/A'}</td>
+                                                <td className="text-muted">{price?.toLocaleString()}đ</td>
+                                                <td className="fw-bold text-dark">{subtotal?.toLocaleString()}đ</td>
                                             </tr>
                                         );
                                     })
                                 ) : (
-                                    <tr>
-                                        <td colSpan="5" className="text-center">Không có sản phẩm nào</td>
-                                    </tr>
+                                    <tr><td colSpan="5" className="text-center">Không có sản phẩm nào</td></tr>
                                 )}
                             </tbody>
                         </Table>
@@ -359,7 +517,7 @@ function OrderDetail(props) {
                         <div className="order__detail-group mt-4 p-3 border rounded border-warning">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h5 className="text-warning font-bold mb-0">Thông tin Chia Bill</h5>
-                                {!orderDetail.is_payment && (
+                                {!orderDetail.is_payment && !orderDetail.split_bills.some(sb => sb.is_payment) && (
                                     <button className="btn btn-sm btn-outline-warning fw-bold d-flex align-items-center" onClick={() => setShowSplit(true)}>
                                         <span className="me-1">✏️</span> Chỉnh sửa
                                     </button>
@@ -377,8 +535,11 @@ function OrderDetail(props) {
                                 </thead>
                                 <tbody>
                                     {orderDetail.split_bills.map((sb, sbIdx) => (
-                                        <tr key={sbIdx}>
-                                            <td className="fw-bold align-middle">{sb.user_name} <br /><small className="text-muted">({sb.percent}%)</small></td>
+                                        <tr key={sbIdx} className={sb.is_payment ? "table-success opacity-75" : ""}>
+                                            <td className="fw-bold align-middle">
+                                                {sb.user_name} <br />
+                                                <small className="text-muted">({sb.percent}%)</small>
+                                            </td>
                                             <td className="text-danger fw-bold align-middle">{sb.amount.toLocaleString()} đ</td>
                                             <td className="text-center align-middle" style={{ fontSize: '12px' }}>
                                                 {sb.items && sb.items.map((it, idx) => (
@@ -386,10 +547,43 @@ function OrderDetail(props) {
                                                 ))}
                                                 {(!sb.items || sb.items.length === 0) && "Không áp dụng món"}
                                             </td>
-                                            <td className="align-middle">
-                                                <span className={`badge ${sb.is_payment ? 'bg-success' : 'bg-secondary'}`}>
-                                                    {sb.is_payment ? 'Đã thu' : 'Chưa thu'}
-                                                </span>
+                                            <td className="align-middle text-center">
+                                                {sb.is_payment ? (
+                                                    <div className="text-success fw-bold py-2">
+                                                        <span className="fs-4">✅</span><br/>Thành công
+                                                    </div>
+                                                ) : (
+                                                    <div className="d-flex flex-column align-items-center gap-1">
+                                                        {orderDetail.split_bills.length <= 3 ? (
+                                                            <div 
+                                                                className="p-1 border bg-white rounded cursor-zoom-in"
+                                                                onClick={() => setMainQrData({ 
+                                                                    paymentUrl: sb.payos_checkout_url || "#", 
+                                                                    qrCode: sb.payos_qr_code || sb.payos_checkout_url || "#",
+                                                                    amount: sb.amount, 
+                                                                    isSplit: true, 
+                                                                    splitId: sb.split_id 
+                                                                })}
+                                                            >
+                                                                <QRCodeSVG 
+                                                                    value={sb.payos_qr_code || sb.payos_checkout_url} 
+                                                                    size={80} 
+                                                                    level="H"
+                                                                    imageSettings={{
+                                                                        src: "/logos/mb_logo.png",
+                                                                        x: undefined,
+                                                                        y: undefined,
+                                                                        height: 12,
+                                                                        width: 12,
+                                                                        excavate: true,
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <span className="badge bg-secondary">Chưa thanh toán</span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="align-middle">
                                                 <div className="d-flex justify-content-center align-items-center gap-2 text-center h-100">
@@ -404,10 +598,12 @@ function OrderDetail(props) {
                                                                 <option value="transfer">Chuyển khoảnQR</option>
                                                                 <option value="cash">Tiền mặt</option>
                                                             </Form.Select>
-                                                            <button className="btn btn-sm btn-primary" onClick={() => handleSplitPayment(sb.split_id)}>Thu tiền</button>
+                                                            <button className="btn btn-sm btn-primary fw-bold" onClick={() => handleSplitPayment(sb.split_id)}>
+                                                                Thu tiền
+                                                            </button>
                                                         </>
                                                     ) : (
-                                                        <span className="text-secondary fw-bold fst-italic">
+                                                        <span className="text-success fw-bold fst-italic">
                                                             {sb.payment_method === 'tiền mặt' ? 'Đã trả tiền mặt' : 'Đã chuyển khoản'}
                                                         </span>
                                                     )}
@@ -428,20 +624,18 @@ function OrderDetail(props) {
                             </div>
                             <div className="d-flex justify-content-between w-100 mb-2 border-bottom pb-2">
                                 <span className="text-muted">Trạng thái thanh toán:</span>
-                                <span className={`badge ${orderDetail && orderDetail.is_payment ? 'bg-success' : 'bg-danger'} fs-6`}>
-                                    {orderDetail && orderDetail.is_payment ? 'Đã thanh toán đủ' : 'Chưa thu đủ'}
-                                </span>
-                            </div>
-                            <div className="d-flex justify-content-between w-100 mb-2 border-bottom pb-2">
-                                <span className="text-muted">Phương thức thanh toán:</span>
-                                <span className="fw-bold fs-6 text-capitalize text-primary">
-                                    {orderDetail && (orderDetail.payment_method || "N/A")}
+                                <span className={`badge ${orderDetail && orderDetail.is_payment ? 'bg-success' : (orderDetail && orderDetail.split_bills?.some(sb => sb.is_payment) ? 'bg-warning text-dark' : 'bg-danger')} fs-6`}>
+                                    {orderDetail && orderDetail.is_payment ? 'Đã thanh toán đủ' : (orderDetail && orderDetail.split_bills?.some(sb => sb.is_payment) ? 'Thanh toán 1 phần' : 'Chưa thu đủ')}
                                 </span>
                             </div>
                             <div className="d-flex justify-content-between w-100 mt-2 align-items-center">
-                                <span className="fw-bold fs-5 text-dark">Tổng Cần Thu:</span>
+                                <span className="fw-bold fs-5 text-dark">Tổng Cần Thu (Số dư nợ):</span>
                                 <h2 className="text-danger fw-bold mb-0">
-                                    {orderDetail && orderDetail.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
+                                    {orderDetail && (
+                                        orderDetail.is_payment
+                                            ? "0 đ"
+                                            : (orderDetail.total_price - (orderDetail.split_bills?.filter(sb => sb.is_payment).reduce((acc, curr) => acc + curr.amount, 0) || 0)).toLocaleString('vi', { style: 'currency', currency: 'VND' })
+                                    )}
                                 </h2>
                             </div>
                         </div>
@@ -461,9 +655,14 @@ function OrderDetail(props) {
                             onClick={() => handlePayment(orderDetail && orderDetail.id)}>Đã thanh toán</button>
 
                         {orderDetail && !orderDetail.is_payment && (!orderDetail.split_bills || orderDetail.split_bills.length === 0) && (
-                            <button className="btn btn-warning ms-2 text-white font-bold px-3 py-2" onClick={() => setShowSplit(true)}>
-                                Mở chia hóa đơn
-                            </button>
+                            <>
+                                <button className="btn btn-primary ms-2 text-white font-bold px-3 py-2" onClick={handleMainPaymentQR}>
+                                    Thu tiền chuyển khoản (QR)
+                                </button>
+                                <button className="btn btn-warning ms-2 text-white font-bold px-3 py-2" onClick={() => setShowSplit(true)}>
+                                    Mở chia hóa đơn
+                                </button>
+                            </>
                         )}
                     </div>
                 </div>
@@ -476,6 +675,7 @@ function OrderDetail(props) {
                 orderItems={orderItems}
                 onSuccess={() => fetchOrderDetail(orderId, accessToken)}
             />
+            <ToastContainer position="top-right" autoClose={3000} />
         </React.Fragment>
     );
 }

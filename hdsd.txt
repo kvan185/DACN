@@ -162,4 +162,4 @@ Admin chịu trách nhiệm cấu hình toàn bộ menu hiển thị cho khách 
 Admin có quyền giám sát và can thiệp vào tất cả các bàn và đơn hàng:
 -Quản lý bàn: Tạo bàn mới, cấu hình vị trí, sức chứa và tạo mã QR Code cho từng bàn.
 -Đơn hàng: Xem danh sách toàn bộ đơn hàng trong hệ thống (bao gồm cả đơn đã hoàn thành và đơn hủy).
--Thao tác nâng cao: Admin có toàn quyền thực hiện Gộp/Tách bàn và Chia hóa đơn tương tự nhân viên (chi tiết xem tại mục 4.3).
+-Thao tác nâng cao: Admin có toàn quyền thực hiện Gộp/Tách bàn và Chia hóa đơn tương tự nhân viên (chi tiết xem tại mục 4.3).

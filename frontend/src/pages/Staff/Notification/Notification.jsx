@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
-import { 
-    FaBell, 
-    FaShoppingCart, 
+import {
+    FaBell,
+    FaShoppingCart,
     FaExclamationTriangle,
-    FaCheckCircle 
+    FaCheckCircle
 } from "react-icons/fa";
 
 import "./notification.scss";

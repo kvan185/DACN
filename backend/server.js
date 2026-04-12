@@ -44,7 +44,7 @@ require("./app/routes/product.routes")(app);
 require("./app/routes/productBom.routes")(app);
 require("./app/routes/cart.routes")(app);
 require("./app/routes/order.routes")(app);
-require("./app/routes/paymnet.routes")(app);
+require("./app/routes/payment.routes")(app);
 require("./app/routes/revenue.routes")(app);
 require("./app/routes/table.routes")(app);
 require("./app/routes/reservation.routes")(app);
