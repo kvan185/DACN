@@ -206,17 +206,13 @@ function Checkout(props) {
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
-        const myParam = urlParams.get('vnp_TransactionStatus');
-        const orderInfo = urlParams.get('vnp_OrderInfo');
+        const code = urlParams.get('code');
+        const cancel = urlParams.get('cancel');
+        const orderCode = urlParams.get('orderCode');
 
-        if (myParam === '00' && orderInfo) {
-            const arrOId = orderInfo.split(':');
-            const oId = arrOId[1];
-
+        if (code === '00' && cancel === 'false' && orderCode) {
             const finalizePayment = async () => {
-                // Cập nhật trạng thái thanh toán (Backend cũng đã xử lý qua IPN/Return)
-                await fetchUpdateIsPayment(oId, true, 'chuyển khoản');
-
+                // Trạng thái đơn hàng sẽ được Backend xử lý thông qua Webhook PayOS tự động
                 const savedOrderSource = localStorage.getItem('orderSource');
                 const savedTableNumber = localStorage.getItem('tableNumber');
 
@@ -242,8 +238,8 @@ function Checkout(props) {
             };
 
             finalizePayment();
-        } else if (myParam && myParam !== '00') {
-            toast.error('Thanh toán không thành công');
+        } else if (cancel === 'true' || (code && code !== '00')) {
+            toast.error('Thanh toán không thành công / Đã hủy');
         }
     }, [navigate]);
 

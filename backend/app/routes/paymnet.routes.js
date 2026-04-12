@@ -11,8 +11,8 @@ module.exports = app => {
     router.post("/split/pay", payment.createSplitPaymentUrl);
 
     // return
-    router.get("/vnpay_return", payment.vnpayReturn);
-    router.get("/vnpay_ipn", payment.vnpayIPN);
+    router.post("/webhook", payment.receiveWebhook);
+    router.get("/status/:payosOrderCode", payment.getOrderStatus);
 
     app.use("/api/payment", router);
   };

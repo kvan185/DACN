@@ -58,6 +58,9 @@ module.exports = mongoose => {
             enum: ['online', 'table'],
             default: 'online',
         },
+        payos_order_code: {
+            type: Number,
+        },
         payment_method: {
             type: String,
             default: '',
@@ -65,6 +68,7 @@ module.exports = mongoose => {
         split_bills: {
             type: [{
                 split_id: String,
+                payos_order_code: Number,
                 split_type: String,
                 user_name: String,
                 items: [{

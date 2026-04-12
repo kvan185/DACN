@@ -1,6 +1,4 @@
 const db = require("../models");
-const moment = require('moment');
-const crypto = require("crypto");
 const convertHelper = require("../helpers/convert.helper.js");
 const listSocket = require("../socket");
 const Order = db.order;
@@ -9,6 +7,13 @@ const CartItem = db.cartItem;
 const Admin = db.admin;
 const { canDeductIngredients, deductIngredients } = require("./order.controller");
 const mongoose = require("mongoose");
+const { PayOS } = require("@payos/node");
+
+const client_id = process.env.PAYOS_CLIENT_ID || "";
+const api_key = process.env.PAYOS_API_KEY || "";
+const checksum_key = process.env.PAYOS_CHECKSUM_KEY || "";
+
+const payos = new PayOS(client_id, api_key, checksum_key);
 
 exports.splitBill = async (req, res) => {
     try {
@@ -106,42 +111,21 @@ exports.createSplitPaymentUrl = async (req, res) => {
             return res.status(200).json({ success: true, message: "Thanh toán split (tiền mặt) thành công" });
         }
 
-        // VNPAY
-        process.env.TZ = 'Asia/Ho_Chi_Minh';
-        let date = new Date();
-        let createDate = moment(date).format('YYYYMMDDHHmmss');
-        let ipAddr = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
+        // PAYOS
+        const payosOrderCode = Number(String(Date.now()).slice(-6) + Math.floor(100 + Math.random() * 900));
+        split.payos_order_code = payosOrderCode;
+        await order.save();
 
-        let tmnCode = process.env.VNP_TMNCODE;
-        let secretKey = process.env.VNP_HASHSECRET;
-        let vnpUrl = process.env.VNP_URL;
-        let returnUrl = process.env.VNP_RETURNURL;
+        const body = {
+            orderCode: payosOrderCode,
+            amount: split.amount,
+            description: `Split bill ${split.split_id.slice(-6)}`,
+            returnUrl: `http://localhost:5173/checkout`,
+            cancelUrl: `http://localhost:5173/checkout`,
+        };
 
-        let vnp_Params = {};
-        vnp_Params['vnp_Version'] = '2.1.0';
-        vnp_Params['vnp_Command'] = 'pay';
-        vnp_Params['vnp_TmnCode'] = tmnCode;
-        vnp_Params['vnp_Locale'] = 'vn';
-        vnp_Params['vnp_CurrCode'] = 'VND';
-        // TxnRef MUST BE UNIQUE -> orderId_splitId
-        vnp_Params['vnp_TxnRef'] = orderId + "_" + splitId;
-        vnp_Params['vnp_OrderInfo'] = `Thanh toan split bill:${splitId}`;
-        vnp_Params['vnp_OrderType'] = 'other';
-        vnp_Params['vnp_Amount'] = split.amount * 100;
-        vnp_Params['vnp_ReturnUrl'] = returnUrl;
-        vnp_Params['vnp_IpAddr'] = ipAddr;
-        vnp_Params['vnp_CreateDate'] = createDate;
-        if (bankCode) vnp_Params['vnp_BankCode'] = bankCode;
-
-        vnp_Params = sortObject(vnp_Params);
-        let querystring = require('qs');
-        let signData = querystring.stringify(vnp_Params, { encode: false });
-        let hmac = crypto.createHmac("sha512", secretKey);
-        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
-        vnp_Params['vnp_SecureHash'] = signed;
-        vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
-
-        res.status(200).json({ paymentUrl: vnpUrl })
+        const paymentLinkResponse = await payos.paymentRequests.create(body);
+        res.status(200).json({ paymentUrl: paymentLinkResponse.checkoutUrl });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Failed to create split payment URL' });
@@ -171,55 +155,22 @@ exports.createPaymentUrl = async (req, res) => {
         await deductIngredients(order.id);
         const oId = order.id;
 
-        process.env.TZ = 'Asia/Ho_Chi_Minh';
 
-        let date = new Date();
-        let createDate = moment(date).format('YYYYMMDDHHmmss');
 
-        let ipAddr = req.headers['x-forwarded-for'] ||
-            req.connection.remoteAddress ||
-            req.socket.remoteAddress ||
-            req.connection.socket.remoteAddress;
+        const payosOrderCode = Number(String(Date.now()).slice(-6) + Math.floor(100 + Math.random() * 900));
+        order.payos_order_code = payosOrderCode;
+        await order.save();
 
-        let tmnCode = process.env.VNP_TMNCODE;
-        let secretKey = process.env.VNP_HASHSECRET;
-        let vnpUrl = process.env.VNP_URL;
-        let returnUrl = process.env.VNP_RETURNURL;
-        let orderId = oId;
-        let amount = order.total_price;
+        const body = {
+            orderCode: payosOrderCode,
+            amount: order.total_price,
+            description: `Thanh toan ${order.id.slice(-6)}`,
+            returnUrl: `http://localhost:5173/checkout`,
+            cancelUrl: `http://localhost:5173/checkout`,
+        };
 
-        let locale = 'vn';
-        if (locale === null || locale === '') {
-            locale = 'vn';
-        }
-        let currCode = 'VND';
-        let vnp_Params = {};
-        vnp_Params['vnp_Version'] = '2.1.0';
-        vnp_Params['vnp_Command'] = 'pay';
-        vnp_Params['vnp_TmnCode'] = tmnCode;
-        vnp_Params['vnp_Locale'] = locale;
-        vnp_Params['vnp_CurrCode'] = currCode;
-        vnp_Params['vnp_TxnRef'] = orderId;
-        vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId;
-        vnp_Params['vnp_OrderType'] = 'other';
-        vnp_Params['vnp_Amount'] = amount * 100;
-        vnp_Params['vnp_ReturnUrl'] = returnUrl;
-        vnp_Params['vnp_IpAddr'] = ipAddr;
-        vnp_Params['vnp_CreateDate'] = createDate;
-        if (bankCode !== null && bankCode !== '') {
-            vnp_Params['vnp_BankCode'] = bankCode;
-        }
-
-        vnp_Params = sortObject(vnp_Params);
-
-        let querystring = require('qs');
-        let signData = querystring.stringify(vnp_Params, { encode: false });
-        let hmac = crypto.createHmac("sha512", secretKey);
-        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
-        vnp_Params['vnp_SecureHash'] = signed;
-        vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
-
-        res.status(200).json({ paymentUrl: vnpUrl })
+        const paymentLinkResponse = await payos.paymentRequests.create(body);
+        res.status(200).json({ paymentUrl: paymentLinkResponse.checkoutUrl });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to create payment URL' });
@@ -243,52 +194,20 @@ exports.createGuestPaymentUrl = async (req, res) => {
         await deductIngredients(order.id);
         const oId = order.id;
 
-        process.env.TZ = 'Asia/Ho_Chi_Minh';
+        const payosOrderCode = Number(String(Date.now()).slice(-6) + Math.floor(100 + Math.random() * 900));
+        order.payos_order_code = payosOrderCode;
+        await order.save();
 
-        let date = new Date();
-        let createDate = moment(date).format('YYYYMMDDHHmmss');
+        const body = {
+            orderCode: payosOrderCode,
+            amount: order.total_price,
+            description: `Ban ${tableNumber}`,
+            returnUrl: `http://localhost:5173/checkout`,
+            cancelUrl: `http://localhost:5173/checkout`,
+        };
 
-        let ipAddr = req.headers['x-forwarded-for'] ||
-            req.connection.remoteAddress ||
-            req.socket.remoteAddress ||
-            req.connection.socket.remoteAddress;
-
-        let tmnCode = process.env.VNP_TMNCODE;
-        let secretKey = process.env.VNP_HASHSECRET;
-        let vnpUrl = process.env.VNP_URL;
-        let returnUrl = process.env.VNP_RETURNURL;
-        let orderId = oId;
-        let amount = order.total_price;
-
-        let locale = 'vn';
-        let currCode = 'VND';
-        let vnp_Params = {};
-        vnp_Params['vnp_Version'] = '2.1.0';
-        vnp_Params['vnp_Command'] = 'pay';
-        vnp_Params['vnp_TmnCode'] = tmnCode;
-        vnp_Params['vnp_Locale'] = locale;
-        vnp_Params['vnp_CurrCode'] = currCode;
-        vnp_Params['vnp_TxnRef'] = orderId;
-        vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId;
-        vnp_Params['vnp_OrderType'] = 'other';
-        vnp_Params['vnp_Amount'] = amount * 100;
-        vnp_Params['vnp_ReturnUrl'] = returnUrl;
-        vnp_Params['vnp_IpAddr'] = ipAddr;
-        vnp_Params['vnp_CreateDate'] = createDate;
-        if (bankCode !== null && bankCode !== '') {
-            vnp_Params['vnp_BankCode'] = bankCode;
-        }
-
-        vnp_Params = sortObject(vnp_Params);
-
-        let querystring = require('qs');
-        let signData = querystring.stringify(vnp_Params, { encode: false });
-        let hmac = crypto.createHmac("sha512", secretKey);
-        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
-        vnp_Params['vnp_SecureHash'] = signed;
-        vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
-
-        res.status(200).json({ paymentUrl: vnpUrl })
+        const paymentLinkResponse = await payos.paymentRequests.create(body);
+        res.status(200).json({ paymentUrl: paymentLinkResponse.checkoutUrl });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to create guest payment URL' });
@@ -315,107 +234,49 @@ exports.createTablePaymentUrl = async (req, res) => {
         const totalAmount = orders.reduce((sum, order) => sum + order.total_price, 0);
         const firstOrderId = orders[0]._id;
 
-        process.env.TZ = 'Asia/Ho_Chi_Minh';
-        let date = new Date();
-        let createDate = moment(date).format('YYYYMMDDHHmmss');
-        let ipAddr = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
+        const payosOrderCode = Number(String(Date.now()).slice(-6) + Math.floor(100 + Math.random() * 900));
+        orders[0].payos_order_code = payosOrderCode;
+        await orders[0].save();
 
-        let tmnCode = process.env.VNP_TMNCODE;
-        let secretKey = process.env.VNP_HASHSECRET;
-        let vnpUrl = process.env.VNP_URL;
-        let returnUrl = process.env.VNP_RETURNURL;
+        const body = {
+            orderCode: payosOrderCode,
+            amount: totalAmount,
+            description: `Gop Ban ${tableNumber}`,
+            returnUrl: `http://localhost:5173/checkout`,
+            cancelUrl: `http://localhost:5173/checkout`,
+        };
 
-        let vnp_Params = {};
-        vnp_Params['vnp_Version'] = '2.1.0';
-        vnp_Params['vnp_Command'] = 'pay';
-        vnp_Params['vnp_TmnCode'] = tmnCode;
-        vnp_Params['vnp_Locale'] = 'vn';
-        vnp_Params['vnp_CurrCode'] = 'VND';
-        vnp_Params['vnp_TxnRef'] = firstOrderId;
-        vnp_Params['vnp_OrderInfo'] = `TableOrder:${firstOrderId}:${tableNumber}`;
-        vnp_Params['vnp_OrderType'] = 'other';
-        vnp_Params['vnp_Amount'] = totalAmount * 100;
-        vnp_Params['vnp_ReturnUrl'] = returnUrl;
-        vnp_Params['vnp_IpAddr'] = ipAddr;
-        vnp_Params['vnp_CreateDate'] = createDate;
-        if (bankCode) vnp_Params['vnp_BankCode'] = bankCode;
-
-        vnp_Params = sortObject(vnp_Params);
-        let querystring = require('qs');
-        let signData = querystring.stringify(vnp_Params, { encode: false });
-        let hmac = crypto.createHmac("sha512", secretKey);
-        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
-        vnp_Params['vnp_SecureHash'] = signed;
-        vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
-
-        res.status(200).json({ paymentUrl: vnpUrl })
+        const paymentLinkResponse = await payos.paymentRequests.create(body);
+        res.status(200).json({ paymentUrl: paymentLinkResponse.checkoutUrl });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to create table payment URL' });
     }
 };
 
-exports.vnpayReturn = async (req, res) => {
+exports.receiveWebhook = async (req, res) => {
     try {
-        let vnp_Params = req.query;
+        const webhookData = payos.webhooks.verify(req.body);
 
-        let secureHash = vnp_Params['vnp_SecureHash'];
+        if (webhookData.code === '00') {
+            const { orderCode } = webhookData;
 
-        delete vnp_Params['vnp_SecureHash'];
-        delete vnp_Params['vnp_SecureHashType'];
-
-        vnp_Params = sortObject(vnp_Params);
-
-        let tmnCode = process.env.VNP_TMNCODE;
-        let secretKey = process.env.VNP_HASHSECRET;
-
-        let querystring = require('qs');
-        let signData = querystring.stringify(vnp_Params, { encode: false });
-        let hmac = crypto.createHmac("sha512", secretKey);
-        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
-
-        if (secureHash === signed) {
-            let orderId = vnp_Params['vnp_TxnRef'];
-            let responseCode = vnp_Params['vnp_ResponseCode'];
-            
-            if (responseCode === '00') {
-                let actualOrderId = orderId;
-                let splitId = null;
-                
-                if (orderId.includes('_')) {
-                    const parts = orderId.split('_');
-                    actualOrderId = parts[0];
-                    splitId = parts[1];
+            // Tìm đơn hàng chính
+            const order = await Order.findOne({ payos_order_code: orderCode });
+            if (order) {
+                // Đóng dấu toàn bộ order
+                if (order.order_source === 'table') {
+                    await Order.updateMany(
+                        { table_number: order.table_number, order_source: 'table', is_payment: false },
+                        { $set: { is_payment: true, payment_method: "chuyển khoản (PayOS)" } }
+                    );
+                } else {
+                    order.is_payment = true;
+                    order.payment_method = "chuyển khoản (PayOS)";
+                    await order.save();
                 }
 
-                const order = await Order.findById(actualOrderId);
-                if (order) {
-                    if (splitId) {
-                        const split = order.split_bills.find(s => s.split_id === splitId);
-                        if (split) {
-                            split.is_payment = true;
-                            split.payment_method = 'chuyển khoản';
-                            split.paid_at = new Date();
-                        }
-                        const allPaid = order.split_bills.every(s => s.is_payment);
-                        if (allPaid) {
-                            order.is_payment = true;
-                            order.payment_method = 'chuyển khoản (chia bill)';
-                        }
-                        await order.save();
-                    } else if (order.order_source === 'table') {
-                        await Order.updateMany(
-                            { table_number: order.table_number, order_source: 'table', is_payment: false },
-                            { $set: { is_payment: true, payment_method: "chuyển khoản" } }
-                        );
-                    } else {
-                        order.is_payment = true;
-                        order.payment_method = "chuyển khoản";
-                        await order.save();
-                    }
-                }
-                
-                // Gửi socket update list cho admin
+                // Gửi socket update list
                 const listOrder = await Order.find({});
                 const admins = await Admin.find({});
                 for (const ad of admins) {
@@ -423,75 +284,25 @@ exports.vnpayReturn = async (req, res) => {
                         listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
                     }
                 }
-                
-                res.status(200).json({ code: '00', message: 'Success' });
             } else {
-                res.status(200).json({ code: responseCode, message: 'Payment failed' });
-            }
-        } else {
-            res.status(200).json({ code: '97', message: 'Invalid checksum' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-};
-
-exports.vnpayIPN = async (req, res) => {
-    try {
-        let vnp_Params = req.query;
-        let secureHash = vnp_Params['vnp_SecureHash'];
-
-        delete vnp_Params['vnp_SecureHash'];
-        delete vnp_Params['vnp_SecureHashType'];
-
-        vnp_Params = sortObject(vnp_Params);
-        let secretKey = process.env.VNP_HASHSECRET;
-        let querystring = require('qs');
-        let signData = querystring.stringify(vnp_Params, { encode: false });
-        let hmac = crypto.createHmac("sha512", secretKey);
-        let signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
-
-        if (secureHash === signed) {
-            let orderId = vnp_Params['vnp_TxnRef'];
-            let responseCode = vnp_Params['vnp_ResponseCode'];
-
-            let actualOrderId = orderId;
-            let splitId = null;
-            if (orderId.includes('_')) {
-                const parts = orderId.split('_');
-                actualOrderId = parts[0];
-                splitId = parts[1];
-            }
-
-            const order = await Order.findById(actualOrderId);
-            if (order) {
-                if (responseCode === '00') {
-                    if (splitId) {
-                        const split = order.split_bills.find(s => s.split_id === splitId);
-                        if (split && !split.is_payment) {
-                            split.is_payment = true;
-                            split.payment_method = 'chuyển khoản';
-                            split.paid_at = new Date();
-                        }
-                        const allPaid = order.split_bills.every(s => s.is_payment);
-                        if (allPaid) {
-                            order.is_payment = true;
-                            order.payment_method = 'chuyển khoản (chia bill)';
-                        }
-                        await order.save();
-                    } else if (order.order_source === 'table') {
-                        await Order.updateMany(
-                            { table_number: order.table_number, order_source: 'table', is_payment: false },
-                            { $set: { is_payment: true, payment_method: "chuyển khoản" } }
-                        );
-                    } else {
-                        order.is_payment = true;
-                        order.payment_method = "chuyển khoản";
-                        await order.save();
+                // Trường hợp thanh toán Split Bill
+                // Xử lý các order mà có chứa split_bills với payos_order_code này
+                const splitOrder = await Order.findOne({ "split_bills.payos_order_code": orderCode });
+                if (splitOrder) {
+                    const split = splitOrder.split_bills.find(s => s.payos_order_code === orderCode);
+                    if (split && !split.is_payment) {
+                        split.is_payment = true;
+                        split.payment_method = 'chuyển khoản (PayOS)';
+                        split.paid_at = new Date();
                     }
+                    const allPaid = splitOrder.split_bills.every(s => s.is_payment);
+                    if (allPaid) {
+                        splitOrder.is_payment = true;
+                        splitOrder.payment_method = 'chia bill (PayOS)';
+                    }
+                    await splitOrder.save();
 
-                    // Gửi socket update list cho admin
+                    // Gửi socket
                     const listOrder = await Order.find({});
                     const admins = await Admin.find({});
                     for (const ad of admins) {
@@ -499,35 +310,24 @@ exports.vnpayIPN = async (req, res) => {
                             listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
                         }
                     }
-
-                    res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
-                } else {
-                    res.status(200).json({ RspCode: '00', Message: 'Confirm Success' });
                 }
-            } else {
-                res.status(200).json({ RspCode: '01', Message: 'Order not found' });
             }
-        } else {
-            res.status(200).json({ RspCode: '97', Message: 'Invalid Checksum' });
         }
+        res.status(200).json({ success: true, message: "Webhook accepted" });
     } catch (error) {
-        console.error(error);
-        res.status(200).json({ RspCode: '99', Message: 'Unknow error' });
+        console.error("Webhook error: ", error);
+        res.status(400).json({ success: false, message: "Invalid signature" });
     }
 };
 
-function sortObject(obj) {
-    let sorted = {};
-    let str = [];
-    let key;
-    for (key in obj) {
-        if (obj.hasOwnProperty(key)) {
-            str.push(encodeURIComponent(key));
-        }
+exports.getOrderStatus = async (req, res) => {
+    try {
+        const { payosOrderCode } = req.params;
+        if (!payosOrderCode) return res.status(400).json({ success: false, message: "Thiếu orderCode" });
+
+        const paymentData = await payos.paymentRequests.get(Number(payosOrderCode));
+        res.status(200).json({ success: true, data: paymentData });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Lỗi Call PayOS" });
     }
-    str.sort();
-    for (key = 0; key < str.length; key++) {
-        sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+");
-    }
-    return sorted;
-}
+};
