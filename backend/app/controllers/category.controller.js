@@ -96,7 +96,18 @@ exports.create = async (req, res) => {
 
 exports.getList = async (req, res) => {
   try {
-    const categories = await Category.find({});
+    const { search, status } = req.query;
+    let query = {};
+
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
+    }
+
+    if (status !== undefined && status !== 'All') {
+      query.is_active = status === 'active';
+    }
+
+    const categories = await Category.find(query).sort({ createdAt: -1 });
     res.status(200).json(categories);
   } catch (error) {
     console.error(error);

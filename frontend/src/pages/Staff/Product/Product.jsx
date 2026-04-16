@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Table, InputGroup, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaRegEdit, FaSearch, FaEye } from 'react-icons/fa';
-import { MdDelete } from 'react-icons/md';
+import { FaRegEdit, FaSearch, FaEye, FaSortAmountDownAlt, FaSortAmountUp } from 'react-icons/fa';
+import { MdDelete, MdAdd } from 'react-icons/md';
 import { IoMdClose } from "react-icons/io";
 import { toast } from 'react-toastify';
 import { socket } from '../../../socket';
@@ -18,6 +18,10 @@ function Product(props) {
     // Search properties
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('All');
+    const [sortOrder, setSortOrder] = useState('desc');
     const debounceTimeoutRef = useRef(null);
 
     const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
@@ -69,10 +73,20 @@ function Product(props) {
 
     const totalPages = Math.ceil(productList.length / itemsPerPage);
 
-    const fetchListProduct = async (searchQuery = '') => {
+    const fetchListProduct = async (searchQuery = searchTerm, min = minPrice, max = maxPrice, status = selectedStatus, order = sortOrder) => {
         setIsSearching(true);
         try {
-            const url = searchQuery ? `/api/product?search=${encodeURIComponent(searchQuery)}` : '/api/product';
+            const queryParams = new URLSearchParams();
+            if (searchQuery) queryParams.append('search', searchQuery);
+            if (min) queryParams.append('minPrice', min);
+            if (max) queryParams.append('maxPrice', max);
+            if (status !== 'All') queryParams.append('status', status);
+            if (order) {
+                queryParams.append('sortBy', 'price');
+                queryParams.append('order', order);
+            }
+
+            const url = `/api/product?${queryParams.toString()}`;
             const response = await fetch(url);
             const data = await response.json();
             setProductList(data || []);
@@ -106,9 +120,9 @@ function Product(props) {
     };
 
     useEffect(() => {
-        fetchListProduct();
+        fetchListProduct(searchTerm, minPrice, maxPrice, selectedStatus, sortOrder);
         fetchCategories();
-    }, []);
+    }, [selectedStatus]);
 
     useEffect(() => {
         socket.on('stock_changed', () => {
@@ -124,21 +138,23 @@ function Product(props) {
         const value = e.target.value;
         setSearchTerm(value);
 
-        if (debounceTimeoutRef.current) {
-            clearTimeout(debounceTimeoutRef.current);
-        }
-
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
         debounceTimeoutRef.current = setTimeout(() => {
-            fetchListProduct(value);
+            fetchListProduct(value, minPrice, maxPrice, selectedStatus, sortOrder);
+        }, 500);
+    };
+
+    const handlePriceChange = (newMin = minPrice, newMax = maxPrice) => {
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = setTimeout(() => {
+            fetchListProduct(searchTerm, newMin, newMax, selectedStatus, sortOrder);
         }, 500);
     };
 
     const handleClearSearch = () => {
         setSearchTerm('');
-        if (debounceTimeoutRef.current) {
-            clearTimeout(debounceTimeoutRef.current);
-        }
-        fetchListProduct('');
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        fetchListProduct('', minPrice, maxPrice, selectedStatus, sortOrder);
     };
 
     const handleDeleteProItem = async (proId) => {
@@ -254,14 +270,56 @@ function Product(props) {
             <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Sản phẩm
                 <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
             <div className="d-flex align-items-center gap-2">
-                <div className="search-container" style={{ width: '380px' }}>
+                <Form.Select
+                    value={selectedStatus}
+                    onChange={(e) => {
+                        setSelectedStatus(e.target.value);
+                        setCurrentPage(1);
+                    }}
+                    style={{ width: '130px' }}
+                    className="bg-white border-secondary-subtle shadow-none"
+                >
+                    <option value="All">Trạng thái</option>
+                    <option value="active">Hoạt động</option>
+                    <option value="locked">Tạm khóa</option>
+                </Form.Select>
+
+                <div className="d-flex align-items-center gap-1 bg-white border border-secondary-subtle rounded-2 px-2" style={{ height: '40px' }}>
+                    <Form.Control
+                        type="number"
+                        placeholder="Giá từ..."
+                        value={minPrice}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setMinPrice(val);
+                            handlePriceChange(val, maxPrice);
+                        }}
+                        className="border-0 shadow-none p-0 text-center"
+                        style={{ width: '80px', fontSize: '14px' }}
+                    />
+                    <span className="text-muted">-</span>
+                    <Form.Control
+                        type="number"
+                        placeholder="đến..."
+                        value={maxPrice}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setMaxPrice(val);
+                            handlePriceChange(minPrice, val);
+                        }}
+                        className="border-0 shadow-none p-0 text-center"
+                        style={{ width: '80px', fontSize: '14px' }}
+                    />
+                </div>
+
+                <div className="search-container" style={{ width: '300px' }}>
                     <InputGroup>
                         <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
                             <FaSearch className="text-muted" />
                         </InputGroup.Text>
                         <Form.Control
                             type="text"
-                            placeholder="Tìm kiếm theo Tên hoặc Mã sản phẩm..."
+                            placeholder="Tìm theo tên, giá..."
                             value={searchTerm}
                             onChange={handleSearchChange}
                             className="border-start-0 border-secondary-subtle ps-1 shadow-none"
@@ -276,7 +334,20 @@ function Product(props) {
                         )}
                     </InputGroup>
                 </div>
-                <button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={openAddModal} style={{ padding: '10px 22px', borderRadius: '8px', fontWeight: '500' }}> + Thêm mới</button>
+                <button
+                    className="btn btn-outline-secondary d-flex align-items-center gap-2"
+                    onClick={() => {
+                        const nextOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+                        setSortOrder(nextOrder);
+                        fetchListProduct(searchTerm, minPrice, maxPrice, selectedStatus, nextOrder);
+                    }}
+                    style={{ padding: '8px 10px', borderRadius: '8px', border: '1px solid #dee2e6' }}
+                    title={sortOrder === 'desc' ? "Sắp xếp: Giá Lớn -> Bé" : "Sắp xếp: Giá Bé -> Lớn"}
+                >
+                    {sortOrder === 'asc' ? <FaSortAmountUp className="text-success" /> : <FaSortAmountDownAlt className="text-success" />}
+                    Giá ({sortOrder === 'desc' ? "Lớn → Bé" : "Bé → Lớn"})
+                </button>
+                <button className="btn btn-success ms-2 d-flex align-items-center gap-2" onClick={openAddModal} style={{ padding: '8px 18px', borderRadius: '8px', fontWeight: '500' }}> + Thêm mới</button>
             </div>
         </div>
             <div className="pt-0 mt-0">

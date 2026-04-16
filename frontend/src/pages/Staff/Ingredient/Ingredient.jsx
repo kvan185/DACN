@@ -13,24 +13,19 @@ function Ingredient() {
     const [ingredients, setIngredients] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [sortOrder, setSortOrder] = useState('none'); // 'none' | 'asc' | 'desc'
+    const [sortOrder, setSortOrder] = useState('desc'); // 'asc' | 'desc'
     const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
-
-    // Logic sorting và phân trang
-    const sortedIngredients = [...ingredients].sort((a, b) => {
-        if (sortOrder === 'asc') return a.qty - b.qty;
-        if (sortOrder === 'desc') return b.qty - a.qty;
-        return 0;
-    });
 
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = sortedIngredients.slice(indexOfFirstItem, indexOfLastItem);
+    const currentItems = ingredients.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(ingredients.length / itemsPerPage);
 
     // Search properties
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
+    const [maxQty, setMaxQty] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('All');
     const debounceTimeoutRef = useRef(null);
 
     // Action (Add/Update) Modal States
@@ -68,11 +63,20 @@ function Ingredient() {
         }
     };
 
-    const getData = async (searchQuery = '') => {
+    const getData = async (searchQuery = searchTerm, threshold = maxQty, status = selectedStatus, order = sortOrder) => {
         try {
             setLoading(true);
             setIsSearching(true);
-            const url = searchQuery ? `/api/ingredient?search=${encodeURIComponent(searchQuery)}` : '/api/ingredient';
+            const queryParams = new URLSearchParams();
+            if (searchQuery) queryParams.append('search', searchQuery);
+            if (threshold) queryParams.append('maxQty', threshold);
+            if (status !== 'All') queryParams.append('status', status);
+            if (order !== 'none') {
+                queryParams.append('sortBy', 'qty');
+                queryParams.append('order', order);
+            }
+
+            const url = `/api/ingredient?${queryParams.toString()}`;
             const res = await fetch(url);
             const data = await res.json();
             setIngredients(data || []);
@@ -91,18 +95,26 @@ function Ingredient() {
         setSearchTerm(value);
 
         if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-        debounceTimeoutRef.current = setTimeout(() => getData(value), 500);
+        debounceTimeoutRef.current = setTimeout(() => getData(value, maxQty, selectedStatus), 500);
+    };
+
+    const handleThresholdChange = (e) => {
+        const value = e.target.value;
+        setMaxQty(value);
+
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = setTimeout(() => getData(searchTerm, value, selectedStatus, sortOrder), 500);
     };
 
     const handleClearSearch = () => {
         setSearchTerm('');
         if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-        getData('');
+        getData('', maxQty, selectedStatus);
     };
 
     useEffect(() => {
-        getData();
-    }, []);
+        getData(searchTerm, maxQty, selectedStatus, sortOrder);
+    }, [selectedStatus]);
 
     useEffect(() => {
         socket.on('stock_changed', () => {
@@ -214,14 +226,37 @@ function Ingredient() {
                 <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Nguyên liệu
                     <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
                 <div className="d-flex align-items-center gap-2">
-                    <div className="search-container" style={{ width: '380px' }}>
+                    <Form.Select
+                        value={selectedStatus}
+                        onChange={(e) => {
+                            setSelectedStatus(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        style={{ width: '130px' }}
+                        className="bg-white border-secondary-subtle shadow-none"
+                    >
+                        <option value="All">Trạng thái</option>
+                        <option value="active">Hoạt động</option>
+                        <option value="inactive">Đã khóa</option>
+                    </Form.Select>
+
+                    <Form.Control
+                        type="number"
+                        placeholder="Số lượng dưới..."
+                        value={maxQty}
+                        onChange={handleThresholdChange}
+                        style={{ width: '130px' }}
+                        className="bg-white border-secondary-subtle shadow-none"
+                    />
+
+                    <div className="search-container" style={{ width: '300px' }}>
                         <InputGroup>
                             <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
                                 <FaSearch className="text-muted" />
                             </InputGroup.Text>
                             <Form.Control
                                 type="text"
-                                placeholder="Tìm kiếm nguyên liệu..."
+                                placeholder="Tìm theo tên, đơn vị, ghi chú..."
                                 value={searchTerm}
                                 onChange={handleSearchChange}
                                 className="border-start-0 border-secondary-subtle ps-1 shadow-none"
@@ -239,17 +274,15 @@ function Ingredient() {
                     <button
                         className="btn btn-outline-secondary d-flex align-items-center gap-2"
                         onClick={() => {
-                            if (sortOrder === 'none') setSortOrder('asc');
-                            else if (sortOrder === 'asc') setSortOrder('desc');
-                            else setSortOrder('none');
+                            const nextOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+                            setSortOrder(nextOrder);
+                            getData(searchTerm, maxQty, selectedStatus, nextOrder);
                         }}
                         style={{ padding: '8px 10px', borderRadius: '8px', marginLeft: '20px' }}
-                        title="Sắp xếp theo số lượng"
+                        title={sortOrder === 'desc' ? "Sắp xếp: Lớn -> Bé" : "Sắp xếp: Bé -> Lớn"}
                     >
-                        {sortOrder === 'none' && <FaSortAmountDownAlt />}
-                        {sortOrder === 'asc' && <FaSortAmountUp className="text-success" />}
-                        {sortOrder === 'desc' && <FaSortAmountDownAlt className="text-success" />}
-                        Số lượng
+                        {sortOrder === 'asc' ? <FaSortAmountUp className="text-success" /> : <FaSortAmountDownAlt className="text-success" />}
+                        Số lượng ({sortOrder === 'desc' ? "Lớn → Bé" : "Bé → Lớn"})
                     </button>
                     <button className="btn btn-success ms-3 d-flex align-items-center gap-2" onClick={openAddModal} style={{ padding: '10px 22px', borderRadius: '8px', fontWeight: '500' }}> + Thêm nguyên liệu</button>
                 </div>

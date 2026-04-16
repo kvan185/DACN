@@ -41,8 +41,8 @@ exports.create = (req, res) => {
 
 exports.getList = async (req, res) => {
   try {
-    const { search } = req.query;
-    const data = await productService.getList(search);
+    const { search, minPrice, maxPrice, status, sortBy, order } = req.query;
+    const data = await productService.getList({ search, minPrice, maxPrice, status, sortBy, order });
     res.json(data);
   } catch (error) {
     handleError(res, error);

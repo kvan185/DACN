@@ -60,13 +60,13 @@ function TableProduct({ cartItems, selectedItems, setSelectedItems }) {
                     window.location.href = '/login';
                 }
             } else {
-                const orderSource = localStorage.getItem('orderSource');
+                const orderSource = sessionStorage.getItem('orderSource');
                 if (orderSource === 'table') {
                     // Xử lý cho khách vãng lai
-                    const guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+                    const guestCart = JSON.parse(sessionStorage.getItem('guestCart')) || [];
                     const updatedCart = guestCart.filter(item => item.id !== cartItemId);
                     
-                    localStorage.setItem('guestCart', JSON.stringify(updatedCart));
+                    sessionStorage.setItem('guestCart', JSON.stringify(updatedCart));
                     
                     // Cập nhật Redux store để giao diện (Cart badge, Cart sidebar) thay đổi ngay
                     dispatch(setCartItems(updatedCart));

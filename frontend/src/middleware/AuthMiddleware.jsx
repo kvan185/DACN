@@ -5,7 +5,7 @@ export const RequireAuth = ({ children }) => {
     const accessToken = sessionStorage.getItem("accessToken");
 
 
-    const isTableOrder = location.state?.orderSource === 'table' || localStorage.getItem('orderSource') === 'table';
+    const isTableOrder = location.state?.orderSource === 'table' || sessionStorage.getItem('orderSource') === 'table';
     const isFullTablePayment = location.state?.isFullTablePayment;
 
     if (!accessToken && !isTableOrder && !isFullTablePayment) {

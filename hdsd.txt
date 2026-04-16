@@ -13,7 +13,7 @@ Bước 3: Kiểm tra Giỏ hàng & Thanh toán
 -Nhấn "Thanh toán". Hệ thống tự nhận diện hình thức "Đặt hàng online".
 -Chọn phương thức thanh toán:
   + Tiền mặt: Thanh toán cho nhân viên khi nhận món tại quầy.
-  + Chuyển khoản (VNPay): Quét mã QR code hoặc dùng Internet Banking để thanh toán ngay.
+  + Chuyển khoản (PayOS): Quét mã QR code hoặc dùng Internet Banking để thanh toán ngay.
 Bước 4: Nhận hàng
 -Sau khi đặt thành công, đơn hàng sẽ ở trạng thái chờ nhận đơn . 
 -Khách hàng đến quán, cung cấp thông tin "Lịch sử đơn hàng" để nhân viên bàn giao món.
@@ -37,7 +37,7 @@ Bước 5: Thanh toán
 -Nhấn "Thanh toán". Hệ thống tự nhận diện hình thức "Đặt món tại quán".
 -Chọn phương thức thanh toán:
   + Tiền mặt: Nhân viên sẽ thu tiền tại bàn.
-  + Chuyển khoản (VNPay): Thanh toán online để hoàn tất nhanh chóng.
+  + Chuyển khoản (PayOS): Thanh toán online để hoàn tất nhanh chóng.
 (*) Tính năng mở rộng: Chia hóa đơn (Split Bill)
 -Tại màn hình "Thanh toán", khách hàng có thể chọn "Mở chia hóa đơn".
 -Hệ thống cho phép chọn món ăn riêng hoặc chia theo % tổng hóa đơn để khách hàng chủ động thanh toán phần của mình ngay tại bàn.
@@ -81,7 +81,7 @@ Bước 3: Hoàn thành & Phục vụ (Hoàn thành)
 -Khi món đã sẵn sàng mang ra bàn hoặc giao cho khách đặt online (lấy hàng tại quán), nhấn "Hoàn thành" (Complete).
 Bước 4: Xác nhận thanh toán
 - Đối với khách thanh toán tiền mặt tại quầy hoặc tại bàn, Staff nhấn nút "Đã thanh toán" để kết thúc và cập nhật trạng thái đơn hàng
--Lưu ý: Nút này sẽ tự ẩn nếu khách thanh toán qua VNPay thành công.
+-Lưu ý: Nút này sẽ tự ẩn nếu khách thanh toán qua PayOS thành công.
 
 4.3.1.1. Chia hóa đơn (Split Bill)
 Khi khách muốn thanh toán riêng từng món hoặc chia tiền, nhân viên thực hiện:

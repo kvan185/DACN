@@ -5,7 +5,7 @@ import moment from 'moment';
 import { QRCodeSVG } from 'qrcode.react';
 import { ToastContainer, toast } from 'react-toastify';
 
-import { fetchUpdateIsPayment, fetchUpdateStatusOrder, fetchPaymentStatus } from '../../../actions/order';
+import { fetchUpdateIsPayment, fetchUpdateStatusOrder, fetchPaymentStatus, fetchUpdateItemStatus } from '../../../actions/order';
 import { statusOrder } from '../../../config/statusOrder';
 import SplitBillModal from '../../../components/SplitBillModal';
 import { socket } from '../../../socket';
@@ -26,6 +26,29 @@ function OrderDetail(props) {
     const [isZoomed, setIsZoomed] = useState(false);
     const { orderId } = useParams();
     const accessToken = sessionStorage.getItem("accessToken");
+
+    const leftColPercent = import.meta.env.VITE_ORDER_LEFT_COL_PERCENT || 40;
+    const rightColPercent = import.meta.env.VITE_ORDER_RIGHT_COL_PERCENT || 60;
+
+    const handleUpdateItemStatus = async (itemId, newStatus) => {
+        const res = await fetchUpdateItemStatus(orderDetail.id || orderDetail._id, itemId, newStatus, accessToken);
+        if (res && res.success) {
+            fetchOrderDetail(orderId, accessToken);
+        } else {
+            toast.error(res?.message || 'Lỗi cập nhật trạng thái món');
+        }
+    };
+
+    const slipItems = orderItems.filter(item => !item.status || (item.status !== 'SERVED' && item.status !== 'CANCELED'));
+    const receiptItems = orderItems.filter(item => item.status === 'SERVED');
+    const canceledItems = orderItems.filter(item => item.status === 'CANCELED');
+
+    const slipBatches = {};
+    slipItems.forEach(item => {
+        const key = `Batch ${item.batch_num || 1} - ${item.guest_name || orderDetail?.guest_name || 'Khách chung'}`;
+        if (!slipBatches[key]) slipBatches[key] = [];
+        slipBatches[key].push(item);
+    });
 
     useEffect(() => {
         if (orderId && accessToken) {
@@ -540,7 +563,7 @@ function OrderDetail(props) {
                         <div className="d-flex align-items-center gap-4">
                             <div>
                                 <span className="text-muted me-1">Tên khách hàng:</span>
-                                <span className="fw-bold fs-5">{orderDetail && orderDetail.first_name} {orderDetail && orderDetail.last_name}</span>
+                                <span className="fw-bold fs-5">{orderDetail && orderDetail.guest_name ? orderDetail.guest_name : `${orderDetail && orderDetail.first_name} ${orderDetail && orderDetail.last_name}`}</span>
                             </div>
                             {orderDetail && orderDetail.table_number && (
                                 <div className="text-primary fw-bold fs-5" style={{ borderLeft: '2px solid #ccc', paddingLeft: '20px' }}>
@@ -550,42 +573,161 @@ function OrderDetail(props) {
                         </div>
                         <div>
                             <span className="text-muted me-1">Ngày đặt hàng:</span>
-                            <span className="fw-bold fs-6">{orderDetail && moment(orderDetail.createdAt).format('DD/MM/YYYY HH:mm')}</span>
+                            <span className="fw-bold fs-6">{orderDetail && moment(orderDetail.createdAt).format('DD/MM/YYYY')}</span>
                         </div>
                     </div>
 
-                    <div className="order__detail-group mt-3">
-                        <Table striped hover className="text-end align-middle border-bottom table-borderless">
-                            <thead className="table-dark">
-                                <tr>
-                                    <th className="text-center column-stt" style={{ color: '#fff' }}>STT</th>
-                                    <th className="text-start" style={{ color: '#fff' }}>Tên sản phẩm</th>
-                                    <th className="text-center" style={{ color: '#fff' }}>Số lượng</th>
-                                    <th style={{ color: '#fff' }}>Đơn giá</th>
-                                    <th style={{ color: '#fff' }}>Thành tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {orderItems && orderItems.length > 0 ? (
-                                    orderItems.map((item, index) => {
-                                        const { product_name, price, qty } = item;
-                                        const subtotal = (price || 0) * (qty || 0);
+                    <div className="order__detail-group mt-3 d-flex flex-wrap" style={{ gap: '1rem' }}>
+                        {/* Cột Trái: Slip List */}
+                        <div style={{ flex: `0 0 calc(${leftColPercent}% - 0.5rem)`, maxWidth: `calc(${leftColPercent}% - 0.5rem)` }}>
+                            <div className="border rounded bg-white shadow-sm h-100 hidden-print">
+                                <h5 className="p-3 bg-dark text-white rounded-top mb-0 fst-italic">📝 Món Đang Chuẩn Bị (Slips)</h5>
+                                <div className="p-2">
+                                    {Object.keys(slipBatches).length > 0 ? (
+                                        Object.keys(slipBatches).map((batchKey, i) => (
+                                            <div key={i} className="mb-3 border p-2 rounded bg-light">
+                                                <h6 className="text-secondary fw-bold border-bottom pb-1 mb-2">{batchKey}</h6>
+                                                {slipBatches[batchKey].map((item, index) => (
+                                                    <div key={index} className="d-flex justify-content-between align-items-center bg-white p-2 mb-2 shadow-sm rounded border-start border-4 border-warning">
+                                                        <div className="w-50">
+                                                            <div className="fw-bold">{item.product_name} <span className="text-primary">(x{item.qty})</span></div>
+                                                            <div className="text-muted" style={{fontSize:'12px'}}>Trạng thái: <span className={item.status === 'PREPARING' ? 'text-warning fw-bold' : 'text-danger fw-bold'}>{item.status || 'NEW'}</span></div>
+                                                        </div>
+                                                        <div className="d-flex flex-column gap-1 w-50">
+                                                            {(item.status === 'NEW' || !item.status) && (
+                                                                <button className="btn btn-sm btn-outline-warning w-100 fw-bold" onClick={() => handleUpdateItemStatus(item._id || item.id, 'PREPARING')}>
+                                                                    🔥 Nhận đơn
+                                                                </button>
+                                                            )}
+                                                            {(item.status === 'PREPARING' || item.status === 'NEW' || !item.status) && (
+                                                                <button className="btn btn-sm btn-success w-100 fw-bold" onClick={() => handleUpdateItemStatus(item._id || item.id, 'SERVED')}>
+                                                                    ✅ Đã Phục Vụ
+                                                                </button>
+                                                            )}
+                                                            <button className="btn btn-sm btn-outline-danger w-100 fw-bold mt-1" onClick={() => {
+                                                                if (window.confirm('Xác nhận hủy món này do sự cố quy trình? (Tiền sẽ được trừ vào tổng đơn)')) {
+                                                                    handleUpdateItemStatus(item._id || item.id, 'CANCELED');
+                                                                }
+                                                            }}>
+                                                                ❌ Xóa do sự cố
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center p-4 text-muted fst-italic">Không có món nào đang chuẩn bị</div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Cột Phải: Receipt (Món Đã Phục Vụ) */}
+                        <div style={{ flex: `0 0 calc(${rightColPercent}% - 0.5rem)`, maxWidth: `calc(${rightColPercent}% - 0.5rem)` }}>
+                            <div className="border rounded bg-white shadow-sm h-100 print-section">
+                                <h5 className="p-3 bg-success text-white rounded-top mb-0 fst-italic">🧾 Món Đã Phục Vụ (Receipt)</h5>
+                                <div className="p-0">
+                                    {(() => {
+                                        const servedItems = receiptItems; // Already filtered above
+                                        
+                                        // Grouping logic for served items
+                                        const sortedServed = [...servedItems].sort((a, b) => new Date(a.served_at || 0) - new Date(b.served_at || 0));
+                                        const sessions = [];
+                                        
+                                        if (sortedServed.length > 0) {
+                                            let currentSession = {
+                                                startTime: sortedServed[0].served_at ? new Date(sortedServed[0].served_at) : null,
+                                                items: [sortedServed[0]]
+                                            };
+
+                                            for (let i = 1; i < sortedServed.length; i++) {
+                                                const item = sortedServed[i];
+                                                const itemTime = item.served_at ? new Date(item.served_at) : null;
+                                                
+                                                if (!currentSession.startTime || !itemTime) {
+                                                    // Nếu không có thời gian, cho vào session hiện tại (hoặc tạo mới nếu muốn tách biệt)
+                                                    currentSession.items.push(item);
+                                                    continue;
+                                                }
+
+                                                const diffInMinutes = (itemTime - currentSession.startTime) / (1000 * 60);
+                                                if (diffInMinutes <= 3) {
+                                                    currentSession.items.push(item);
+                                                } else {
+                                                    sessions.push(currentSession);
+                                                    currentSession = {
+                                                        startTime: itemTime,
+                                                        items: [item]
+                                                    };
+                                                }
+                                            }
+                                            sessions.push(currentSession);
+                                        }
+
                                         return (
-                                            <tr key={index}>
-                                                <td className="text-center">{index + 1}</td>
-                                                <td className="text-start fw-bold text-dark">{product_name}</td>
-                                                <td className="text-center fw-bold text-primary">{qty}</td>
-                                                <td className="text-muted">{price?.toLocaleString()}đ</td>
-                                                <td className="fw-bold text-dark">{subtotal?.toLocaleString()}đ</td>
-                                            </tr>
+                                            <>
+                                                {sessions.length > 0 ? (
+                                                    sessions.map((session, sIdx) => (
+                                                        <div key={sIdx} className="mb-4">
+                                                            <div className="bg-light p-2 border-start border-4 border-success d-flex justify-content-between align-items-center">
+                                                                <span className="fw-bold text-success text-uppercase" style={{fontSize: '13px'}}>Đợt phục vụ {sIdx + 1}</span>
+                                                                <span className="text-muted fw-bold" style={{fontSize: '12px'}}>
+                                                                    🕒 {session.startTime ? moment(session.startTime).format('HH:mm') : 'N/A'}
+                                                                </span>
+                                                            </div>
+                                                            <Table striped hover size="sm" className="text-end align-middle mb-0 table-borderless">
+                                                                <tbody>
+                                                                    {session.items.map((item, index) => (
+                                                                        <tr key={index}>
+                                                                            <td className="text-start ps-3 fw-bold text-dark" style={{width: '60%'}}>{item.product_name}</td>
+                                                                            <td className="text-center fw-bold text-primary" style={{width: '10%'}}>x{item.qty}</td>
+                                                                            <td className="fw-bold text-dark text-end pe-3" style={{width: '30%'}}>{(item.price * item.qty).toLocaleString()}đ</td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </Table>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="text-center p-4 text-muted fst-italic">Chưa có món nào được phục vụ</div>
+                                                )}
+                                            </>
                                         );
-                                    })
-                                ) : (
-                                    <tr><td colSpan="5" className="text-center">Không có sản phẩm nào</td></tr>
-                                )}
-                            </tbody>
-                        </Table>
+                                    })()}
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    {canceledItems.length > 0 && (
+                        <div className="order__detail-group mt-4 border rounded bg-white shadow-sm overflow-hidden">
+                            <h5 className="p-3 bg-danger text-white mb-0 fst-italic">🚫 Món Đã Hủy (Canceled Items)</h5>
+                            <div className="p-0">
+                                <Table striped hover size="sm" className="text-end align-middle mb-0 table-borderless">
+                                    <thead className="table-light">
+                                        <tr style={{ fontSize: '13px' }}>
+                                            <th className="text-start ps-3" style={{ width: '60%' }}>Tên món</th>
+                                            <th className="text-center" style={{ width: '10%' }}>SL</th>
+                                            <th className="text-end pe-3" style={{ width: '30%' }}>Nguyên giá</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {canceledItems.map((item, index) => (
+                                            <tr key={index} className="text-muted">
+                                                <td className="text-start ps-3 fw-bold">{item.product_name}</td>
+                                                <td className="text-center">x{item.qty}</td>
+                                                <td className="text-end pe-3 fw-bold">{(item.price * item.qty).toLocaleString()}đ</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                                <div className="p-2 bg-light text-end pe-3">
+                                    <small className="text-danger fst-italic">* Các món này đã được trừ khỏi tổng hóa đơn</small>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {orderDetail && orderDetail.split_bills && orderDetail.split_bills.length > 0 && (
                         <div className="order__detail-group mt-4 p-3 border rounded border-warning">
@@ -694,10 +836,6 @@ function OrderDetail(props) {
                     <div className="order__detail-foot mt-4 pb-3 border-bottom-0">
                         <div className="order__detail-status bg-light p-4 rounded w-100 d-flex flex-column align-items-end">
                             <div className="d-flex justify-content-between w-100 mb-2 border-bottom pb-2">
-                                <span className="text-muted">Trạng thái đơn hàng:</span>
-                                <span className='order-status fw-bold fs-6'>{orderDetail && orderDetail.status}</span>
-                            </div>
-                            <div className="d-flex justify-content-between w-100 mb-2 border-bottom pb-2">
                                 <span className="text-muted">Trạng thái thanh toán:</span>
                                 <span className={`badge ${orderDetail && orderDetail.is_payment ? 'bg-success' : (orderDetail && orderDetail.split_bills?.some(sb => sb.is_payment) ? 'bg-warning text-dark' : 'bg-danger')} fs-6`}>
                                     {orderDetail && orderDetail.is_payment ? 'Đã thanh toán đủ' : (orderDetail && orderDetail.split_bills?.some(sb => sb.is_payment) ? 'Thanh toán 1 phần' : 'Chưa thu đủ')}
@@ -717,14 +855,7 @@ function OrderDetail(props) {
                     </div>
 
                     <div className="order__detail-group-btn mt-3 no-print d-flex justify-content-end bg-light p-3 rounded">
-                        <button disabled={(orderDetail && orderDetail.status !== statusOrder.NEW)} className="btn btn-confirm"
-                            onClick={() => handleConfirmOrder(orderDetail && orderDetail.id)}>Bếp Nhận Đơn</button>
-
-                        <button disabled={orderDetail && orderDetail.status !== statusOrder.CONFIRMED} className="btn btn-processing"
-                            onClick={() => handleProcessingOrder(orderDetail && orderDetail.id)}>Đang làm</button>
-
-                        <button disabled={orderDetail && orderDetail.status !== statusOrder.PROCESSING} className="btn btn-complete"
-                            onClick={() => handleCompleteOrder(orderDetail && orderDetail.id)}>Hoàn thành</button>
+                        {/* {order-level status buttons removed} */}
 
                         <button hidden={orderDetail && orderDetail.is_payment} className="btn btn-payment"
                             onClick={() => handlePayment(orderDetail && orderDetail.id)}>Đã thanh toán</button>

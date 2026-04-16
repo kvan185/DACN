@@ -17,7 +17,7 @@ function Cart({ accessToken }) {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const orderSource = localStorage.getItem('orderSource');
+    const orderSource = sessionStorage.getItem('orderSource');
     const isOrderingPage = location.pathname === '/menu' || location.pathname === '/checkout';
 
     const handleHiddenCart = () => {
@@ -42,15 +42,26 @@ function Cart({ accessToken }) {
         }
 
         try {
-            const tableNumber = localStorage.getItem('tableNumber');
+            const tableNumber = sessionStorage.getItem('tableNumber');
             const itemsToOrder = cartItems.filter(item => selectedItems.includes(item.id));
+            
+            const guestSessionJSON = sessionStorage.getItem('guest_session');
+            let guestName = null;
+            let sessionId = null;
+            if (guestSessionJSON) {
+                try {
+                    const parsed = JSON.parse(guestSessionJSON);
+                    guestName = parsed.username;
+                    sessionId = parsed.sessionId;
+                } catch (e) {}
+            }
 
-            const data = await fetchGuestOrder(itemsToOrder, tableNumber, 'table');
+            const data = await fetchGuestOrder(itemsToOrder, tableNumber, 'table', 'cash', guestName, sessionId);
 
             if (data) {
                 // Cập nhật local storage giỏ hàng sau khi order
                 const remaingItems = cartItems.filter(item => !selectedItems.includes(item.id));
-                localStorage.setItem('guestCart', JSON.stringify(remaingItems));
+                sessionStorage.setItem('guestCart', JSON.stringify(remaingItems));
 
                 // Nếu có đăng nhập, ta cũng nên clear backend cart (giả sử có API hoặc ghi chú)
                 if (accessToken) {
@@ -92,7 +103,7 @@ function Cart({ accessToken }) {
             }
             getItemsCart();
         } else if (orderSource === 'table') {
-            const guestItems = JSON.parse(localStorage.getItem('guestCart')) || [];
+            const guestItems = JSON.parse(sessionStorage.getItem('guestCart')) || [];
             dispatch(setCartItems(guestItems));
             // Tạo giỏ hàng giả cho khách vãng lai
             dispatch(setCartStore({

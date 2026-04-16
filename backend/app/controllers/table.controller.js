@@ -89,7 +89,12 @@ exports.deleteTable = async (req, res) => {
   }
 };
 
-exports.getTablesListInternal = async () => {
+exports.getTablesListInternal = async (sortBy, order) => {
+  let sortCriteria = { tableNumber: 1 };
+  if (sortBy && order) {
+    sortCriteria = { [sortBy]: order === 'asc' ? 1 : -1 };
+  }
+
   const tables = await Table.aggregate([
     {
       $lookup: {
@@ -99,7 +104,7 @@ exports.getTablesListInternal = async () => {
         as: 'reservationList'
       }
     },
-    { $sort: { tableNumber: 1 } }
+    { $sort: sortCriteria }
   ]);
 
   // Tìm các lịch đặt bàn của ngày hôm nay
@@ -199,7 +204,8 @@ exports.getTablesListInternal = async () => {
 
 exports.getAllTables = async (req, res) => {
   try {
-    const result = await exports.getTablesListInternal();
+    const { sortBy, order } = req.query;
+    const result = await exports.getTablesListInternal(sortBy, order);
     res.json(result);
   } catch (error) {
     console.error(error);

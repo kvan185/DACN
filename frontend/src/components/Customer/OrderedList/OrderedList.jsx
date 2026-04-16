@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { visibilityOrderedList } from '../../../actions/user';
 import { fetchGetGuestOrdersByTable, fetchGuestPayment } from '../../../actions/order';
+import { socket } from '../../../socket';
 import './orderedList.scss';
 
 function OrderedList() {
@@ -12,7 +13,7 @@ function OrderedList() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    const tableNumber = localStorage.getItem('tableNumber');
+    const tableNumber = sessionStorage.getItem('tableNumber');
 
     const handleHiddenList = () => {
         dispatch(visibilityOrderedList(false));
@@ -22,7 +23,13 @@ function OrderedList() {
         if (!tableNumber) return;
         setLoading(true);
         try {
-            const data = await fetchGetGuestOrdersByTable(tableNumber);
+            let sessionId = null;
+            const sessionStr = sessionStorage.getItem('guest_session');
+            if (sessionStr) {
+                const sessionObj = JSON.parse(sessionStr);
+                sessionId = sessionObj.sessionId;
+            }
+            const data = await fetchGetGuestOrdersByTable(tableNumber, sessionId);
             if (data) {
                 setOrders(data);
             }
@@ -36,9 +43,19 @@ function OrderedList() {
     useEffect(() => {
         if (isOrderedList) {
             loadOrders();
-            // Refresh every 30 seconds while open
+            // Refresh every 30 seconds while open as fallback
             const interval = setInterval(loadOrders, 30000);
-            return () => clearInterval(interval);
+
+            // Listen to real-time events
+            const handleUpdate = () => loadOrders();
+            socket.on('itemStatusUpdated', handleUpdate);
+            socket.on('paymentSuccess', handleUpdate);
+
+            return () => {
+                clearInterval(interval);
+                socket.off('itemStatusUpdated', handleUpdate);
+                socket.off('paymentSuccess', handleUpdate);
+            };
         }
     }, [isOrderedList]);
 
@@ -115,29 +132,52 @@ function OrderedList() {
                     {loading && orders.length === 0 ? (
                         <p className="text-center">Đang tải...</p>
                     ) : orders.length > 0 ? (
-                        orders.map((group, idx) => (
-                            <div key={group.order.id} className="order-group">
-                                <div className="order-header">
-                                    <span className="order-time">
-                                        {new Date(group.order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                    <span className={`order-status ${getStatusClass(group.order.status)}`}>
-                                        {getStatusText(group.order.status)}
-                                    </span>
-                                </div>
-                                <div className="order-items">
-                                    {group.orderItems.map((item, itemIdx) => (
-                                        <div key={itemIdx} className="order-item">
-                                            <span className="item-name">{item.product_name}</span>
-                                            <span className="item-qty">x{item.qty}</span>
-                                            <span className="item-price">
-                                                {item.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
-                                            </span>
+                        orders.map((group, idx) => {
+                            // Gom nhóm các món theo batch_num (đợt gọi món)
+                            const batches = {};
+                            group.orderItems.forEach(item => {
+                                const bNum = item.batch_num || 1;
+                                if (!batches[bNum]) batches[bNum] = [];
+                                batches[bNum].push(item);
+                            });
+
+                            return (
+                                <div key={group.order.id} className="order-group-container">
+                                    {Object.keys(batches).sort((a, b) => a - b).map(bNum => (
+                                        <div key={bNum} className="order-group">
+                                            <div className="order-header">
+                                                <span className="order-time fw-bold">
+                                                    {new Date(batches[bNum][0].createdAt || group.order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                                <span className="order-status fw-bold text-primary">
+                                                    Lần gọi món thứ {bNum}
+                                                </span>
+                                            </div>
+                                            <div className="order-items">
+                                                {batches[bNum].map((item, itemIdx) => (
+                                                    <div key={itemIdx} className="order-item d-flex align-items-center flex-wrap">
+                                                        <span className="item-name flex-grow-1" style={{width: '50%'}}>{item.product_name}</span>
+                                                        <span className="item-qty text-center" style={{width: '15%'}}>x{item.qty}</span>
+                                                        <span className="item-price text-end" style={{width: '35%'}}>
+                                                            {item.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })}
+                                                        </span>
+                                                        <div className="w-100 mt-1 d-flex justify-content-start">
+                                                            <span className={`badge border ${item.status === 'CANCELED' ? 'bg-danger text-white' : 'bg-light text-dark'}`} style={{fontSize: '11px'}}>
+                                                                Trạng thái: {
+                                                                    item.status === 'CANCELED' ? 'Đã hủy (Sự cố)' :
+                                                                    item.status === 'SERVED' ? 'Đã phục vụ' :
+                                                                    item.status === 'PREPARING' ? 'Đang chuẩn bị' : 'Chờ xác nhận'
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <h4 className="list-no-item">(Chưa có món nào được đặt)</h4>
                     )}

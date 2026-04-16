@@ -51,7 +51,7 @@ function Checkout(props) {
     const cartTotalPrice = cartItems.reduce((sum, item) => sum + item.total_price, 0);
 
     useEffect(() => {
-        const savedOrderSource = localStorage.getItem('orderSource');
+        const savedOrderSource = sessionStorage.getItem('orderSource');
         if (accessToken) {
             const getItemsCart = async () => {
                 const response = await fetchGetCart(accessToken);
@@ -66,7 +66,7 @@ function Checkout(props) {
             }
             getItemsCart();
         } else if (savedOrderSource === 'table') {
-            const guestItems = JSON.parse(localStorage.getItem('guestCart')) || [];
+            const guestItems = JSON.parse(sessionStorage.getItem('guestCart')) || [];
             dispatch(setCartItems(guestItems));
             dispatch(setCartStore({
                 id: 'guest',
@@ -83,14 +83,14 @@ function Checkout(props) {
             finalOrderSource = passedOrderSource;
             setOrderSource(passedOrderSource);
             if (passedOrderSource === 'table') {
-                const savedTableNumber = localStorage.getItem('tableNumber');
+                const savedTableNumber = sessionStorage.getItem('tableNumber');
                 if (savedTableNumber) {
                     setTableNumber(savedTableNumber);
                 }
             }
         } else {
-            const savedOrderSource = localStorage.getItem('orderSource');
-            const savedTableNumber = localStorage.getItem('tableNumber');
+            const savedOrderSource = sessionStorage.getItem('orderSource');
+            const savedTableNumber = sessionStorage.getItem('tableNumber');
 
             if (savedOrderSource) {
                 finalOrderSource = savedOrderSource;
@@ -144,7 +144,7 @@ function Checkout(props) {
 
             if (data && data.success) {
                 if (orderSource === 'table') {
-                    localStorage.removeItem('guestCart');
+                    sessionStorage.removeItem('guestCart');
                     localStorage.removeItem('guestHasOrdered');
                     // Clear redux state cho khách tiếp theo
                     dispatch(setCartItems([]));
@@ -209,7 +209,7 @@ function Checkout(props) {
 
         if (data && data.success) {
             if (orderSource === 'table') {
-                localStorage.removeItem('guestCart');
+                sessionStorage.removeItem('guestCart');
                 localStorage.removeItem('guestHasOrdered');
                 dispatch(setCartItems([]));
                 dispatch(setCartStore({ id: 'guest', total_item: 0, total_price: 0 }));
@@ -231,11 +231,11 @@ function Checkout(props) {
         if (code === '00' && cancel === 'false' && orderCode) {
             const finalizePayment = async () => {
                 // Trạng thái đơn hàng sẽ được Backend xử lý thông qua Webhook PayOS tự động
-                const savedOrderSource = localStorage.getItem('orderSource');
-                const savedTableNumber = localStorage.getItem('tableNumber');
+                const savedOrderSource = sessionStorage.getItem('orderSource');
+                const savedTableNumber = sessionStorage.getItem('tableNumber');
 
                 if (savedOrderSource === 'table') {
-                    localStorage.removeItem('guestCart');
+                    sessionStorage.removeItem('guestCart');
                     localStorage.removeItem('guestHasOrdered');
 
                     // Clear redux state cho khách tiếp theo
@@ -294,7 +294,7 @@ function Checkout(props) {
                 
                 // Thu dọn giỏ hàng nếu cần
                 if (orderSource === 'table') {
-                    localStorage.removeItem('guestCart');
+                    sessionStorage.removeItem('guestCart');
                     localStorage.removeItem('guestHasOrdered');
                     dispatch(setCartItems([]));
                     dispatch(setCartStore({ id: 'guest', total_item: 0, total_price: 0 }));
@@ -320,7 +320,7 @@ function Checkout(props) {
                         toast.success("Thanh toán thành công!");
                         
                         if (orderSource === 'table') {
-                            localStorage.removeItem('guestCart');
+                            sessionStorage.removeItem('guestCart');
                             localStorage.removeItem('guestHasOrdered');
                             dispatch(setCartItems([]));
                             dispatch(setCartStore({ id: 'guest', total_item: 0, total_price: 0 }));
@@ -362,7 +362,7 @@ function Checkout(props) {
 
         setIsCallingStaff(true);
         try {
-            const savedTableNumber = tableNumber || localStorage.getItem('tableNumber');
+            const savedTableNumber = tableNumber || sessionStorage.getItem('tableNumber');
             const res = await fetchCallStaff(savedTableNumber, customMessage, orderId || splitOrderPayload?.id);
             if (res.success) {
                 setCallStaffCount(prev => prev + 1);
@@ -377,7 +377,7 @@ function Checkout(props) {
         }
     };
 
-    const currentOrderSource = passedOrderSource || localStorage.getItem('orderSource') || orderSource;
+    const currentOrderSource = passedOrderSource || sessionStorage.getItem('orderSource') || orderSource;
     if (!accessToken && currentOrderSource !== 'table' && !isFullTablePayment) {
         navigate(`/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`);
     }
@@ -475,7 +475,7 @@ function Checkout(props) {
                                 </button>
                                 <button 
                                     className="btn btn-outline-primary px-4 py-2 fw-bold"
-                                    onClick={() => navigate(`/menu?table=${tableNumber || localStorage.getItem('tableNumber')}`, { replace: true })}
+                                    onClick={() => navigate(`/menu?table=${tableNumber || sessionStorage.getItem('tableNumber')}`, { replace: true })}
                                 >
                                     Quay lại Menu
                                 </button>
@@ -600,7 +600,7 @@ function Checkout(props) {
                         }
 
                         if (orderSource === 'table') {
-                            localStorage.removeItem('guestCart');
+                            sessionStorage.removeItem('guestCart');
                             localStorage.removeItem('guestHasOrdered');
                             dispatch(setCartItems([]));
                             dispatch(setCartStore({ id: 'guest', total_item: 0, total_price: 0 }));

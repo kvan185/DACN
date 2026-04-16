@@ -38,7 +38,7 @@ function Home(props) {
 
     useEffect(() => {
         fetchCategory();
-        localStorage.setItem('orderSource', 'online');
+        sessionStorage.setItem('orderSource', 'online');
     }, []);
 
     useEffect(() => {

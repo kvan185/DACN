@@ -15,6 +15,7 @@ function Category(props) {
     // Search properties
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState('All');
     const debounceTimeoutRef = useRef(null);
 
     const itemsPerPage = import.meta.env.VITE_ITEMS_PER_PAGE || 6;
@@ -50,10 +51,14 @@ function Category(props) {
 
     const totalPages = Math.ceil(categoryList.length / itemsPerPage);
 
-    const fetchListCate = async (searchQuery = '') => {
+    const fetchListCate = async (searchQuery = searchTerm, status = selectedStatus) => {
         setIsSearching(true);
         try {
-            const url = searchQuery ? `/api/category?search=${encodeURIComponent(searchQuery)}` : '/api/category';
+            const queryParams = new URLSearchParams();
+            if (searchQuery) queryParams.append('search', searchQuery);
+            if (status !== 'All') queryParams.append('status', status);
+
+            const url = `/api/category?${queryParams.toString()}`;
             const response = await fetch(url);
             const data = await response.json();
             setCategoryList(data || []);
@@ -67,7 +72,7 @@ function Category(props) {
 
     useEffect(() => {
         fetchListCate();
-    }, []);
+    }, [selectedStatus]);
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
@@ -169,7 +174,22 @@ function Category(props) {
         <div className="staff-management block-category ps-0 pt-0">
             <div className="staff-management__header d-flex justify-content-between align-items-center mb-4 mt-4 px-0">
                 <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý danh mục
-                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>                <div className="d-flex align-items-center gap-2">
+                    <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
+                <div className="d-flex align-items-center gap-2">
+                    <Form.Select
+                        value={selectedStatus}
+                        onChange={(e) => {
+                            setSelectedStatus(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        style={{ width: '150px' }}
+                        className="bg-white border-secondary-subtle shadow-none"
+                    >
+                        <option value="All">Trạng thái</option>
+                        <option value="active">Hoạt động</option>
+                        <option value="inactive">Tạm khóa</option>
+                    </Form.Select>
+
                     <div className="search-container" style={{ width: '380px' }}>
                         <InputGroup>
                             <InputGroup.Text className="bg-white border-end-0">

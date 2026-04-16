@@ -175,9 +175,9 @@ function Detail(props) {
             }
 
         } else {
-            const orderSource = localStorage.getItem('orderSource');
+            const orderSource = sessionStorage.getItem('orderSource');
             if (orderSource === 'table') {
-                let guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+                let guestCart = JSON.parse(sessionStorage.getItem('guestCart')) || [];
                 const existingItemIndex = guestCart.findIndex(item => item.id === idProduct);
 
                 if (existingItemIndex > -1) {
@@ -195,7 +195,7 @@ function Detail(props) {
                     });
                 }
 
-                localStorage.setItem('guestCart', JSON.stringify(guestCart));
+                sessionStorage.setItem('guestCart', JSON.stringify(guestCart));
                 dispatch(setCartItems(guestCart));
                 dispatch(setCartStore({
                     id: 'guest',

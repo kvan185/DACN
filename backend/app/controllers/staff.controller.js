@@ -45,25 +45,49 @@ const upload = multer({
 // GET: Lấy danh sách nhân viên 
 exports.getAllStaffs = async (req, res) => {
     try {
-        const { search = '', page = 1, limit = 10, role } = req.query;
+        const { search = '', page = 1, limit = 10, role, gender } = req.query;
         
         const query = {};
 
-        // ADDED: Role filtering
+        // Role filtering
         if (role && role !== 'All') {
-            query.role = role === 'ADMIN' ? 'ADMIN' : 'STAFF';
+            query.role = role === 'ADMIN' || role === 'STAFF' ? role : { $in: ['ADMIN', 'STAFF'] };
         } else {
-            query.role = { $in: ['ADMIN', 'STAFF'] }; // Fetch both roles by default
+            query.role = { $in: ['ADMIN', 'STAFF'] };
         }
 
-        // Tìm kiếm theo tên hoặc email
+        // Tìm kiếm theo tên, email hoặc số điện thoại
         if (search) {
-            const searchRegex = new RegExp(search, 'i');
+            const searchRegex = { $regex: search, $options: 'i' };
             query.$or = [
                 { first_name: searchRegex },
                 { last_name: searchRegex },
                 { email: searchRegex },
+                { phone: searchRegex },
+                {
+                    $expr: {
+                        $regexMatch: {
+                            input: { $concat: ["$first_name", " ", "$last_name"] },
+                            regex: search,
+                            options: "i"
+                        }
+                    }
+                },
+                {
+                    $expr: {
+                        $regexMatch: {
+                            input: { $concat: ["$last_name", " ", "$first_name"] },
+                            regex: search,
+                            options: "i"
+                        }
+                    }
+                }
             ];
+        }
+
+        // ADDED: Gender filtering
+        if (gender && gender !== 'All') {
+            query.gender = gender;
         }
 
         const limitNum = parseInt(limit, 10);
@@ -71,7 +95,6 @@ exports.getAllStaffs = async (req, res) => {
         const skip = (pageNum - 1) * limitNum;
 
         const totalItems = await Admin.countDocuments(query);
-        // CHANGED: Sorting logic, 'ADMIN' first because A < S alphabetically, then by latest creation
         const staffs = await Admin.find(query).skip(skip).limit(limitNum).sort({ role: 1, createdAt: -1 });
 
         res.json({

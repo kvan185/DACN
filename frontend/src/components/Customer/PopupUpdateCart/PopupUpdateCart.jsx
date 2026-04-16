@@ -14,7 +14,7 @@ function PopupUpdateCart(props) {
     const inputRef = useRef();
     const accessToken = sessionStorage.getItem("accessToken");
     const dispatch = useDispatch();
-    const orderSource = localStorage.getItem('orderSource');
+    const orderSource = sessionStorage.getItem('orderSource');
 
     const fetchIngredientsByProduct = async (productId) => {
         try {
@@ -94,7 +94,7 @@ function PopupUpdateCart(props) {
                 dispatch(setCartItems(data.cartItems));
             }
         } else if (orderSource === 'table') {
-            const guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+            const guestCart = JSON.parse(sessionStorage.getItem('guestCart')) || [];
             const itemIndex = guestCart.findIndex(item => item.id === props.itemcart.id);
 
             if (itemIndex > -1) {
@@ -106,7 +106,7 @@ function PopupUpdateCart(props) {
                     guestCart.splice(itemIndex, 1);
                 }
 
-                localStorage.setItem('guestCart', JSON.stringify(guestCart));
+                sessionStorage.setItem('guestCart', JSON.stringify(guestCart));
 
                 // Cập nhật Redux store để giao diện (Cart badge, Cart sidebar) thay đổi ngay
                 dispatch(setCartItems(guestCart));

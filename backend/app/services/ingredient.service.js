@@ -2,12 +2,37 @@ const Ingredient = require("../models/ingredient.model");
 const ProductBOM = require("../models/productBom.model");
 const { checkAllProductsAvailability } = require("./product.service");
 
-const getAll = async (searchQuery) => {
+const getAll = async (filters) => {
     let query = {};
-    if (searchQuery) {
-        query.name = { $regex: searchQuery, $options: 'i' };
+    const { search, maxQty, status, sortBy, order } = typeof filters === 'string' ? { search: filters } : (filters || {});
+
+    if (search) {
+        const searchRegex = { $regex: search, $options: 'i' };
+        query.$or = [
+            { name: searchRegex },
+            { unit: searchRegex },
+            { note: searchRegex }
+        ];
+        // Support search by exact quantity if input is numeric
+        if (!isNaN(search) && search.trim() !== '') {
+            query.$or.push({ qty: Number(search) });
+        }
     }
-    return await Ingredient.find(query).sort({ createdAt: -1 });
+
+    if (maxQty !== undefined && maxQty !== '') {
+        query.qty = { ...query.qty, $lte: Number(maxQty) };
+    }
+
+    if (status !== undefined && status !== 'All') {
+        query.is_active = status === 'active';
+    }
+
+    let sort = { createdAt: -1 };
+    if (sortBy && order && order !== 'none') {
+        sort = { [sortBy]: order === 'asc' ? 1 : -1 };
+    }
+
+    return await Ingredient.find(query).sort(sort);
 };
 
 const create = async (data) => {

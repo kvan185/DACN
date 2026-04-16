@@ -28,7 +28,18 @@ module.exports = mongoose => {
             type: Boolean,
             default: true,
         },
-
+        batch_num: {
+            type: Number,
+            default: 1,
+        },
+        status: {
+            type: String,
+            enum: ['NEW', 'PREPARING', 'SERVED', 'CANCELED'],
+            default: 'NEW'
+        },
+        served_at: {
+            type: Date
+        }
       },
       { timestamps: true }
     );

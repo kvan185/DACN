@@ -47,7 +47,7 @@
 - **Nhân viên**: Mở quản lý "Đơn Hàng", vào Chi tiết hóa đơn Bàn 3 (Hoặc đi từ tab Quản lý Bàn qua nút Thanh Toán xanh).
 - **Thuyết minh**: *"Giả sử khách nhờ thu ngân tách giùm. Thu ngân chỉ cần bấm ngay nút '✏️ Chỉnh sửa' tiện lợi sát bảng thông tin chia bill để tách hộ hoặc tái cấu trúc chia tiền nếu khách đổi ý."*
 - Khi đã tách xong, nhân viên chọn phương thức "Chuyển khoảnQR" cho khách tương ứng.
-- **Thuyết minh**: *"Ngay lập tức mã QR thanh toán của VNPAY được sinh ra trực tiếp bằng file vector SVG hệ thống. Điểm đột phá tại đây là thời gian khởi tạo QR chưa tới 1 giây, hoàn toàn không dính tình trạng lag / đơ gián đoạn như những bên sử dụng API thứ ba, và chuẩn nét kể cả khi mang đi In Hóa Đơn."*
+- **Thuyết minh**: *"Ngay lập tức mã QR thanh toán của PayOS được sinh ra trực tiếp bằng file vector SVG hệ thống. Điểm đột phá tại đây là thời gian khởi tạo QR chưa tới 1 giây, hoàn toàn không dính tình trạng lag / đơ gián đoạn như những bên sử dụng API thứ ba, và chuẩn nét kể cả khi mang đi In Hóa Đơn."*
 - Thu Ngân ấn **"Xác nhận đã nhận tiền"**: Nút thanh toán bay màu thành nhãn dòng trạng thái "✅ Đã trực tiếp thanh toán".
 
 ---

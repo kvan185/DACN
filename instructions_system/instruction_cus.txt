@@ -18,7 +18,7 @@ Bước 3: Kiểm tra Giỏ hàng & Thanh toán
 - Nhấn "Thanh toán". Hệ thống tự nhận diện hình thức "Đặt hàng online".
 - Chọn phương thức thanh toán:
   + Tiền mặt: Thanh toán cho nhân viên khi nhận món tại quầy.
-  + Chuyển khoản (VNPay): Quét mã QR code hoặc dùng Internet Banking để thanh toán ngay.
+  + Chuyển khoản (PayOS): Quét mã QR code hoặc dùng Internet Banking để thanh toán ngay.
 
 Bước 4: Nhận hàng
 - Sau khi đặt thành công, đơn hàng sẽ ở trạng thái chờ nhận đơn . 
@@ -50,7 +50,7 @@ Bước 5: Thanh toán
 - Nhấn "Thanh toán". Hệ thống tự nhận diện hình thức "Đặt món tại quán".
 - Chọn phương thức thanh toán:
   + Tiền mặt: Nhân viên sẽ thu tiền tại bàn.
-  + Chuyển khoản (VNPay): Thanh toán online để hoàn tất nhanh chóng.
+  + Chuyển khoản (PayOS): Thanh toán online để hoàn tất nhanh chóng.
 
 
 3. LUỒNG ĐẶT BÀN TRƯỚC (RESERVATION)

@@ -13,7 +13,8 @@ const StaffList = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [selectedRole, setSelectedRole] = useState('All'); // Added role filter
+    const [selectedRole, setSelectedRole] = useState('All'); 
+    const [selectedGender, setSelectedGender] = useState('All'); 
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -57,12 +58,12 @@ const StaffList = () => {
     // Fetch staffs on init, page change, role change, or search change
     useEffect(() => {
         fetchStaffs();
-    }, [currentPage, debouncedSearch, selectedRole]);
+    }, [currentPage, debouncedSearch, selectedRole, selectedGender]);
 
     // Reset pagination when search or filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearch, selectedRole]);
+    }, [debouncedSearch, selectedRole, selectedGender]);
 
     const fetchStaffs = async () => {
         setLoading(true);
@@ -71,7 +72,8 @@ const StaffList = () => {
                 page: currentPage,
                 limit: itemsPerPage,
                 search: debouncedSearch,
-                role: selectedRole
+                role: selectedRole,
+                gender: selectedGender
             }).toString();
 
             const response = await fetch(`/api/staff?${query}`, {
@@ -245,6 +247,20 @@ const StaffList = () => {
                     <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
                 <div className="d-flex align-items-center gap-2">
                     <Form.Select
+                        value={selectedGender}
+                        onChange={(e) => {
+                            setSelectedGender(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        style={{ width: '150px' }}
+                        className="bg-white border-secondary-subtle shadow-none"
+                    >
+                        <option value="All">Tất cả giới tính</option>
+                        <option value="male">Nam</option>
+                        <option value="female">Nữ</option>
+                    </Form.Select>
+
+                    <Form.Select
                         value={selectedRole}
                         onChange={(e) => {
                             setSelectedRole(e.target.value);
@@ -265,7 +281,7 @@ const StaffList = () => {
                             </InputGroup.Text>
                             <Form.Control
                                 type="text"
-                                placeholder="Tìm theo tên, email..."
+                                placeholder="Tìm theo tên, email, SĐT..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="border-start-0 border-secondary-subtle ps-1 shadow-none"

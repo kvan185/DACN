@@ -44,8 +44,12 @@ export const fetchUpdateStatusOrder = async (orderId, accessToken, status) => {
     return response;
 }
 
-export const fetchGetGuestOrdersByTable = async (tableNumber) => {
-    const response = await fetch(`/api/order/guest/table/${tableNumber}`, {
+export const fetchGetGuestOrdersByTable = async (tableNumber, sessionId) => {
+    let url = `/api/order/guest/table/${tableNumber}`;
+    if (sessionId) {
+        url += `?sessionId=${sessionId}`;
+    }
+    const response = await fetch(url, {
         method: 'get',
         headers: {
             'Content-Type': 'application/json'
@@ -67,12 +71,14 @@ export const fetchPayGuestOrdersByTable = async (tableNumber, paymentMethod) => 
     return data;
 }
 
-export const fetchGuestOrder = async (items, tableNumber, orderSource, paymentMethod) => {
+export const fetchGuestOrder = async (items, tableNumber, orderSource, paymentMethod, guest_name, session_id) => {
     const orderData = {
         items: items,
         tableNumber: tableNumber,
         typeOrder: paymentMethod || "cash",
-        orderSource: orderSource
+        orderSource: orderSource,
+        guest_name: guest_name,
+        session_id: session_id
     };
 
     const response = await fetch('/api/order/guest', {
@@ -150,6 +156,18 @@ export const fetchPaymentStatus = async (orderCode) => {
         headers: {
             'Content-Type': 'application/json'
         }
+    });
+    return response.json();
+}
+
+export const fetchUpdateItemStatus = async (orderId, itemId, status, accessToken) => {
+    const response = await fetch(`/api/order/${orderId}/items/${itemId}/status`, {
+        method: 'put',
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
     });
     return response.json();
 }

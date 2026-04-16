@@ -21,7 +21,7 @@ Bước 3: Hoàn thành & Phục vụ (Hoàn thành)
 
 Bước 4: Xác nhận thanh toán
 - Đối với khách thanh toán tiền mặt tại quầy hoặc tại bàn, Staff nhấn nút "Đã thanh toán" để kết thúc đơn hàng. 
-- Lưu ý: Nút này sẽ tự ẩn nếu khách thanh toán qua VNPay thành công.
+- Lưu ý: Nút này sẽ tự ẩn nếu khách thanh toán qua PayOS thành công.
 
 2. QUẢN LÝ TÌNH TRẠNG BÀN (TABLE STATUS) - CHI TIẾT
 --------------------------------------------------

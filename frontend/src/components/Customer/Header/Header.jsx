@@ -18,12 +18,12 @@ function Header(props) {
     const params = new URLSearchParams(location.search);
     const tableParam = params.get('table');
 
-    let orderSource = localStorage.getItem('orderSource');
+    let orderSource = sessionStorage.getItem('orderSource');
     if (tableParam) {
         orderSource = 'table';
     }
 
-    const tableNumber = localStorage.getItem('tableNumber') || tableParam;
+    const tableNumber = sessionStorage.getItem('tableNumber') || tableParam;
     const isOrderingPage = location.pathname === '/menu' || location.pathname === '/checkout' || location.pathname.startsWith('/detail/');
 
     function handleShowCart() {

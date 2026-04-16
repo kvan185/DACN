@@ -4,7 +4,7 @@ import { Container, Row, Col, Button, Table, Modal, Form, InputGroup } from 'rea
 import { QRCodeSVG } from 'qrcode.react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaRegEdit, FaSearch, FaUtensils, FaPlus, FaEye, FaEyeSlash, FaTimesCircle } from 'react-icons/fa';
+import { FaRegEdit, FaSearch, FaUtensils, FaPlus, FaEye, FaEyeSlash, FaTimesCircle, FaSortAmountDownAlt, FaSortAmountUp } from 'react-icons/fa';
 import { MdDelete, MdCancel } from 'react-icons/md';
 import { IoMdClose } from "react-icons/io";
 import { socket } from '../../../socket.js';
@@ -32,6 +32,7 @@ const TableManagement = () => {
         isAvailable: true
     });
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortOrder, setSortOrder] = useState('desc');
     const itemsPerPage = parseInt(import.meta.env.VITE_ITEMS_PER_PAGE) || 6;
 
     useEffect(() => {
@@ -92,6 +93,8 @@ const TableManagement = () => {
     const [allReservations, setAllReservations] = useState([]);
     const [showMergeModal, setShowMergeModal] = useState(false);
     const [mergeToTable, setMergeToTable] = useState('');
+    const [showPaymentMergeModal, setShowPaymentMergeModal] = useState(false);
+    const [paymentMergeOrders, setPaymentMergeOrders] = useState([]);
     const [socketTables, setSocketTables] = useState([]);
     const socketRef = useRef(socket);
     const user = JSON.parse(sessionStorage.getItem("user"));
@@ -131,13 +134,18 @@ const TableManagement = () => {
     }, []);
 
     useEffect(() => {
-        fetchTables();
+        fetchTables(sortOrder);
     }, [socketTables]);
 
-    const fetchTables = async () => {
+    const fetchTables = async (order = sortOrder) => {
         setLoading(true);
         try {
-            const response = await fetch('/api/tables');
+            const queryParams = new URLSearchParams();
+            if (order) {
+                queryParams.append('sortBy', 'seatingCapacity');
+                queryParams.append('order', order);
+            }
+            const response = await fetch(`/api/tables?${queryParams.toString()}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -161,7 +169,7 @@ const TableManagement = () => {
                 if (!response.ok) {
                     throw new Error('Lỗi khi xóa bàn');
                 }
-                fetchTables();
+                fetchTables(sortOrder);
                 toast.success('Xóa bàn thành công!');
             } catch (error) {
                 toast.error('Lỗi khi xóa bàn: ' + error.message);
@@ -195,7 +203,7 @@ const TableManagement = () => {
             }
 
             handleCloseEditModal();
-            fetchTables();
+            fetchTables(sortOrder);
             toast.success('Cập nhật bàn thành công!');
         } catch (error) {
             toast.error('Lỗi khi cập nhật bàn: ' + error.message);
@@ -225,7 +233,7 @@ const TableManagement = () => {
                 location: 'Tầng 1 trong nhà',
                 isAvailable: true
             });
-            fetchTables();
+            fetchTables(sortOrder);
             emitTableChange();
             toast.success('Thêm bàn mới thành công!');
 
@@ -277,7 +285,7 @@ const TableManagement = () => {
             try {
                 await completeReservation(accessToken, tableId);
 
-                fetchTables();
+                fetchTables(sortOrder);
                 emitTableChange();
                 toast.success('Cập nhật trạng thái bàn thành công!');
             } catch (error) {
@@ -313,7 +321,7 @@ const TableManagement = () => {
         if (window.confirm('Bạn có chắc chắn muốn hủy đặt bàn này? Bàn sẽ được giải phóng ngay lập tức.')) {
             try {
                 await cancelReservation(accessToken, reservationId);
-                fetchTables();
+                fetchTables(sortOrder);
                 emitTableChange();
                 toast.success('Đã hủy đặt và giải phóng bàn thành công!');
 
@@ -370,7 +378,7 @@ const TableManagement = () => {
                     throw new Error(errorData.message || 'Lỗi khi cập nhật trạng thái bàn');
                 }
 
-                fetchTables();
+                fetchTables(sortOrder);
                 emitTableChange();
                 toast.success('Đã chuyển trạng thái bàn sang đang sử dụng!');
             } catch (error) {
@@ -397,7 +405,8 @@ const TableManagement = () => {
             const response = await fetch(`/api/order/guest/table/${tableNumber}`);
             const data = await response.json();
             if (response.ok && data && data.length > 0) {
-                navigate(`/staff/order/detail/${data[0].order.id || data[0].order._id}`);
+                setPaymentMergeOrders(data.map(d => d.order));
+                setShowPaymentMergeModal(true);
             } else {
                 toast.warning('Không tìm thấy đơn hàng chưa thanh toán cho bàn này!');
             }
@@ -406,6 +415,26 @@ const TableManagement = () => {
             toast.error('Có lỗi xảy ra khi lấy thông tin đơn hàng');
         }
     };
+
+    const handleMergePayments = async () => {
+        try {
+            const orderIds = paymentMergeOrders.map(o => o._id || o.id);
+            const response = await fetch('/api/order/merge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderIds })
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                setShowPaymentMergeModal(false);
+                navigate(`/staff/order/detail/${data.newOrderId}`);
+            } else {
+                toast.error(data.message || 'Lỗi gộp hóa đơn');
+            }
+        } catch(e) {
+            toast.error('Lỗi kết nối gộp đơn');
+        }
+    }
 
     const renderCountdown = (targetTime) => {
         const diff = new Date(targetTime) - now;
@@ -493,6 +522,19 @@ const TableManagement = () => {
                             )}
                         </InputGroup>
                     </div>
+                    <button
+                        className="btn btn-outline-secondary d-flex align-items-center gap-2"
+                        onClick={() => {
+                            const nextOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+                            setSortOrder(nextOrder);
+                            fetchTables(nextOrder);
+                        }}
+                        style={{ height: '40px', borderRadius: '8px', border: '1px solid #dee2e6' }}
+                        title={sortOrder === 'desc' ? "Sắp xếp: Sức chứa Lớn -> Bé" : "Sắp xếp: Sức chứa Bé -> Lớn"}
+                    >
+                        {sortOrder === 'asc' ? <FaSortAmountUp className="text-success" /> : <FaSortAmountDownAlt className="text-success" />}
+                        Sức chứa ({sortOrder === 'desc' ? "Lớn → Bé" : "Bé → Lớn"})
+                    </button>
                     <Button
                         className="btn-add d-flex align-items-center gap-2 ms-2"
                         onClick={handleShowAddModal}
@@ -776,6 +818,55 @@ const TableManagement = () => {
                     )}
                 </>
             )}
+
+            {/* Modal Chọn Thanh toán */}
+            <Modal show={showPaymentMergeModal} onHide={() => setShowPaymentMergeModal(false)} centered size="lg">
+                <Modal.Header closeButton className="bg-primary text-white">
+                    <Modal.Title>Thanh toán Bàn {paymentMergeOrders[0]?.table_number}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="alert alert-info">
+                        Bàn này có <strong>{paymentMergeOrders.length}</strong> phiên gọi món đang hoạt động. Bạn hãy chọn khách hàng muốn thanh toán hoặc gộp tất cả.
+                    </div>
+                    
+                    <Table hover responsive className="mt-3 align-middle">
+                        <thead className="table-light">
+                            <tr>
+                                <th>Khách hàng</th>
+                                <th>Số món</th>
+                                <th>Tổng tiền</th>
+                                <th className="text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {paymentMergeOrders.map((order, idx) => (
+                                <tr key={idx}>
+                                    <td className="fw-bold">{order.guest_name || 'Khách vãng lai'}</td>
+                                    <td>{order.total_item}</td>
+                                    <td className="text-danger fw-bold">{order.total_price.toLocaleString()} đ</td>
+                                    <td className="text-center">
+                                        <Button 
+                                            variant="success" 
+                                            size="sm" 
+                                            onClick={() => navigate(`/staff/order/detail/${order._id || order.id}`)}
+                                        >
+                                            Tính tiền riêng
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-between">
+                    <Button variant="outline-secondary" onClick={() => setShowPaymentMergeModal(false)}>
+                        Đóng
+                    </Button>
+                    <Button variant="primary" onClick={handleMergePayments} disabled={paymentMergeOrders.length < 2}>
+                        Gộp tất cả & Thanh toán chung
+                    </Button>
+                </Modal.Footer>
+            </Modal>
 
             {/* Modal Sửa */}
             <Modal show={showEditModal} onHide={handleCloseEditModal}>

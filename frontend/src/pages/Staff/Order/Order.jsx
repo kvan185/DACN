@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { socket } from '../../../socket.js';
 import { Link } from 'react-router-dom';
 import { Table, InputGroup, Form } from 'react-bootstrap';
-import { FaSearch, FaEye, FaShareAlt } from 'react-icons/fa';
+import { FaSearch, FaEye, FaShareAlt, FaSortAmountDownAlt, FaSortAmountUp } from 'react-icons/fa';
 import { IoMdClose } from "react-icons/io";
 const host = import.meta.env.VITE_API_URL;
 
@@ -27,33 +27,36 @@ function Order(props) {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+    const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('All');
+    const [sortOrder, setSortOrder] = useState('desc');
     const debounceTimeoutRef = useRef(null);
 
-    const fetchOrderList = async (accessToken, searchQuery = '') => {
+    const fetchOrderList = async (token = accessToken, searchQuery = searchTerm, min = minPrice, max = maxPrice, payment = selectedPaymentStatus, order = sortOrder) => {
         setIsSearching(true);
         try {
-            const url = searchQuery ? `/api/order?search=${encodeURIComponent(searchQuery)}` : '/api/order';
+            const queryParams = new URLSearchParams();
+            if (searchQuery) queryParams.append('search', searchQuery);
+            if (min) queryParams.append('minPrice', min);
+            if (max) queryParams.append('maxPrice', max);
+            if (payment !== 'All') queryParams.append('isPayment', payment === 'paid');
+            if (order) {
+                queryParams.append('sortBy', 'total_price');
+                queryParams.append('order', order);
+            }
+
+            const url = `/api/order?${queryParams.toString()}`;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
+                    Authorization: `Bearer ${token}`,
                 }
             });
             const data = await response.json();
             if (response.ok && Array.isArray(data)) {
-                const sortedData = data.sort((a, b) => {
-                    if (a.is_payment !== b.is_payment) {
-                        return a.is_payment ? 1 : -1;
-                    }
-                    if (a.is_payment) {
-                        return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
-                    } else {
-                        return new Date(b.createdAt) - new Date(a.createdAt);
-                    }
-                });
-                setOrderList(sortedData);
+                setOrderList(data);
             } else {
-                console.error('Lỗi khi lấy đơn hàng:', data);
                 setOrderList([]);
             }
             setCurrentPage(1);
@@ -70,25 +73,27 @@ function Order(props) {
     }, [searchTerm]);
 
     useEffect(() => {
-        if (accessToken) fetchOrderList(accessToken);
+        if (accessToken) fetchOrderList(accessToken, searchTerm, minPrice, maxPrice, selectedPaymentStatus, sortOrder);
         if (user && (user.id || user._id)) {
             socketRef.current.emit('adminConnect', user.id || user._id);
         }
 
         const handleRefreshList = () => {
-            if (accessToken) fetchOrderList(accessToken, searchRef.current);
+            if (accessToken) fetchOrderList(accessToken, searchRef.current, minPrice, maxPrice, selectedPaymentStatus, sortOrder);
         };
 
         socketRef.current.on('sendListOrder', handleRefreshList);
         socketRef.current.on('paymentSuccess', handleRefreshList);
         socketRef.current.on('notification', handleRefreshList);
+        socketRef.current.on('itemStatusUpdated', handleRefreshList);
 
         return () => {
             socketRef.current.off('sendListOrder', handleRefreshList);
             socketRef.current.off('paymentSuccess', handleRefreshList);
             socketRef.current.off('notification', handleRefreshList);
+            socketRef.current.off('itemStatusUpdated', handleRefreshList);
         };
-    }, [accessToken]);
+    }, [accessToken, selectedPaymentStatus]);
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
@@ -96,14 +101,21 @@ function Order(props) {
 
         if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
         debounceTimeoutRef.current = setTimeout(() => {
-            if (accessToken) fetchOrderList(accessToken, value);
+            if (accessToken) fetchOrderList(accessToken, value, minPrice, maxPrice, selectedPaymentStatus, sortOrder);
+        }, 500);
+    };
+
+    const handlePriceChange = () => {
+        if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = setTimeout(() => {
+            if (accessToken) fetchOrderList(accessToken, searchTerm, minPrice, maxPrice, selectedPaymentStatus, sortOrder);
         }, 500);
     };
 
     const handleClearSearch = () => {
         setSearchTerm('');
         if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-        if (accessToken) fetchOrderList(accessToken, '');
+        if (accessToken) fetchOrderList(accessToken, '', minPrice, maxPrice, selectedPaymentStatus, sortOrder);
     };
 
     useEffect(() => {
@@ -118,14 +130,54 @@ function Order(props) {
                 <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Đơn hàng
                     <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
                 <div className="d-flex align-items-center gap-2">
-                    <div className="search-container" style={{ width: '380px' }}>
+                    <Form.Select
+                        value={selectedPaymentStatus}
+                        onChange={(e) => {
+                            setSelectedPaymentStatus(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        style={{ width: '150px' }}
+                        className="bg-white border-secondary-subtle shadow-none"
+                    >
+                        <option value="All">Thanh toán</option>
+                        <option value="paid">Đã thanh toán</option>
+                        <option value="unpaid">Chưa thanh toán</option>
+                    </Form.Select>
+
+                    <div className="d-flex align-items-center gap-1 bg-white border border-secondary-subtle rounded-2 px-2" style={{ height: '40px' }}>
+                        <Form.Control
+                            type="number"
+                            placeholder="Tổng từ..."
+                            value={minPrice}
+                            onChange={(e) => {
+                                setMinPrice(e.target.value);
+                                handlePriceChange();
+                            }}
+                            className="border-0 shadow-none p-0 text-center"
+                            style={{ width: '90px', fontSize: '14px' }}
+                        />
+                        <span className="text-muted">-</span>
+                        <Form.Control
+                            type="number"
+                            placeholder="đến..."
+                            value={maxPrice}
+                            onChange={(e) => {
+                                setMaxPrice(e.target.value);
+                                handlePriceChange();
+                            }}
+                            className="border-0 shadow-none p-0 text-center"
+                            style={{ width: '90px', fontSize: '14px' }}
+                        />
+                    </div>
+
+                    <div className="search-container" style={{ width: '280px' }}>
                         <InputGroup>
                             <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
                                 <FaSearch className="text-muted" />
                             </InputGroup.Text>
                             <Form.Control
                                 type="text"
-                                placeholder="Tìm kiếm theo mã đơn hàng hoặc tên khách..."
+                                placeholder="Mã đơn, tên khách, Sl..."
                                 value={searchTerm}
                                 onChange={handleSearchChange}
                                 className="border-start-0 border-secondary-subtle ps-1 shadow-none"
@@ -140,6 +192,19 @@ function Order(props) {
                             )}
                         </InputGroup>
                     </div>
+                    <button
+                        className="btn btn-outline-secondary d-flex align-items-center gap-2"
+                        onClick={() => {
+                            const nextOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+                            setSortOrder(nextOrder);
+                            fetchOrderList(accessToken, searchTerm, minPrice, maxPrice, selectedPaymentStatus, nextOrder);
+                        }}
+                        style={{ height: '40px', borderRadius: '8px', border: '1px solid #dee2e6' }}
+                        title={sortOrder === 'desc' ? "Sắp xếp: Tổng tiền Lớn -> Bé" : "Sắp xếp: Tổng tiền Bé -> Lớn"}
+                    >
+                        {sortOrder === 'asc' ? <FaSortAmountUp className="text-success" /> : <FaSortAmountDownAlt className="text-success" />}
+                        Tổng tiền ({sortOrder === 'desc' ? "Lớn → Bé" : "Bé → Lớn"})
+                    </button>
                 </div>
             </div>
 
@@ -169,17 +234,18 @@ function Order(props) {
                                     order_source,
                                     table_number,
                                     status,
-                                    is_payment
+                                    is_payment,
+                                    guest_name
                                 } = orderData;
 
                                 return (
                                     <tr key={index}>
                                         <td>{index + 1}</td>
                                         <td>{id}</td>
-                                        <td>{first_name + ' ' + last_name}</td>
+                                        <td>{guest_name ? guest_name : (first_name + ' ' + last_name)}</td>
                                         <td>
                                             <span className={order_source === 'online' ? 'admin-badge admin-badge--info' : 'admin-badge admin-badge--warning'}>
-                                                {order_source === 'online' ? 'Đặt hàng online' : `Đặt tại bàn ${table_number}`}
+                                                {order_source === 'online' ? 'Đặt hàng online' : `Bàn ${table_number}${guest_name ? ` - ${guest_name}` : ''}`}
                                             </span>
                                         </td>
                                         <td>{total_item}</td>
@@ -212,8 +278,8 @@ function Order(props) {
                                                 <Link to={`/staff/order/detail/${id}`} className="btn btn-sm btn-link p-1" title="Chi tiết đơn hàng">
                                                     <FaEye className='icon-view fs-5 text-info' />
                                                 </Link>
-                                                <button 
-                                                    className="btn btn-sm btn-link p-1" 
+                                                <button
+                                                    className="btn btn-sm btn-link p-1"
                                                     title="Chia sẻ vào Chat"
                                                     onClick={() => {
                                                         const event = new CustomEvent('shareOrderToChat', { detail: orderData });

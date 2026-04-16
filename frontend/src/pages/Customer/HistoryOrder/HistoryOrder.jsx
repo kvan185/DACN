@@ -35,7 +35,21 @@ function HistoryOrder(props) {
     }, []);
 
     const fetchOrderUser = async (accessToken) => {
-        const response = await fetch('api/order', {
+        let url = 'api/order';
+        const guestSession = sessionStorage.getItem("guest_session");
+        
+        if (guestSession) {
+            try {
+                const parsed = JSON.parse(guestSession);
+                if (parsed.username && parsed.table) {
+                    url += `?guestName=${encodeURIComponent(parsed.username)}&tableNumber=${encodeURIComponent(parsed.table)}`;
+                }
+            } catch (e) {
+                console.error("Error parsing guest session:", e);
+            }
+        }
+
+        const response = await fetch(url, {
             method: 'get',
             headers: {
                 Authorization: `Bearer ${accessToken}`,

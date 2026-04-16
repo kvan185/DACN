@@ -44,7 +44,6 @@ node server.js
 
 ### 6. Thanh toán
 - Thanh toán tiền mặt
-- Thanh toán qua VNPay
 - Kiểm tra trạng thái thanh toán
 
 ### 7. Thống kê doanh thu
@@ -69,7 +68,6 @@ node server.js
 - JWT Authentication
 - Socket.IO
 - Multer (upload file)
-- VNPay Payment Gateway
 
 ### 10. Quản lý đặt bàn
 - Xem danh sách bàn trống

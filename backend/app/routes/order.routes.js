@@ -11,6 +11,8 @@ module.exports = app => {
   router.get("/", order.getListOrder);
   router.get("/guest/table/:tableNumber", order.getGuestOrdersByTable);
   router.put("/guest/table/:tableNumber/payment", order.payGuestOrdersByTable);
+  router.get("/guest/table/:tableNumber/active-guests", order.getActiveGuests);
+  router.post("/guest/join", order.joinGuestSession);
 
   // get order
   router.get("/:orderId", order.getOrder);
@@ -21,6 +23,9 @@ module.exports = app => {
   // update status payment
   router.post("/status/payment", order.updateIsPayment);
   router.post("/call-staff", order.callStaff);
+
+  router.put("/:id/items/:itemId/status", order.updateOrderItemStatus);
+  router.post("/merge", order.mergeOrders);
 
   app.use("/api/order", router);
 };

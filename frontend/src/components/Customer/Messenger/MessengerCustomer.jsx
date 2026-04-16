@@ -140,12 +140,12 @@ const MessengerCustomer = () => {
 
     const handleQuickAdd = async (productId) => {
         if (!productId) return;
-        const orderSource = localStorage.getItem('orderSource');
+        const orderSource = sessionStorage.getItem('orderSource');
         if (orderSource === 'table') {
             try {
                 const res = await fetch(`/api/product/${productId}`);
                 const product = await res.json();
-                let guestCart = JSON.parse(localStorage.getItem('guestCart')) || [];
+                let guestCart = JSON.parse(sessionStorage.getItem('guestCart')) || [];
                 const existingItemIndex = guestCart.findIndex(item => item.id === productId);
                 if (existingItemIndex > -1) {
                     guestCart[existingItemIndex].qty += 1;
@@ -157,7 +157,7 @@ const MessengerCustomer = () => {
                         price: product.price, qty: 1, total_price: product.price
                     });
                 }
-                localStorage.setItem('guestCart', JSON.stringify(guestCart));
+                sessionStorage.setItem('guestCart', JSON.stringify(guestCart));
                 dispatch(setCartItems(guestCart));
                 dispatch(setCartStore({
                     id: 'guest',

@@ -58,20 +58,45 @@ const create = async (data, file) => {
     return await product.save();
 };
 
-const getList = async (searchQuery) => {
+const getList = async (filters) => {
     let query = {};
-    if (searchQuery && typeof searchQuery === "string") {
-        query = {
-            $or: [
-                { name: { $regex: searchQuery, $options: "i" } }
-            ]
-        };
-        // Check if searchQuery is valid ObjectId
-        if (searchQuery.match(/^[0-9a-fA-F]{24}$/)) {
-            query.$or.push({ _id: searchQuery });
+    const { search, minPrice, maxPrice, status, sortBy, order } = typeof filters === 'string' ? { search: filters } : (filters || {});
+
+    if (search && typeof search === "string") {
+        query.$or = [
+            { name: { $regex: search, $options: "i" } }
+        ];
+        // Check if search is valid ObjectId
+        if (search.match(/^[0-9a-fA-F]{24}$/)) {
+            query.$or.push({ _id: search });
+        }
+        // Support search by exact price if search is numeric (clean non-numeric chars first)
+        const numericSearch = search.replace(/[^0-9]/g, '');
+        if (numericSearch && numericSearch.length > 0) {
+            query.$or.push({ price: Number(numericSearch) });
         }
     }
-    const products = await Product.find(query).sort({ createdAt: -1 });
+
+    const cleanNum = (val) => (val !== undefined && val !== null) ? String(val).replace(/[^0-9]/g, '') : "";
+    const minNum = cleanNum(minPrice);
+    const maxNum = cleanNum(maxPrice);
+
+    if (minNum !== "" || maxNum !== "") {
+        query.price = {};
+        if (minNum !== "") query.price.$gte = Number(minNum);
+        if (maxNum !== "") query.price.$lte = Number(maxNum);
+    }
+
+    if (status !== undefined && status !== 'All') {
+        query.is_active = status === 'active';
+    }
+
+    let sort = { createdAt: -1 };
+    if (sortBy && order) {
+        sort = { [sortBy]: order === 'asc' ? 1 : -1 };
+    }
+
+    const products = await Product.find(query).sort(sort);
     return products.map(buildImageUrl);
 };
 

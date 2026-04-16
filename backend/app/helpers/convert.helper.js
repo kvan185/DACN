@@ -128,7 +128,7 @@ exports.getArrayDate = async (startDate, endDate, typeGet) => {
     return arrayDate;
 };
 
-exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber) => {
+exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber, guestName = null) => {
     if (!items || items.length === 0) {
         return false;
     }
@@ -139,8 +139,9 @@ exports.createOrderFromGuestItems = async (items, typeOrder, tableNumber) => {
     const newOrder = new Order({
         customer_id: null,
         cart_id: null,
-        first_name: "Khách",
-        last_name: "vãng lai",
+        first_name: guestName || "Khách",
+        last_name: guestName ? "" : "vãng lai",
+        guest_name: guestName,
         total_item: total_item,
         total_price: total_price,
         status: "NEW",

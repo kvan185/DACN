@@ -58,6 +58,12 @@ module.exports = mongoose => {
             enum: ['online', 'table'],
             default: 'online',
         },
+        guest_name: {
+            type: String,
+        },
+        session_id: {
+            type: String,
+        },
         payos_order_code: {
             type: Number,
         },

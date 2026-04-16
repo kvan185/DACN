@@ -38,13 +38,20 @@ function Customer() {
     const debounceTimeoutRef = useRef(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
+    const [selectedGender, setSelectedGender] = useState('All');
+    const [selectedStatus, setSelectedStatus] = useState('All');
 
     // 🔹 Lấy danh sách khách hàng
-    const fetchCustomers = async (searchQuery = '') => {
+    const fetchCustomers = async (searchQuery = searchTerm, gender = selectedGender, status = selectedStatus) => {
         setLoading(true);
         setIsSearching(true);
         try {
-            const url = searchQuery ? `/api/admin/customer?search=${encodeURIComponent(searchQuery)}` : '/api/admin/customer';
+            const queryParams = new URLSearchParams();
+            if (searchQuery) queryParams.append('search', searchQuery);
+            if (gender !== 'All') queryParams.append('gender', gender);
+            if (status !== 'All') queryParams.append('is_active', status === 'active');
+
+            const url = `/api/admin/customer?${queryParams.toString()}`;
             const res = await fetch(url);
             const data = await res.json();
 
@@ -69,7 +76,7 @@ function Customer() {
 
     useEffect(() => {
         fetchCustomers();
-    }, []);
+    }, [selectedGender, selectedStatus]);
 
     const handleSearchChange = (e) => {
         const value = e.target.value;
@@ -229,6 +236,34 @@ function Customer() {
                 <h2 className="title-admin mb-0" style={{ fontSize: '24px', fontWeight: '600', color: '#2d3748', marginLeft: '0', paddingLeft: '0' }}>Quản lý Khách hàng
                     <style>{`.title-admin::after { display: none !important; }`}</style> </h2>
                 <div className="d-flex align-items-center gap-2">
+                    <Form.Select
+                        value={selectedGender}
+                        onChange={(e) => {
+                            setSelectedGender(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        style={{ width: '150px' }}
+                        className="bg-white border-secondary-subtle shadow-none"
+                    >
+                        <option value="All">Giới tính</option>
+                        <option value="male">Nam</option>
+                        <option value="female">Nữ</option>
+                    </Form.Select>
+
+                    <Form.Select
+                        value={selectedStatus}
+                        onChange={(e) => {
+                            setSelectedStatus(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        style={{ width: '150px' }}
+                        className="bg-white border-secondary-subtle shadow-none"
+                    >
+                        <option value="All">Trạng thái</option>
+                        <option value="active">Hoạt động</option>
+                        <option value="locked">Đã khóa</option>
+                    </Form.Select>
+
                     <div className="search-container" style={{ width: '380px' }}>
                         <InputGroup>
                             <InputGroup.Text className="bg-white border-end-0 border-secondary-subtle">
@@ -236,7 +271,7 @@ function Customer() {
                             </InputGroup.Text>
                             <Form.Control
                                 type="text"
-                                placeholder="Tìm kiếm theo Tên, Email hoặc Số điện thoại..."
+                                placeholder="Tìm theo Tên, Email, SĐT..."
                                 value={searchTerm}
                                 onChange={handleSearchChange}
                                 className="border-start-0 border-secondary-subtle ps-1 shadow-none"

@@ -7,19 +7,45 @@ const mongoose = require('mongoose'); // ← THÊM DÒNG NÀY
 // 🔹 Lấy danh sách tất cả khách hàng (cho admin)
 const getCustomers = async (req, res) => {
     try {
-        const { search } = req.query;
+        const { search, gender, is_active } = req.query;
         let query = {};
+        
         if (search) {
             const searchRegex = { $regex: search, $options: 'i' };
-            query = {
-                $or: [
-                    { first_name: searchRegex },
-                    { last_name: searchRegex },
-                    { email: searchRegex },
-                    { phone: searchRegex }
-                ]
-            };
+            query.$or = [
+                { first_name: searchRegex },
+                { last_name: searchRegex },
+                { email: searchRegex },
+                { phone: searchRegex },
+                {
+                    $expr: {
+                        $regexMatch: {
+                            input: { $concat: ["$first_name", " ", "$last_name"] },
+                            regex: search,
+                            options: "i"
+                        }
+                    }
+                },
+                {
+                    $expr: {
+                        $regexMatch: {
+                            input: { $concat: ["$last_name", " ", "$first_name"] },
+                            regex: search,
+                            options: "i"
+                        }
+                    }
+                }
+            ];
         }
+
+        if (gender && gender !== 'All') {
+            query.gender = gender;
+        }
+
+        if (is_active !== undefined && is_active !== 'All') {
+            query.is_active = is_active === 'true';
+        }
+
         const customers = await Customer.find(query).sort({ createdAt: -1 });
         res.status(200).json(customers);
     } catch (error) {

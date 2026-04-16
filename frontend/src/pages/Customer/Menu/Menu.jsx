@@ -9,6 +9,7 @@ import CategoryList from '../../../components/Customer/Category/Category';
 import Cart from '../../../components/Customer/Cart/Cart';
 import { setDisplayToast, getCategoryId } from '../../../actions/user';
 import { socket } from '../../../socket';
+import GuestJoin from './GuestJoin';
 
 function Menu() {
     const [tableNumber, setTableNumber] = useState(null);
@@ -52,23 +53,67 @@ function Menu() {
         fetchProducts();
     }, [categoryId]);
 
+    const [showGuestJoin, setShowGuestJoin] = useState(false);
+    const [guestName, setGuestName] = useState(null);
+
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const table = params.get('table');
+        let table = params.get('table');
+
         if (table) {
-            setTableNumber(table);
             setOrderSource('table');
-            localStorage.setItem('tableNumber', table);
-            localStorage.setItem('orderSource', 'table');
+            // Kiểm tra format table=3/khanhvan+code 
+            if (table.includes('/')) {
+                const slashIndex = table.indexOf('/');
+                const tabNum = table.substring(0, slashIndex);
+                const userCode = table.substring(slashIndex + 1);
+                
+                setTableNumber(tabNum);
+                sessionStorage.setItem('tableNumber', tabNum);
+                sessionStorage.setItem('orderSource', 'table');
+                
+                // userCode có thể là "Khánh Văn 0375266538"
+                // Ta tìm khoảng trắng cuối cùng để tách số điện thoại (code)
+                const lastSpaceIndex = userCode.lastIndexOf(' ');
+                let uname = userCode;
+                let ucode = '';
+
+                if (lastSpaceIndex !== -1) {
+                    uname = userCode.substring(0, lastSpaceIndex).trim();
+                    ucode = userCode.substring(lastSpaceIndex + 1).trim();
+                }
+
+                setGuestName(uname);
+                sessionStorage.setItem('guest_session', JSON.stringify({ 
+                    table: tabNum, 
+                    username: uname, 
+                    code: ucode, 
+                    sessionId: ucode 
+                }));
+            } else {
+                setTableNumber(table);
+                sessionStorage.setItem('tableNumber', table);
+                sessionStorage.setItem('orderSource', 'table');
+
+                // Mở model check session
+                setShowGuestJoin(true);
+            }
         } else {
             setOrderSource('online');
-            localStorage.setItem('orderSource', 'online');
+            sessionStorage.setItem('orderSource', 'online');
         }
     }, [location]);
 
+    const handleGuestJoined = (username, code, sessionId) => {
+        setShowGuestJoin(false);
+        setGuestName(username);
+        // Thay đổi URL mà không reload trang 
+        navigate(`/menu?table=${tableNumber}/${username}+${code}`, { replace: true });
+    };
+
     useEffect(() => {
-        const savedOrderSource = localStorage.getItem('orderSource');
-        const savedTableNumber = localStorage.getItem('tableNumber');
+        const savedOrderSource = sessionStorage.getItem('orderSource');
+        const savedTableNumber = sessionStorage.getItem('tableNumber');
 
         if (savedOrderSource) {
             setOrderSource(savedOrderSource);
@@ -108,7 +153,7 @@ function Menu() {
                     <div className="order-info">
                         {orderSource === 'table' ? (
                             <div className="table-info">
-                                <span> THỰC ĐƠN </span>
+                                <span> THỰC ĐƠN | Bàn: {tableNumber} | Khách: {guestName || 'Khách vãng lai'} </span>
                             </div>
                         ) : (
                             <div className="online-info">
@@ -116,6 +161,12 @@ function Menu() {
                             </div>
                         )}
                     </div>
+                    
+                    <GuestJoin 
+                        show={showGuestJoin} 
+                        tableNumber={tableNumber} 
+                        onJoined={handleGuestJoined} 
+                    />
                     <div className="mb-2"> {/* mb-5 tạo khoảng cách lớn phía dưới category */}
                         <CategoryList categories={categories} />
                     </div>
