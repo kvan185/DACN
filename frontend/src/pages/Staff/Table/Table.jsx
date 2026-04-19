@@ -105,9 +105,10 @@ const TableManagement = () => {
     const [showMergeBillsModal, setShowMergeBillsModal] = useState(false);
     const [selectedMergeBillsTable, setSelectedMergeBillsTable] = useState(null);
     const [slaveTablesToMerge, setSlaveTablesToMerge] = useState([]);
-    
+
     // New state for multi-payment
     const [selectedMultiPayTables, setSelectedMultiPayTables] = useState([]);
+    const [isMultiPayMode, setIsMultiPayMode] = useState(false);
     const [showMoveModal, setShowMoveModal] = useState(false);
     const [moveToTable, setMoveToTable] = useState('');
     const [socketTables, setSocketTables] = useState([]);
@@ -733,8 +734,8 @@ const TableManagement = () => {
                                 <tr key={table._id}>
                                     <td>
                                         <div className="d-flex align-items-center justify-content-center gap-2">
-                                            {table.status === 'Đang sử dụng' && table.hasOrders && !table.isPaid && !table.merged_into && (
-                                                <Form.Check 
+                                            {isMultiPayMode && table.status === 'Đang sử dụng' && table.hasOrders && !table.isPaid && !table.merged_into && (
+                                                <Form.Check
                                                     type="checkbox"
                                                     checked={selectedMultiPayTables.includes(table.tableNumber)}
                                                     onChange={(e) => {
@@ -939,33 +940,45 @@ const TableManagement = () => {
                         </tbody>
                     </Table>
 
-                    {selectedMultiPayTables.length >= 2 && (
-                        <div className="d-flex justify-content-end mb-3 mt-2">
+                    <div className="d-flex justify-content-end mb-3 mt-3">
+                        {!isMultiPayMode ? (
+                            <Button
+                                variant="outline-primary"
+                                className="fw-bold px-4 rounded-pill shadow-sm"
+                                onClick={() => setIsMultiPayMode(true)}
+                                style={{ border: '2px solid #0d6efd' }}
+                            >
+                                Thanh toán nhiều bàn
+                            </Button>
+                        ) : (
                             <div className="bg-white p-2 px-3 rounded shadow-sm border border-primary d-flex align-items-center gap-3">
                                 <div className="fw-bold text-primary">Đã chọn {selectedMultiPayTables.length} bàn</div>
-                                <Button 
-                                    variant="primary" 
+                                <Button
+                                    variant="primary"
                                     size="sm"
                                     className="fw-bold px-3 rounded-pill"
+                                    disabled={selectedMultiPayTables.length < 2}
                                     onClick={() => {
                                         navigate(`/staff/order/multi-payment?tables=${selectedMultiPayTables.join(',')}`);
                                     }}
                                 >
-                                    <FaMoneyBillWave className="me-2" />
                                     Thanh toán chung
                                 </Button>
-                                <Button 
-                                    variant="outline-secondary" 
+                                <Button
+                                    variant="outline-secondary"
                                     size="sm"
                                     className="rounded-circle p-1"
-                                    onClick={() => setSelectedMultiPayTables([])}
+                                    onClick={() => {
+                                        setSelectedMultiPayTables([]);
+                                        setIsMultiPayMode(false);
+                                    }}
                                     style={{ width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
                                     <IoMdClose size={14} />
                                 </Button>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
                     {totalPages > 1 && (
                         <div className="admin-pagination">
@@ -1430,8 +1443,8 @@ const TableManagement = () => {
                                 !t.isPaid &&
                                 t.tableNumber !== selectedMergeBillsTable
                             ).length === 0 && (
-                                <div className="text-muted fst-italic">Không có bàn nào khác đang sử dụng có thể gộp.</div>
-                            )}
+                                    <div className="text-muted fst-italic">Không có bàn nào khác đang sử dụng có thể gộp.</div>
+                                )}
                         </div>
                     </Form.Group>
                 </Modal.Body>
