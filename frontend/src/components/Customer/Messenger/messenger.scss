@@ -60,11 +60,35 @@
                 gap: 10px;
                 font-weight: 700;
                 font-size: 16px;
-                
-                img { width: 30px; height: 30px; border-radius: 50%; }
+
+                img {
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                }
             }
 
-            .close-btn { cursor: pointer; opacity: 0.8; &:hover { opacity: 1; }}
+            .header-actions {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+
+                .action-btn,
+                .close-btn {
+                    cursor: pointer;
+                    opacity: 0.8;
+                    transition: all 0.2s ease;
+
+                    &:hover {
+                        opacity: 1;
+                        transform: scale(1.1);
+                    }
+                }
+
+                .action-btn:hover {
+                    color: #ff4d4f;
+                }
+            }
         }
 
         .window-tabs {
@@ -112,26 +136,31 @@
                     font-size: 14px;
                     line-height: 1.5;
 
-                    &.bot, &.received {
+                    &.bot,
+                    &.received {
                         align-self: flex-start;
                         background: #f0f2f5;
                         color: #1c1e21;
                         border-bottom-left-radius: 4px;
                     }
 
-                    &.user, &.sent {
+                    &.user,
+                    &.sent {
                         align-self: flex-end;
                         background: #f3ba00;
                         color: white;
                         border-bottom-right-radius: 4px;
                     }
 
-                    .msg-img { 
-                        max-width: 100%; 
-                        border-radius: 8px; 
-                        margin-top: 5px; 
+                    .msg-img {
+                        max-width: 100%;
+                        border-radius: 8px;
+                        margin-top: 5px;
                         cursor: pointer;
-                        &:hover { filter: brightness(0.9); }
+
+                        &:hover {
+                            filter: brightness(0.9);
+                        }
                     }
 
                     .chat-cart-card {
@@ -139,32 +168,55 @@
                         border: 1px solid #eee;
                         border-radius: 12px;
                         padding: 12px;
-                        margin-top: 10px;
+                        margin: 10px 0;
                         display: flex;
                         flex-direction: column;
                         gap: 8px;
                         color: #333;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
                         .ccc-info {
                             display: flex;
                             flex-direction: column;
-                            .ccc-name { font-weight: 700; font-size: 14px; }
-                            .ccc-price { color: #f3ba00; font-weight: 600; font-size: 13px; }
+
+                            .ccc-name {
+                                font-weight: 700;
+                                font-size: 14px;
+                                color: #1c1e21;
+                            }
+
+                            .ccc-price {
+                                color: #f3ba00;
+                                font-weight: 700;
+                                font-size: 14px;
+                                margin-top: 2px;
+                            }
                         }
 
                         .ccc-btn {
                             background: #f3ba00;
                             color: white;
                             border: none;
-                            padding: 6px;
+                            padding: 8px;
                             border-radius: 8px;
-                            font-size: 12px;
-                            font-weight: 600;
+                            font-size: 13px;
+                            font-weight: 700;
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            gap: 5px;
-                            &:hover { background: #d4a300; }
+                            gap: 8px;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+
+                            &:hover {
+                                background: #d4a300;
+                                transform: translateY(-1px);
+                                box-shadow: 0 4px 10px rgba(243, 186, 0, 0.3);
+                            }
+
+                            &:active {
+                                transform: translateY(0);
+                            }
                         }
                     }
                 }
@@ -197,7 +249,10 @@
                     color: #999;
                     cursor: pointer;
                     font-size: 18px;
-                    &:hover { color: #f3ba00; }
+
+                    &:hover {
+                        color: #f3ba00;
+                    }
                 }
             }
         }
@@ -206,8 +261,11 @@
 
 .light-box-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.9);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -218,6 +276,6 @@
         max-width: 90%;
         max-height: 90%;
         object-fit: contain;
-        box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
     }
 }

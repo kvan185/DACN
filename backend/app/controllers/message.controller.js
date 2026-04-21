@@ -79,9 +79,9 @@ exports.getHistory = async (req, res) => {
         }
 
         const messages = await Message.find(query)
-        .sort({ createdAt: 1 })
-        .populate('orderId')
-        .populate('sender', 'first_name last_name avatar');
+            .sort({ createdAt: 1 })
+            .populate('orderId')
+            .populate('sender', 'first_name last_name avatar');
 
         res.status(200).send(messages);
     } catch (error) {
@@ -115,7 +115,7 @@ exports.getConversations = async (req, res) => {
         for (const msg of messages) {
             // If it's a customer msg, the "other" is always the customer (sender)
             let otherId, otherModel;
-            
+
             if (conversationType === 'customer') {
                 // If msg sender is customer, that's our conversation grouping key
                 otherId = msg.senderModel === 'customer' ? msg.sender.toString() : msg.receiver.toString();
@@ -127,7 +127,7 @@ exports.getConversations = async (req, res) => {
 
             if (!seenIds.has(otherId) && otherId !== userId) {
                 seenIds.add(otherId);
-                
+
                 // Fetch other participant info
                 let otherInfo = null;
                 if (otherModel === 'admin') {
@@ -176,7 +176,7 @@ exports.getConversations = async (req, res) => {
 exports.markAsRead = async (req, res) => {
     try {
         const { userId, otherId, conversationType } = req.body;
-        
+
         const query = { sender: otherId, isRead: false };
         if (conversationType === 'customer') {
             query.conversationType = 'customer';

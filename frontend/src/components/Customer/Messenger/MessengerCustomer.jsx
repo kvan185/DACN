@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { socket } from "../../../socket";
 import axios from "axios";
-import { 
-    FaCommentDots, FaTimes, FaRobot, FaUserTie, 
-    FaPaperPlane, FaImage, FaPaperclip 
+import {
+    FaCommentDots, FaTimes, FaRobot, FaUserTie,
+    FaPaperPlane, FaImage, FaPaperclip, FaTrashAlt
 } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -26,7 +26,7 @@ const MessengerCustomer = () => {
     const [isStreaming, setIsStreaming] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
     const [isStaffTyping, setIsStaffTyping] = useState(false);
-    
+
     const messageListRef = useRef(null);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -132,7 +132,7 @@ const MessengerCustomer = () => {
         try {
             await axios.put(`${host}/api/messages/read`, {
                 userId: userId,
-                otherId: 'STAFF', 
+                otherId: 'STAFF',
                 conversationType: 'customer'
             });
         } catch (error) { console.error("Mark as read error:", error); }
@@ -214,7 +214,7 @@ const MessengerCustomer = () => {
                             if (parsed.text) fullText += parsed.text;
                             if (parsed.action) actions.push(parsed.action);
                             if (parsed.fallback && parsed.actions) actions.push(...parsed.actions);
-                            
+
                             setAiMessages(prev => {
                                 const newMsgs = [...prev];
                                 const last = newMsgs[newMsgs.length - 1];
@@ -223,7 +223,7 @@ const MessengerCustomer = () => {
                                 return newMsgs;
                             });
                             scrollToBottom();
-                        } catch (e) {}
+                        } catch (e) { }
                     }
                 }
             }
@@ -276,6 +276,14 @@ const MessengerCustomer = () => {
         }
     };
 
+    const clearAiHistory = () => {
+        if (window.confirm("Bạn có muốn xóa toàn bộ lịch sử tư vấn AI?")) {
+            const initialMsg = { role: 'bot', content: 'Chào bạn! Mình là NutriBot - Trợ lý dinh dưỡng thông minh. Mình có thể giúp gì cho bạn?' };
+            setAiMessages([initialMsg]);
+            sessionStorage.setItem('messenger_ai_history', JSON.stringify([initialMsg]));
+        }
+    };
+
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file || file.size > 5 * 1024 * 1024) return alert("File quá lớn (>5MB)");
@@ -293,6 +301,62 @@ const MessengerCustomer = () => {
             setStaffMessages(prev => [...prev, { ...msgData, createdAt: new Date() }]);
             scrollToBottom();
         } catch (error) { console.error("Upload error:", error); }
+    };
+
+    const renderMessageContent = (content) => {
+        if (!content) return null;
+
+        // Regex to match [CART: ID | Name | Price]
+        const regex = /\[CART:\s*([^|\]]+)\|\s*([^|\]]+)\|\s*([^\]]+)\]/g;
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = regex.exec(content)) !== null) {
+            // Add preceding text
+            if (match.index > lastIndex) {
+                parts.push({ type: 'text', value: content.substring(lastIndex, match.index) });
+            }
+            // Add cart action
+            parts.push({
+                type: 'cart',
+                id: match[1].trim(),
+                name: match[2].trim(),
+                price: match[3].trim()
+            });
+            lastIndex = regex.lastIndex;
+        }
+
+        // Add remaining text
+        if (lastIndex < content.length) {
+            parts.push({ type: 'text', value: content.substring(lastIndex) });
+        }
+
+        // If no tags found, just return markdown
+        if (parts.length === 0) {
+            return <ReactMarkdown>{content}</ReactMarkdown>;
+        }
+
+        return (
+            <div className="msg-content-wrapper">
+                {parts.map((p, idx) => {
+                    if (p.type === 'text') {
+                        return <ReactMarkdown key={idx}>{p.value}</ReactMarkdown>;
+                    }
+                    return (
+                        <div key={idx} className="chat-cart-card">
+                            <div className="ccc-info">
+                                <span className="ccc-name">{p.name}</span>
+                                <span className="ccc-price">{parseInt(p.price).toLocaleString('vi-VN')}₫</span>
+                            </div>
+                            <button className="ccc-btn" onClick={() => handleQuickAdd(p.id)}>
+                                <FaPaperPlane /> Thêm vào giỏ
+                            </button>
+                        </div>
+                    );
+                })}
+            </div>
+        );
     };
 
     const renderActions = (actions) => {
@@ -326,10 +390,20 @@ const MessengerCustomer = () => {
                 <div className={`messenger-window ${!isOpen ? 'hidden' : ''}`}>
                     <div className="window-header">
                         <div className="brand">
-                            <img src="/static/images/logo.png" alt="logo" onError={(e)=>e.target.src=DEFAULT_AVATAR} />
+                            <img src="/static/images/logo.png" alt="logo" onError={(e) => e.target.src = DEFAULT_AVATAR} />
                             <span>Healthy Food Support</span>
                         </div>
-                        <FaTimes className="close-btn" onClick={() => setIsOpen(false)} />
+                        <div className="header-actions" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                            {activeTab === 'ai' && (
+                                <FaTrashAlt
+                                    className="action-btn"
+                                    title="Xóa lịch sử AI"
+                                    onClick={clearAiHistory}
+                                    style={{ cursor: 'pointer', fontSize: '14px', opacity: 0.8 }}
+                                />
+                            )}
+                            <FaTimes className="close-btn" onClick={() => setIsOpen(false)} />
+                        </div>
                     </div>
 
                     <div className="window-tabs">
@@ -347,7 +421,7 @@ const MessengerCustomer = () => {
                                 const isUser = (m.role === 'user' || m.sender === userId || m.sender?._id === userId);
                                 return (
                                     <div key={i} className={`msg ${isUser ? 'user' : 'bot'}`}>
-                                        {m.type !== 'image' && <ReactMarkdown>{m.content}</ReactMarkdown>}
+                                        {m.type !== 'image' && renderMessageContent(m.content)}
                                         {m.type === 'image' && <img src={`${host}${m.fileUrl}`} className="msg-img" alt="sent" onClick={() => setPreviewImage(`${host}${m.fileUrl}`)} />}
                                         {renderActions(m.actions)}
                                     </div>
@@ -366,12 +440,12 @@ const MessengerCustomer = () => {
                                     <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
                                 </label>
                             )}
-                            <input 
-                                type="text" placeholder="Nhập nội dung..." 
+                            <input
+                                type="text" placeholder="Nhập nội dung..."
                                 value={inputText} onChange={handleInput}
                                 disabled={isStreaming}
                             />
-                            <button type="submit" disabled={isStreaming} style={{border: 'none', background: 'none'}}>
+                            <button type="submit" disabled={isStreaming} style={{ border: 'none', background: 'none' }}>
                                 <FaPaperPlane className="send-btn" />
                             </button>
                         </form>
