@@ -96,6 +96,10 @@ module.exports = mongoose => {
             linked_tables: {
                 type: [String],
                 default: []
+            },
+            needs_support: {
+                type: Boolean,
+                default: false,
             }
           },
       { timestamps: true }

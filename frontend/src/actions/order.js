@@ -184,3 +184,15 @@ export const fetchUndoSplitPayment = async (orderId, accessToken) => {
     });
     return response.json();
 }
+
+export const fetchResetSupportRequest = async (orderId, accessToken) => {
+    const response = await fetch(`/api/order/reset-support`, {
+        method: 'post',
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ orderId })
+    });
+    return response.json();
+}

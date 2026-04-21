@@ -377,7 +377,17 @@ exports.getListOrder = async (req, res) => {
             );
             res.status(200).json(orderList);
         } else {
-            res.status(200).json(orders);
+            const ordersWithPending = await Promise.all(orders.map(async (o) => {
+                const pendingItems = await OrderItem.countDocuments({
+                    order_id: o._id,
+                    status: { $in: ['NEW', 'PREPARING'] }
+                });
+                const obj = o.toObject();
+                obj.id = o._id;
+                obj.hasPendingItems = pendingItems > 0;
+                return obj;
+            }));
+            res.status(200).json(ordersWithPending);
         }
     } catch (error) {
         console.error(error);
@@ -636,6 +646,11 @@ exports.callStaff = async (req, res) => {
             }
         }
 
+        // Cập nhật trạng thái yêu cầu hỗ trợ vào database
+        if (orderId) {
+            await Order.findByIdAndUpdate(orderId, { needs_support: true });
+        }
+
         res.status(200).json({ success: true, message: "Đã gửi yêu cầu hỗ trợ tới nhân viên." });
     } catch (error) {
         console.error(error);
@@ -658,6 +673,27 @@ exports.getActiveGuests = async (req, res) => {
         res.status(200).json({ success: true, guests: guests });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi lấy danh sách khách' });
+    }
+};
+
+exports.resetSupportRequest = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+        if (!orderId) return res.status(400).json({ success: false, message: "Thiếu Order ID" });
+
+        await Order.findByIdAndUpdate(orderId, { needs_support: false });
+
+        // Thông báo socket cho list cập nhật
+        const listOrder = await Order.find({ status: { $ne: 'COMPLETED' }, is_payment: false });
+        const admins = await Admin.find({ socket_id: { $exists: true, $ne: null } });
+        for (const ad of admins) {
+            listSocket.updateOrder.to(ad.socket_id).emit('sendListOrder', listOrder);
+        }
+
+        res.status(200).json({ success: true, message: "Đã xác nhận xử lý yêu cầu." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Lỗi xử lý yêu cầu." });
     }
 };
 

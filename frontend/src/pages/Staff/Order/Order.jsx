@@ -256,18 +256,30 @@ function Order(props) {
                                         </td>
                                         <td>
                                             <div className="d-flex flex-column gap-1 align-items-center">
-                                                <span className={`admin-badge ${status === statusOrder.NEW ? 'admin-badge--default' :
-                                                    status === statusOrder.CONFIRMED ? 'admin-badge--info' :
-                                                        status === statusOrder.PROCESSING ? 'admin-badge--warning' :
-                                                            status === statusOrder.COMPLETED ? 'admin-badge--success' : 'admin-badge--danger'
-                                                    }`}>
-                                                    {
-                                                        status === statusOrder.NEW ? 'Đơn mới' :
-                                                            status === statusOrder.CONFIRMED ? 'Nhận đơn' :
-                                                                status === statusOrder.PROCESSING ? 'Đang chờ làm' :
-                                                                    status === statusOrder.COMPLETED ? 'Hoàn thành' : 'Đã hủy'
+                                                {(() => {
+                                                    let label = "Đã phục vụ";
+                                                    let badgeClass = "admin-badge--info";
+
+                                                    if (is_payment) {
+                                                        label = "Hoàn thành";
+                                                        badgeClass = "admin-badge--success";
+                                                    } else if (status === statusOrder.CANCELED) {
+                                                        label = "Đã hủy";
+                                                        badgeClass = "admin-badge--danger";
+                                                    } else if (status === statusOrder.NEW) {
+                                                        label = "Đơn mới";
+                                                        badgeClass = "admin-badge--default";
+                                                    } else if (orderData.needs_support || orderData.hasPendingItems) {
+                                                        label = "Chờ xử lý";
+                                                        badgeClass = "admin-badge--warning";
                                                     }
-                                                </span>
+
+                                                    return (
+                                                        <span className={`admin-badge ${badgeClass}`}>
+                                                            {label}
+                                                        </span>
+                                                    );
+                                                })()}
                                                 <span className={`badge ${is_payment ? 'bg-success' : 'bg-secondary'}`} style={{ fontSize: '11px', padding: '4px 8px' }}>
                                                     {is_payment ? 'Đã thanh toán' : 'Chưa thanh toán'}
                                                 </span>

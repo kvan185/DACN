@@ -10,6 +10,7 @@ module.exports = app => {
 
     // GET: Get conversation list
     router.get("/conversations", messageController.getConversations);
+    router.get("/unread-count-customer", messageController.getUnreadCountForCustomer);
 
     // PUT: Mark as read
     router.put("/read", messageController.markAsRead);

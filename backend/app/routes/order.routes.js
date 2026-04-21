@@ -24,6 +24,7 @@ module.exports = app => {
   // update status payment
   router.post("/status/payment", order.updateIsPayment);
   router.post("/call-staff", order.callStaff);
+  router.post("/reset-support", order.resetSupportRequest);
 
   router.put("/:id/items/:itemId/status", order.updateOrderItemStatus);
   router.post("/merge", order.mergeOrders);

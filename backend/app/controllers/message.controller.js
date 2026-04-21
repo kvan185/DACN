@@ -172,15 +172,40 @@ exports.getConversations = async (req, res) => {
     }
 };
 
+exports.getUnreadCountForCustomer = async (req, res) => {
+    try {
+        const { userId } = req.query;
+        if (!userId) return res.status(400).send({ message: "Missing userId" });
+
+        const unreadCount = await Message.countDocuments({
+            receiver: userId,
+            conversationType: 'customer',
+            isRead: false
+        });
+
+        res.status(200).send({ unreadCount });
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+};
+
 // API: Mark messages as read
 exports.markAsRead = async (req, res) => {
     try {
         const { userId, otherId, conversationType } = req.body;
 
-        const query = { sender: otherId, isRead: false };
+        let query = { isRead: false };
         if (conversationType === 'customer') {
             query.conversationType = 'customer';
+            // If otherId is 'STAFF' or missing, it means the customer is reading all staff messages
+            if (!otherId || otherId === 'STAFF') {
+                query.receiver = userId;
+            } else {
+                // Otherwise, a staff is reading messages FROM a specific customer
+                query.sender = otherId;
+            }
         } else {
+            query.sender = otherId;
             query.receiver = userId;
             query.conversationType = 'internal';
         }

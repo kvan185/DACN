@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import { setCartStore, setCartItems, setDisplayToast } from '../../../actions/user';
 import { fetchAddProductToCart, fetchGetCart } from '../../../actions/cart';
 import ReactMarkdown from 'react-markdown';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import "./messenger.scss";
 
 const host = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -26,6 +28,13 @@ const MessengerCustomer = () => {
     const [isStreaming, setIsStreaming] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
     const [isStaffTyping, setIsStaffTyping] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const isOpenRef = useRef(isOpen);
+    const activeTabRef = useRef(activeTab);
+
+    useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
+    useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
 
     const messageListRef = useRef(null);
     const dispatch = useDispatch();
@@ -66,7 +75,19 @@ const MessengerCustomer = () => {
         if (savedAiHistory.length > 0) setAiMessages(savedAiHistory);
         else setAiMessages([{ role: 'bot', content: 'Chào bạn! Mình là NutriBot - Trợ lý dinh dưỡng thông minh. Mình có thể giúp gì cho bạn?' }]);
 
-        initUser();
+        const fetchInitialUnread = async (uid) => {
+            try {
+                const res = await axios.get(`${host}/api/messages/unread-count-customer`, { params: { userId: uid } });
+                setUnreadCount(res.data.unreadCount);
+            } catch (err) { console.error("Fetch unread count error:", err); }
+        };
+
+        initUser().then(() => {
+            const storedUser = JSON.parse(sessionStorage.getItem("user"));
+            const guestId = localStorage.getItem("guest_chat_id");
+            const finalId = storedUser ? (storedUser.id || storedUser._id) : guestId;
+            if (finalId) fetchInitialUnread(finalId);
+        });
     }, []);
 
     // 2. Socket Listeners
@@ -75,8 +96,14 @@ const MessengerCustomer = () => {
         socket.emit("userConnect", userId);
 
         socket.on("receiveMessage", (data) => {
-            if (activeTab === 'staff') {
-                setStaffMessages(prev => [...prev, data]);
+            setStaffMessages(prev => [...prev, data]);
+            
+            // Use refs to get current state in socket callback (avoids stale closure)
+            if (!isOpenRef.current || activeTabRef.current !== 'staff') {
+                setUnreadCount(prev => prev + 1);
+            }
+            
+            if (isOpenRef.current && activeTabRef.current === 'staff') {
                 scrollToBottom();
             }
         });
@@ -89,9 +116,13 @@ const MessengerCustomer = () => {
             socket.off("receiveMessage");
             socket.off("displayTyping");
         };
-    }, [userId, activeTab]);
+    }, [userId]); // activeTab removed from deps as we use Ref now
 
     // 3. Auto-save AI History
+    useEffect(() => {
+        sessionStorage.setItem("messenger_unread_count", unreadCount.toString());
+    }, [unreadCount]);
+
     useEffect(() => {
         if (aiMessages.length > 0) {
             sessionStorage.setItem('messenger_ai_history', JSON.stringify(aiMessages));
@@ -99,9 +130,14 @@ const MessengerCustomer = () => {
     }, [aiMessages]);
 
     useEffect(() => {
-        if (isOpen && activeTab === 'staff' && userId) {
-            fetchStaffHistory();
-            markAsRead();
+        if (isOpen && userId) {
+            if (activeTab === 'staff') {
+                fetchStaffHistory();
+                markAsRead();
+                setUnreadCount(0);
+            } else if (activeTab === 'ai') {
+                setUnreadCount(0);
+            }
         }
     }, [isOpen, activeTab, userId]);
 
@@ -132,7 +168,7 @@ const MessengerCustomer = () => {
         try {
             await axios.put(`${host}/api/messages/read`, {
                 userId: userId,
-                otherId: 'STAFF',
+                otherId: null, // Set to null so backend handles it as customer reading staff messages
                 conversationType: 'customer'
             });
         } catch (error) { console.error("Mark as read error:", error); }
@@ -232,6 +268,9 @@ const MessengerCustomer = () => {
                 newMsgs[newMsgs.length - 1].isStreaming = false;
                 return newMsgs;
             });
+            if (!isOpenRef.current || activeTabRef.current !== 'ai') {
+                setUnreadCount(prev => prev + 1);
+            }
             setIsStreaming(false);
         } catch (error) {
             console.error("AI Stream Error:", error);
@@ -382,8 +421,9 @@ const MessengerCustomer = () => {
         <>
             <div className="messenger-customer">
                 {!isOpen && (
-                    <div className="messenger-bubble" onClick={() => setIsOpen(true)}>
+                    <div className="messenger-bubble" onClick={() => { setIsOpen(true); setUnreadCount(0); }}>
                         <FaCommentDots />
+                        {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
                     </div>
                 )}
 
@@ -457,6 +497,7 @@ const MessengerCustomer = () => {
                     <img src={previewImage} alt="Preview" />
                 </div>
             )}
+            <ToastContainer />
         </>
     );
 };

@@ -6,6 +6,7 @@
     font-family: 'Inter', sans-serif;
 
     .messenger-bubble {
+        position: relative;
         width: 60px;
         height: 60px;
         background: #f3ba00;
@@ -22,6 +23,32 @@
         &:hover {
             transform: scale(1.1);
         }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4d4f;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(255, 77, 79, 0.4);
+            animation: pulse-red 2s infinite;
+        }
+    }
+
+    @keyframes pulse-red {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
     }
 
     .messenger-window {

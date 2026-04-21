@@ -5,7 +5,7 @@ import moment from 'moment';
 import { QRCodeSVG } from 'qrcode.react';
 import { ToastContainer, toast } from 'react-toastify';
 
-import { fetchUpdateIsPayment, fetchUpdateStatusOrder, fetchPaymentStatus, fetchUpdateItemStatus, fetchUndoSplitPayment } from '../../../actions/order';
+import { fetchUpdateIsPayment, fetchUpdateStatusOrder, fetchPaymentStatus, fetchUpdateItemStatus, fetchUndoSplitPayment, fetchResetSupportRequest } from '../../../actions/order';
 import { statusOrder } from '../../../config/statusOrder';
 import SplitBillModal from '../../../components/SplitBillModal';
 import { socket } from '../../../socket';
@@ -161,6 +161,17 @@ function OrderDetail(props) {
             }
         }
     }
+
+    const handleResetSupport = async () => {
+        if (!orderDetail) return;
+        const res = await fetchResetSupportRequest(orderDetail.id || orderDetail._id, accessToken);
+        if (res && res.success) {
+            toast.success(res.message);
+            fetchOrderDetail(orderId, accessToken);
+        } else {
+            toast.error(res?.message || 'Lỗi xử lý yêu cầu');
+        }
+    };
 
     const handleProcessingOrder = async (orderId) => {
         if (orderId && accessToken) {
@@ -447,8 +458,23 @@ function OrderDetail(props) {
                                 </div>
                             )}
 
-                            <div className="d-flex justify-content-between w-100 mt-3 align-items-center">
-                                <span className="fw-bold fs-6 text-dark">{statusLabel}</span>
+                            <div className="d-flex align-items-center justify-content-between">
+                                <div className="d-flex align-items-center">
+                                    <h2 className="mb-0 fw-bold text-dark">Chi tiết đơn hàng</h2>
+                                    {orderDetail && (
+                                        <span className={`ms-3 admin-badge ${
+                                            orderDetail.is_payment ? 'admin-badge--success' :
+                                            (orderStatus === statusOrder.CANCELED ? 'admin-badge--danger' : 
+                                            (orderStatus === statusOrder.NEW ? 'admin-badge--default' : 
+                                            (orderDetail.needs_support || orderItems.some(i => ['NEW', 'PREPARING'].includes(i.status)) ? 'admin-badge--warning' : 'admin-badge--info')))
+                                        }`}>
+                                            {orderDetail.is_payment ? 'Hoàn thành' : 
+                                            (orderStatus === statusOrder.CANCELED ? 'Đã hủy' : 
+                                            (orderStatus === statusOrder.NEW ? 'Đơn mới' : 
+                                            (orderDetail.needs_support || orderItems.some(i => ['NEW', 'PREPARING'].includes(i.status)) ? 'Chờ xử lý' : 'Đã phục vụ')))}
+                                        </span>
+                                    )}
+                                </div>
                                 <h4 className="text-danger fw-bold mb-0">
                                     {isSplitBill ? bill.amount?.toLocaleString() : orderDetail.total_price?.toLocaleString()} đ
                                 </h4>
@@ -635,7 +661,7 @@ function OrderDetail(props) {
                         <p className="text-muted mb-0">Địa chỉ: 123 Đường Ẩm Thực, Quận 1, TP. HCM</p>
                         <p className="text-muted mb-0">Hotline: 0909 123 456</p>
                         <h4 className="mt-3 fw-bold text-dark text-uppercase">
-                            {orderDetail && orderDetail.is_payment ? "Hóa Đơn Thanh Toán" : "Phiếu mua hàng (Tạm tính)"}
+                            {orderDetail && (orderDetail.is_payment ? "Hóa Đơn Thanh Toán" : (orderDetail.status === statusOrder.CANCELED ? "Phiếu mua hàng (Đã hủy)" : "Phiếu mua hàng (Tạm tính)"))}
                         </h4>
                         <p className="text-muted mb-0">
                             {orderDetail && orderDetail.is_payment ? "Hóa đơn #" : "Phiếu mua hàng #"}: {orderDetail && orderDetail.id}
@@ -660,6 +686,19 @@ function OrderDetail(props) {
                         </div>
                     </div>
 
+                    {orderDetail && orderDetail.needs_support && (
+                        <div className="alert alert-warning d-flex justify-content-between align-items-center mb-4 shadow-sm no-print">
+                            <div className="d-flex align-items-center">
+                                <i className="fa-solid fa-bell-concierge fa-fade me-3 fs-4"></i>
+                                <div>
+                                    <h6 className="mb-0 fw-bold">Khách hàng cần hỗ trợ!</h6>
+                                    <small>Vui lòng kiểm tra và phản hồi lại cho khách.</small>
+                                </div>
+                            </div>
+                            <button className="btn btn-sm btn-dark fw-bold px-3" onClick={handleResetSupport}>Đã hỗ trợ xong</button>
+                        </div>
+                    )}
+
                     <div className="order__detail-group mt-3 d-flex flex-wrap" style={{ gap: '1rem' }}>
                         {/* Cột Trái: Slip List - Hide if Paid */}
                         {!(orderDetail && orderDetail.is_payment) && (
@@ -671,7 +710,9 @@ function OrderDetail(props) {
                                             Object.keys(slipBatches).map((batchKey, i) => (
                                                 <div key={i} className="mb-3 border p-2 rounded bg-light">
                                                     <div className="d-flex justify-content-between align-items-center bg-light p-2 mb-2 border-bottom">
-                                                        <h6 className="text-secondary fw-bold mb-0">{batchKey}</h6>
+                                                        <h6 className="text-secondary fw-bold mb-0">
+                                                            {batchKey}
+                                                        </h6>
                                                         {slipBatches[batchKey].some(item => item.status === 'NEW' || !item.status) && (
                                                             <button
                                                                 className="btn btn-sm btn-warning fw-bold"
@@ -694,18 +735,20 @@ function OrderDetail(props) {
                                                                 <div className="text-muted" style={{ fontSize: '12px' }}>Trạng thái: <span className={item.status === 'PREPARING' ? 'text-warning fw-bold' : 'text-danger fw-bold'}>{item.status || 'NEW'}</span></div>
                                                             </div>
                                                             <div className="d-flex flex-column gap-1 w-50">
-                                                                {item.status === 'PREPARING' && (
+                                                                {item.status === 'PREPARING' && orderDetail.status !== statusOrder.CANCELED && (
                                                                     <button className="btn btn-sm btn-success w-100 fw-bold" onClick={() => handleUpdateItemStatus(item._id || item.id, 'SERVED')}>
                                                                         Đã Phục Vụ
                                                                     </button>
                                                                 )}
-                                                                <button className="btn btn-sm btn-outline-danger w-100 fw-bold mt-1" onClick={() => {
-                                                                    if (window.confirm('Xác nhận hủy món này do sự cố quy trình? (Tiền sẽ được trừ vào tổng đơn)')) {
-                                                                        handleUpdateItemStatus(item._id || item.id, 'CANCELED');
-                                                                    }
-                                                                }}>
-                                                                    Xóa do sự cố
-                                                                </button>
+                                                                {orderDetail.status !== statusOrder.CANCELED && (
+                                                                    <button className="btn btn-sm btn-outline-danger w-100 fw-bold mt-1" onClick={() => {
+                                                                        if (window.confirm('Xác nhận hủy món này do sự cố quy trình? (Tiền sẽ được trừ vào tổng đơn)')) {
+                                                                            handleUpdateItemStatus(item._id || item.id, 'CANCELED');
+                                                                        }
+                                                                    }}>
+                                                                        Xóa do sự cố
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -900,60 +943,64 @@ function OrderDetail(props) {
                         </div>
                     )}
 
-                    <div className="order__detail-foot mt-4 pb-3 border-bottom-0">
-                        <div className="order__detail-status bg-light p-4 rounded w-100 d-flex flex-column align-items-end">
-                            <div className="d-flex justify-content-between w-100 mb-2 border-bottom pb-2">
-                                <span className="text-muted">Trạng thái thanh toán:</span>
-                                <span className={`badge ${orderDetail && orderDetail.is_payment ? 'bg-success' : (orderDetail && orderDetail.split_bills?.some(sb => sb.is_payment) ? 'bg-warning text-dark' : 'bg-danger')} fs-6`}>
-                                    {orderDetail && orderDetail.is_payment ? 'Đã thanh toán đủ' : (orderDetail && orderDetail.split_bills?.some(sb => sb.is_payment) ? 'Thanh toán 1 phần' : 'Chưa thu đủ')}
-                                </span>
-                            </div>
-                            {orderDetail && orderDetail.is_payment && (!orderDetail.split_bills || orderDetail.split_bills.length === 0) && (
+                    {orderDetail && orderStatus !== statusOrder.CANCELED && (
+                        <div className="order__detail-foot mt-4 pb-3 border-bottom-0">
+                            <div className="order__detail-status bg-light p-4 rounded w-100 d-flex flex-column align-items-end">
                                 <div className="d-flex justify-content-between w-100 mb-2 border-bottom pb-2">
-                                    <span className="text-muted">Hình thức thanh toán:</span>
-                                    <span className="fw-bold text-primary">
-                                        {orderDetail.payment_method === 'chuyển khoản' ? 'Chuyển khoản' : 'Tiền mặt'}
+                                    <span className="text-muted">Trạng thái thanh toán:</span>
+                                    <span className={`badge ${orderDetail && orderDetail.is_payment ? 'bg-success' : (orderDetail && orderDetail.split_bills?.some(sb => sb.is_payment) ? 'bg-warning text-dark' : 'bg-danger')} fs-6`}>
+                                        {orderDetail && orderDetail.is_payment ? 'Đã thanh toán đủ' : (orderDetail && orderDetail.split_bills?.some(sb => sb.is_payment) ? 'Thanh toán 1 phần' : 'Chưa thu đủ')}
                                     </span>
                                 </div>
-                            )}
-                            <div className="d-flex justify-content-between w-100 mt-2 align-items-center">
-                                <span className="fw-bold fs-5 text-dark">
-                                    {orderDetail && orderDetail.is_payment ? 'Đã Thu (Tổng cộng):' : 'Tổng Cần Thu (Số dư nợ):'}
-                                </span>
-                                <h2 className="text-danger fw-bold mb-0">
-                                    {orderDetail && (
-                                        orderDetail.is_payment
-                                            ? orderDetail.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })
-                                            : (orderDetail.total_price - (orderDetail.split_bills?.filter(sb => sb.is_payment).reduce((acc, curr) => acc + curr.amount, 0) || 0)).toLocaleString('vi', { style: 'currency', currency: 'VND' })
-                                    )}
-                                </h2>
+                                {orderDetail && orderDetail.is_payment && (!orderDetail.split_bills || orderDetail.split_bills.length === 0) && (
+                                    <div className="d-flex justify-content-between w-100 mb-2 border-bottom pb-2">
+                                        <span className="text-muted">Hình thức thanh toán:</span>
+                                        <span className="fw-bold text-primary">
+                                            {orderDetail.payment_method === 'chuyển khoản' ? 'Chuyển khoản' : 'Tiền mặt'}
+                                        </span>
+                                    </div>
+                                )}
+                                <div className="d-flex justify-content-between w-100 mt-2 align-items-center">
+                                    <span className="fw-bold fs-5 text-dark">
+                                        {orderDetail && orderDetail.is_payment ? 'Đã Thu (Tổng cộng):' : 'Tổng Cần Thu (Số dư nợ):'}
+                                    </span>
+                                    <h2 className="text-danger fw-bold mb-0">
+                                        {orderDetail && (
+                                            orderDetail.is_payment
+                                                ? orderDetail.total_price.toLocaleString('vi', { style: 'currency', currency: 'VND' })
+                                                : (orderDetail.total_price - (orderDetail.split_bills?.filter(sb => sb.is_payment).reduce((acc, curr) => acc + curr.amount, 0) || 0)).toLocaleString('vi', { style: 'currency', currency: 'VND' })
+                                        )}
+                                    </h2>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    <div className="order__detail-group-btn mt-3 no-print d-flex justify-content-end bg-light p-3 rounded">
-                        {/* {order-level status buttons removed} */}
+                    {orderDetail && orderStatus !== statusOrder.CANCELED && (
+                        <div className="order__detail-group-btn mt-3 no-print d-flex justify-content-end bg-light p-3 rounded">
+                            {/* {order-level status buttons removed} */}
 
-                        <button hidden={orderDetail && (orderDetail.is_payment || (orderDetail.split_bills && orderDetail.split_bills.length > 0))} className="btn btn-payment"
-                            onClick={() => handlePayment(orderDetail && orderDetail.id, 'tiền mặt')}>Đã thanh toán</button>
+                            <button hidden={orderDetail && (orderDetail.is_payment || (orderDetail.split_bills && orderDetail.split_bills.length > 0))} className="btn btn-payment"
+                                onClick={() => handlePayment(orderDetail && orderDetail.id, 'tiền mặt')}>Đã thanh toán</button>
 
-                        {orderDetail && !orderDetail.is_payment && (!orderDetail.split_bills || orderDetail.split_bills.length === 0) && (
-                            <>
-                                <button className="btn btn-primary ms-2 text-white font-bold px-3 py-2" onClick={handleMainPaymentQR}>
-                                    Thu tiền chuyển khoản (QR)
+                            {orderDetail && !orderDetail.is_payment && (!orderDetail.split_bills || orderDetail.split_bills.length === 0) && (
+                                <>
+                                    <button className="btn btn-primary ms-2 text-white font-bold px-3 py-2" onClick={handleMainPaymentQR}>
+                                        Thu tiền chuyển khoản (QR)
+                                    </button>
+                                    <button className="btn btn-warning ms-2 text-white font-bold px-3 py-2" onClick={() => setShowSplit(true)}>
+                                        Mở chia hóa đơn
+                                    </button>
+                                </>
+                            )}
+
+                            {orderDetail && orderDetail.split_bills && orderDetail.split_bills.length > 0 && !orderDetail.split_bills.some(sb => sb.is_payment) && (
+                                <button className="btn btn-danger ms-2 text-white font-bold px-3 py-2" onClick={handleUndoSplit}>
+                                    Hủy chia bill
                                 </button>
-                                <button className="btn btn-warning ms-2 text-white font-bold px-3 py-2" onClick={() => setShowSplit(true)}>
-                                    Mở chia hóa đơn
-                                </button>
-                            </>
-                        )}
-
-                        {orderDetail && orderDetail.split_bills && orderDetail.split_bills.length > 0 && !orderDetail.split_bills.some(sb => sb.is_payment) && (
-                            <button className="btn btn-danger ms-2 text-white font-bold px-3 py-2" onClick={handleUndoSplit}>
-                                Hủy chia bill
-                            </button>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 
