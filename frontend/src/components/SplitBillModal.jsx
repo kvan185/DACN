@@ -32,18 +32,20 @@ export default function SplitBillModal({ show, onHide, order, orderItems, onSucc
     }, [order, show, orderItems]);
 
     const setupInitialState = (currentTab = tab) => {
-        let iState = orderItems.map(i => {
-            const unitPrice = i.price || 0;
-            const totalPrice = i.total_price || (i.price * i.qty) || 0;
-            return {
-                ...i,
-                unit_price: unitPrice,
-                leftQty: i.qty,
-                leftPrice: totalPrice,
-                original_price: totalPrice,
-                price: totalPrice // override for compatibility with old sum logic
-            };
-        });
+        let iState = orderItems
+            .filter(i => i.status !== 'CANCELED')
+            .map(i => {
+                const unitPrice = i.price || 0;
+                const totalPrice = i.total_price || (i.price * i.qty) || 0;
+                return {
+                    ...i,
+                    unit_price: unitPrice,
+                    leftQty: i.qty,
+                    leftPrice: totalPrice,
+                    original_price: totalPrice,
+                    price: totalPrice // override for compatibility with old sum logic
+                };
+            });
         setItemsState(iState);
 
         let sumRaw = iState.reduce((acc, it) => acc + (it.price || 0), 0);
