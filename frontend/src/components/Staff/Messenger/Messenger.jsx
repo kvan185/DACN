@@ -76,6 +76,7 @@ const Messenger = () => {
     useEffect(() => {
         if (!user) return;
         socket.emit("adminConnect", user.id || user._id);
+        fetchTotalUnread();
 
         socket.on("receiveMessage", (data) => {
             const currentUserId = user.id || user._id;
@@ -101,6 +102,7 @@ const Messenger = () => {
                 markAsRead();
             }
             fetchConversations();
+            fetchTotalUnread();
         });
 
         socket.on("messageSent", (data) => {
@@ -147,6 +149,16 @@ const Messenger = () => {
         }, 100);
     };
 
+    const fetchTotalUnread = async () => {
+        if (!user) return;
+        try {
+            const response = await axios.get(`${host}/api/messages/unread-count-admin`, {
+                params: { adminId: user.id || user._id }
+            });
+            window.dispatchEvent(new CustomEvent('unreadUpdate', { detail: response.data.total }));
+        } catch (error) { console.error("Fetch total unread error:", error); }
+    };
+
     const fetchConversations = async () => {
         try {
             const response = await axios.get(`${host}/api/messages/conversations`, {
@@ -157,8 +169,7 @@ const Messenger = () => {
                 }
             });
             setConversations(response.data);
-            const totalUnread = response.data.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
-            window.dispatchEvent(new CustomEvent('unreadUpdate', { detail: totalUnread }));
+            fetchTotalUnread();
         } catch (error) { console.error("Fetch conversations error:", error); }
     };
 
@@ -186,6 +197,7 @@ const Messenger = () => {
                 conversationType: activeTab === 'colleague' ? 'internal' : 'customer'
             });
             fetchConversations();
+            fetchTotalUnread();
         } catch (error) { console.error("Mark as read error:", error); }
     };
 

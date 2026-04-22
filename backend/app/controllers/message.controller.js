@@ -189,6 +189,35 @@ exports.getUnreadCountForCustomer = async (req, res) => {
     }
 };
 
+exports.getUnreadCountForAdmin = async (req, res) => {
+    try {
+        const { adminId } = req.query;
+        if (!adminId) return res.status(400).send({ message: "Missing adminId" });
+
+        // 1. Tin nhắn nội bộ gửi riêng cho admin này
+        const internalUnread = await Message.countDocuments({
+            receiver: adminId,
+            conversationType: 'internal',
+            isRead: false
+        });
+
+        // 2. Tin nhắn từ khách hàng (chưa có ai đọc)
+        const customerUnread = await Message.countDocuments({
+            senderModel: 'customer',
+            conversationType: 'customer',
+            isRead: false
+        });
+
+        res.status(200).send({
+            total: internalUnread + customerUnread,
+            internal: internalUnread,
+            customer: customerUnread
+        });
+    } catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+};
+
 // API: Mark messages as read
 exports.markAsRead = async (req, res) => {
     try {
